@@ -1,3 +1,4 @@
+import 'package:fyp_chat_app/models/create_user_dto.dart';
 import 'package:http/http.dart' as http;
 
 import 'api.dart';
@@ -14,8 +15,8 @@ class UsersApi extends Api {
     return _instance;
   }
 
-  Future<void> registerUser() async {
-    // var response = post("/");
-    throw UnimplementedError();
+  Future<void> registerUser(CreateUserDto createUserDto) async {
+    var response = post("/", body: createUserDto.toJson());
+    // throw UnimplementedError();
   }
 }

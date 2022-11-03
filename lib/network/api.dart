@@ -1,8 +1,11 @@
+import 'dart:convert';
+
 import 'package:flutter/cupertino.dart';
 import 'package:http/http.dart' as http;
 
 abstract class Api {
-  static const String baseUrl = "http://localhost:3000";
+  // Android is 10.0.2.2 not localhost
+  static const String baseUrl = "http://10.0.2.2:3000";
   abstract String pathPrefix;
 
   @protected
@@ -22,7 +25,7 @@ abstract class Api {
     Map<String, dynamic>? body,
   }) async {
     final url = Uri.parse("$baseUrl/$pathPrefix/$path");
-    final response = await http.post(url, body: body);
+    final response = await http.post(url, body: json.encode(body));
     return response;
   }
 }
