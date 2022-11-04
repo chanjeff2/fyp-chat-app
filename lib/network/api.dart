@@ -25,7 +25,11 @@ abstract class Api {
     Map<String, dynamic>? body,
   }) async {
     final url = Uri.parse("$baseUrl$pathPrefix$path");
-    final response = await http.post(url, body: json.encode(body));
+    final response = await http.post(url,
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: json.encode(body));
     return response;
   }
 }
