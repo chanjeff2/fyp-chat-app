@@ -1,4 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:fyp_chat_app/models/create_user_dto.dart';
+import 'package:fyp_chat_app/network/users_api.dart';
+import 'package:libsignal_protocol_dart/libsignal_protocol_dart.dart';
+
+import 'models/pre_key.dart';
 
 void main() {
   runApp(const MyApp());
@@ -50,7 +55,39 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
 
+  Future<void> install() async {
+    final identityKeyPair = generateIdentityKeyPair();
+    final registrationId = generateRegistrationId(false);
+
+    final preKeys = generatePreKeys(0, 110);
+
+    final signedPreKey = generateSignedPreKey(identityKeyPair, 0);
+
+    final sessionStore = InMemorySessionStore();
+    final preKeyStore = InMemoryPreKeyStore();
+    final signedPreKeyStore = InMemorySignedPreKeyStore();
+    final identityStore =
+        InMemoryIdentityKeyStore(identityKeyPair, registrationId);
+
+    for (var p in preKeys) {
+      await preKeyStore.storePreKey(p.id, p);
+    }
+    await signedPreKeyStore.storeSignedPreKey(signedPreKey.id, signedPreKey);
+
+    // register
+    final createUserDto = CreateUserDto(
+      username: "username",
+      registrationId: registrationId,
+      identityKey: identityKeyPair.getPublicKey(),
+      signedPreKey: SignedPreKey.fromSignedPreKeyRecord(signedPreKey).toDto(),
+      oneTimeKeys:
+          preKeys.map((e) => PreKey.fromPreKeyRecord(e).toDto()).toList(),
+    );
+    await UsersApi().registerUser(createUserDto);
+  }
+
   void _incrementCounter() {
+    install();
     setState(() {
       // This call to setState tells the Flutter framework that something has
       // changed in this State, which causes it to rerun the build method below
