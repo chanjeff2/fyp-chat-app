@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fyp_chat_app/network/api.dart';
 
 import '../../models/create_user_dto.dart';
 import '../../models/pre_key.dart';
@@ -64,10 +65,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   }
                   // TODO: register
                   try {
-                    register();
-                  } catch (e) {
-                    ScaffoldMessenger.of(context)
-                        .showSnackBar(SnackBar(content: Text(e.toString())));
+                    await register();
+                  } on ApiException catch (e) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text("error: ${e.message}")));
                   }
                 },
                 child: const Text("Register"),

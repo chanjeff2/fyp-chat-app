@@ -16,7 +16,7 @@ class UsersApi extends Api {
   }
 
   Future<void> registerUser(CreateUserDto createUserDto) async {
-    var response = post("/", body: createUserDto.toJson());
+    var response = await post("/", body: createUserDto.toJson());
     // throw UnimplementedError();
   }
 }
