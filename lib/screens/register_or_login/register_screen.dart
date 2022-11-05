@@ -7,7 +7,9 @@ import '../../network/users_api.dart';
 import '../../signal/signal_client.dart';
 
 class RegisterScreen extends StatefulWidget {
-  const RegisterScreen({Key? key}) : super(key: key);
+  final void Function(String) onLogin;
+
+  const RegisterScreen({Key? key, required this.onLogin}) : super(key: key);
 
   @override
   State<RegisterScreen> createState() => _RegisterScreenState();
@@ -15,12 +17,12 @@ class RegisterScreen extends StatefulWidget {
 
 class _RegisterScreenState extends State<RegisterScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey();
-  TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _usernameController = TextEditingController();
 
-  Future<void> register() async {
+  Future<void> register(String username) async {
     // register
     final createUserDto = CreateUserDto(
-      username: "username",
+      username: username,
       registrationId: SignalClient().registrationId,
       identityKey: SignalClient().identityKeyPair.getPublicKey(),
       signedPreKey:
@@ -64,8 +66,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     return;
                   }
                   // TODO: register
+                  String username = _usernameController.text;
                   try {
-                    await register();
+                    await register(username);
+                    widget.onLogin(username);
                   } on ApiException catch (e) {
                     ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(content: Text("error: ${e.message}")));
