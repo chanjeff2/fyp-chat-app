@@ -1,4 +1,6 @@
+import 'package:fyp_chat_app/models/signal_keys_db.dart';
 import 'package:libsignal_protocol_dart/libsignal_protocol_dart.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SignalClient {
   SignalClient._();
@@ -20,12 +22,19 @@ class SignalClient {
   late final InMemoryIdentityKeyStore identityStore;
 
   Future<void> install() async {
-    identityKeyPair = generateIdentityKeyPair();
     registrationId = generateRegistrationId(false);
-
+    identityKeyPair = generateIdentityKeyPair();
+    signedPreKey = generateSignedPreKey(identityKeyPair, 0);
     preKeys = generatePreKeys(0, 110);
 
-    signedPreKey = generateSignedPreKey(identityKeyPair, 0);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt("registrationId", registrationId);
+    await prefs.setString("identityKeyPair",
+        IdentityKeyPairDb.fromIdentityKeyPair(identityKeyPair).buffer);
+    await prefs.setString("signedPreKey",
+        SignedPreKeyRecordDb.fromSignedPreKeyRecord(signedPreKey).buffer);
+    await prefs.setStringList("preKeys",
+        preKeys.map((e) => PreKeyRecordDb.fromPreKeyRecord(e).buffer).toList());
 
     identityStore = InMemoryIdentityKeyStore(identityKeyPair, registrationId);
 
@@ -36,11 +45,22 @@ class SignalClient {
   }
 
   Future<void> loadKeys() async {
-    // TODO: load registrationId
-    // TODO: load identityKeyPair
-    // TODO: load signedPreKey
-    // TODO: load preKeys
+    final prefs = await SharedPreferences.getInstance();
+    registrationId = prefs.getInt("registrationId")!;
+    identityKeyPair = IdentityKeyPairDb(prefs.getString("identityKeyPair")!)
+        .toIdentityKeyPair();
+    signedPreKey =
+        SignedPreKeyRecordDb(prefs.getString("signedPreKey")!).toPreKeyRecord();
+    preKeys = prefs
+        .getStringList("preKeys")!
+        .map((e) => PreKeyRecordDb(e).toPreKeyRecord())
+        .toList();
 
     identityStore = InMemoryIdentityKeyStore(identityKeyPair, registrationId);
+
+    for (var p in preKeys) {
+      await preKeyStore.storePreKey(p.id, p);
+    }
+    await signedPreKeyStore.storeSignedPreKey(signedPreKey.id, signedPreKey);
   }
 }

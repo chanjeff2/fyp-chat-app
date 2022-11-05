@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fyp_chat_app/screens/register_or_login/register_screen.dart';
 import 'package:fyp_chat_app/signal/signal_client.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   runApp(const MyApp());
@@ -54,22 +55,27 @@ class _MyHomePageState extends State<MyHomePage> {
   bool isKeysGenerated = false;
   bool isKeysLoaded = false;
   bool isLoggedIn = false;
+  late final SharedPreferences prefs;
 
   @override
   void initState() {
     super.initState();
+    init();
+  }
+
+  Future<void> init() async {
+    prefs = await SharedPreferences.getInstance();
+    isKeysGenerated = prefs.getBool("isKeysGenerated") ?? false;
+    isLoggedIn = prefs.getString("username") != null;
     loadKeys();
-    // TODO: check if logged in
-    isLoggedIn = false;
   }
 
   Future<void> loadKeys() async {
-    // TODO: check if generated keys
-    isKeysGenerated = false;
     if (isKeysGenerated) {
       await SignalClient().loadKeys();
     } else {
       await SignalClient().install();
+      prefs.setBool("isKeysGenerated", true);
     }
     setState(() {
       isKeysLoaded = true;
