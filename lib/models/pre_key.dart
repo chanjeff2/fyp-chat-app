@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
-import 'package:fyp_chat_app/models/pre_key_dto.dart';
+import 'package:fyp_chat_app/dto/pre_key_dto.dart';
 import 'package:libsignal_protocol_dart/libsignal_protocol_dart.dart';
 
 class PreKey {

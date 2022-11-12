@@ -28,10 +28,18 @@ abstract class Api {
   Future<Map<String, dynamic>> get(
     String path, {
     Map<String, String>? query,
+    String? bearerToken,
   }) async {
     final url =
         Uri.parse("$baseUrl$pathPrefix$path").replace(queryParameters: query);
-    final response = await http.get(url);
+    Map<String, String>? headers = null;
+    if (bearerToken != null) {
+      headers = {'Authorization': 'Bearer $bearerToken'};
+    }
+    final response = await http.get(
+      url,
+      headers: headers,
+    );
     return processResponse(response);
   }
 
@@ -39,13 +47,16 @@ abstract class Api {
   Future<Map<String, dynamic>> post(
     String path, {
     Map<String, dynamic>? body,
+    String? bearerToken,
   }) async {
     final url = Uri.parse("$baseUrl$pathPrefix$path");
-    final response = await http.post(url,
-        headers: <String, String>{
-          'Content-Type': 'application/json; charset=UTF-8',
-        },
-        body: json.encode(body));
+    final headers = <String, String>{};
+    headers['Content-Type'] = 'application/json; charset=UTF-8';
+    if (bearerToken != null) {
+      headers['Authorization'] = 'Bearer $bearerToken';
+    }
+    final response =
+        await http.post(url, headers: headers, body: json.encode(body));
     return processResponse(response);
   }
 }
