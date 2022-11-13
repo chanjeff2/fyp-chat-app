@@ -1,8 +1,40 @@
 # fyp_chat_app
 
-A new Flutter project.
+see also https://github.com/chanjeff2/fyp-chat-server
+
+## File Structure
+
+    .
+    ├───android         # files for Android
+    ├───ios             # files for iOS
+    ├───lib
+    │   ├───dto         # objects you get from server
+    │   ├───models      # classes used in the app
+    │   ├───network     # APIs
+    │   ├───screens     # app screens
+    │   ├───signal      # Signal protocol library related
+    │   └───storage     # local storage
+    └───test
 
 ## Getting Started
+
+### json_serializable 
+
+use `flutter pub run build_runner watch --delete-conflicting-outputs` to generate code for `./lib/dto/*.dart`
+
+pub.dev: https://pub.dev/packages/json_serializable
+
+flutter doc: https://docs.flutter.dev/development/data-and-backend/json#serializing-json-using-code-generation-libraries 
+
+### Provider
+
+app state management
+
+pub.dev: https://pub.dev/packages/provider
+
+flutter doc: https://docs.flutter.dev/development/data-and-backend/state-mgmt/simple
+
+---
 
 This project is a starting point for a Flutter application.
 

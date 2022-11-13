@@ -1,6 +1,8 @@
 import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
+import 'package:fyp_chat_app/dto/access_token_dto.dart';
+import 'package:fyp_chat_app/storage/credential_store.dart';
 import 'package:http/http.dart' as http;
 
 class ApiException implements Exception {
@@ -9,6 +11,11 @@ class ApiException implements Exception {
   String error;
 
   ApiException(this.statusCode, this.message, this.error);
+}
+
+class AccessTokenNotFoundException implements Exception {
+  String get message => 'access token not found';
+  AccessTokenNotFoundException();
 }
 
 abstract class Api {
@@ -28,10 +35,22 @@ abstract class Api {
   Future<Map<String, dynamic>> get(
     String path, {
     Map<String, String>? query,
+    bool useAuth = false,
   }) async {
     final url =
         Uri.parse("$baseUrl$pathPrefix$path").replace(queryParameters: query);
-    final response = await http.get(url);
+    Map<String, String>? headers = null;
+    if (useAuth) {
+      AccessTokenDto? accessTokenDto = await CredentialStore().getToken();
+      if (accessTokenDto == null) {
+        throw AccessTokenNotFoundException();
+      }
+      headers = {'Authorization': 'Bearer ${accessTokenDto.accessToken}'};
+    }
+    final response = await http.get(
+      url,
+      headers: headers,
+    );
     return processResponse(response);
   }
 
@@ -39,13 +58,20 @@ abstract class Api {
   Future<Map<String, dynamic>> post(
     String path, {
     Map<String, dynamic>? body,
+    bool useAuth = false,
   }) async {
     final url = Uri.parse("$baseUrl$pathPrefix$path");
-    final response = await http.post(url,
-        headers: <String, String>{
-          'Content-Type': 'application/json; charset=UTF-8',
-        },
-        body: json.encode(body));
+    final headers = <String, String>{};
+    headers['Content-Type'] = 'application/json; charset=UTF-8';
+    if (useAuth) {
+      AccessTokenDto? accessTokenDto = await CredentialStore().getToken();
+      if (accessTokenDto == null) {
+        throw AccessTokenNotFoundException();
+      }
+      headers['Authorization'] = 'Bearer ${accessTokenDto.accessToken}';
+    }
+    final response =
+        await http.post(url, headers: headers, body: json.encode(body));
     return processResponse(response);
   }
 }
