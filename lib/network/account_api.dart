@@ -14,8 +14,8 @@ class AccountApi extends Api {
   @override
   String pathPrefix = "/account";
 
-  Future<AccountDto> getMe(String accessToken) async {
-    final json = await get("/me", bearerToken: accessToken);
+  Future<AccountDto> getMe() async {
+    final json = await get("/me", useAuth: true);
     return AccountDto.fromJson(json);
   }
 }

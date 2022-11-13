@@ -1,5 +1,4 @@
 import 'package:flutter/cupertino.dart';
-import 'package:fyp_chat_app/dto/access_token_dto.dart';
 import 'package:fyp_chat_app/dto/account_dto.dart';
 import 'package:fyp_chat_app/network/account_api.dart';
 import 'package:fyp_chat_app/network/api.dart';
@@ -8,13 +7,11 @@ import 'package:fyp_chat_app/storage/credential_store.dart';
 
 class UserState extends ChangeNotifier {
   AccountDto? _me;
-  AccessTokenDto? _accessTokenDto;
-
+  bool _isAccessTokenAvailable = false;
   bool isInitialized = false;
 
   AccountDto? get me => _me;
-  String? get accessToken => _accessTokenDto?.accessToken;
-  bool get isLoggedIn => isInitialized && accessToken != null && me != null;
+  bool get isLoggedIn => isInitialized && _isAccessTokenAvailable && me != null;
 
   UserState() {
     init();
@@ -25,8 +22,9 @@ class UserState extends ChangeNotifier {
     if (credential != null) {
       try {
         final token = await AuthApi().login(credential);
-        _accessTokenDto = token;
-        final ac = await AccountApi().getMe(token.accessToken);
+        await CredentialStore().storeToken(token.accessToken);
+        _isAccessTokenAvailable = true;
+        final ac = await AccountApi().getMe();
         _me = ac;
       } on ApiException catch (e) {
         // show error?
@@ -41,14 +39,14 @@ class UserState extends ChangeNotifier {
     notifyListeners();
   }
 
-  void setAccessToken(AccessTokenDto accessTokenDto) {
-    _accessTokenDto = accessTokenDto;
+  void setAccessTokenStatus(bool isAvailable) {
+    _isAccessTokenAvailable = isAvailable;
     notifyListeners();
   }
 
   void clearState() {
     _me = null;
-    _accessTokenDto = null;
+    _isAccessTokenAvailable = false;
     notifyListeners();
   }
 }

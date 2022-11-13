@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
+import 'package:fyp_chat_app/storage/credential_store.dart';
 import 'package:http/http.dart' as http;
 
 class ApiException implements Exception {
@@ -9,6 +10,11 @@ class ApiException implements Exception {
   String error;
 
   ApiException(this.statusCode, this.message, this.error);
+}
+
+class AccessTokenNotFoundException implements Exception {
+  String get message => 'access token not found';
+  AccessTokenNotFoundException();
 }
 
 abstract class Api {
@@ -28,12 +34,16 @@ abstract class Api {
   Future<Map<String, dynamic>> get(
     String path, {
     Map<String, String>? query,
-    String? bearerToken,
+    bool useAuth = false,
   }) async {
     final url =
         Uri.parse("$baseUrl$pathPrefix$path").replace(queryParameters: query);
     Map<String, String>? headers = null;
-    if (bearerToken != null) {
+    if (useAuth) {
+      String? bearerToken = await CredentialStore().getToken();
+      if (bearerToken == null) {
+        throw AccessTokenNotFoundException();
+      }
       headers = {'Authorization': 'Bearer $bearerToken'};
     }
     final response = await http.get(
@@ -47,12 +57,16 @@ abstract class Api {
   Future<Map<String, dynamic>> post(
     String path, {
     Map<String, dynamic>? body,
-    String? bearerToken,
+    bool useAuth = false,
   }) async {
     final url = Uri.parse("$baseUrl$pathPrefix$path");
     final headers = <String, String>{};
     headers['Content-Type'] = 'application/json; charset=UTF-8';
-    if (bearerToken != null) {
+    if (useAuth) {
+      String? bearerToken = await CredentialStore().getToken();
+      if (bearerToken == null) {
+        throw AccessTokenNotFoundException();
+      }
       headers['Authorization'] = 'Bearer $bearerToken';
     }
     final response =

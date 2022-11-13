@@ -94,7 +94,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       // store credential
                       await CredentialStore()
                           .storeCredential(username, password);
-                      userState.setAccessToken(accessToken);
+                      await CredentialStore()
+                          .storeToken(accessToken.accessToken);
+                      userState.setAccessTokenStatus(true);
                     } on ApiException catch (e) {
                       ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(content: Text("error: ${e.message}")));
