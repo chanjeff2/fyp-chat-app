@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fyp_chat_app/models/user_state.dart';
 import 'package:fyp_chat_app/screens/home/home_screen.dart';
-import 'package:fyp_chat_app/screens/register_or_login/register_screen.dart';
+import 'package:fyp_chat_app/screens/register_or_login/register_or_login_screen.dart';
 import 'package:provider/provider.dart';
 
 void main() {
@@ -55,7 +55,7 @@ class MyHomePage extends StatelessWidget {
         }
 
         if (!userState.isLoggedIn) {
-          return const RegisterScreen();
+          return const RegisterOrLoginScreen();
         }
 
         return const HomeScreen();

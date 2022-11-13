@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:fyp_chat_app/dto/account_dto.dart';
 import 'package:fyp_chat_app/dto/login_dto.dart';
 import 'package:fyp_chat_app/models/user_state.dart';
+import 'package:fyp_chat_app/network/account_api.dart';
 import 'package:fyp_chat_app/network/api.dart';
 import 'package:fyp_chat_app/storage/credential_store.dart';
 import 'package:provider/provider.dart';
@@ -9,18 +9,22 @@ import 'package:provider/provider.dart';
 import '../../dto/register_dto.dart';
 import '../../network/auth_api.dart';
 
-class RegisterScreen extends StatefulWidget {
-  const RegisterScreen({Key? key}) : super(key: key);
+class RegisterOrLoginScreen extends StatefulWidget {
+  const RegisterOrLoginScreen({Key? key}) : super(key: key);
 
   @override
-  State<RegisterScreen> createState() => _RegisterScreenState();
+  State<RegisterOrLoginScreen> createState() => _RegisterOrLoginScreenState();
 }
 
-class _RegisterScreenState extends State<RegisterScreen> {
+class _RegisterOrLoginScreenState extends State<RegisterOrLoginScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey();
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
   bool _isPasswordVisible = false;
+  bool _isConfirmPasswordVisible = false;
+  bool _isRegister = false;
 
   String get username => _usernameController.text;
   String get password => _passwordController.text;
@@ -29,7 +33,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Register"),
+        title: Text(_isRegister ? "Register" : "Login"),
       ),
       body: Form(
         key: _formKey,
@@ -70,23 +74,51 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   return null;
                 },
               ),
+              if (_isRegister)
+                TextFormField(
+                  controller: _confirmPasswordController,
+                  obscureText: !_isConfirmPasswordVisible,
+                  enabled: _isRegister,
+                  decoration: InputDecoration(
+                      labelText: "Confirm Password",
+                      suffixIcon: IconButton(
+                        onPressed: () {
+                          setState(() {
+                            _isConfirmPasswordVisible =
+                                !_isConfirmPasswordVisible;
+                          });
+                        },
+                        icon: _isConfirmPasswordVisible
+                            ? const Icon(Icons.visibility)
+                            : const Icon(Icons.visibility_off),
+                      )),
+                  validator: (confirmPassword) {
+                    if (confirmPassword?.isEmpty ?? true) {
+                      return "please enter your password again";
+                    }
+                    if (confirmPassword != password) {
+                      return "please make sure your input is the same as the password";
+                    }
+                    return null;
+                  },
+                ),
               Consumer<UserState>(
-                builder: (context, userState, child) => TextButton(
+                builder: (context, userState, child) => ElevatedButton(
                   onPressed: () async {
                     if (!(_formKey.currentState?.validate() ?? false)) {
                       // validation failed for some fields
                       return;
                     }
                     try {
-                      // register
-                      final account = await AuthApi().register(
-                        RegisterDto(
-                          username: username,
-                          password: password,
-                        ),
-                      );
-                      Provider.of<UserState>(context, listen: false)
-                          .setMe(account);
+                      if (_isRegister) {
+                        // register
+                        await AuthApi().register(
+                          RegisterDto(
+                            username: username,
+                            password: password,
+                          ),
+                        );
+                      }
                       // login
                       final accessToken = await AuthApi().login(
                         LoginDto(username: username, password: password),
@@ -96,14 +128,40 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           .storeCredential(username, password);
                       await CredentialStore()
                           .storeToken(accessToken.accessToken);
-                      userState.setAccessTokenStatus(true);
+                      Provider.of<UserState>(context, listen: false)
+                          .setAccessTokenStatus(true);
+                      // get account profile
+                      final account = await AccountApi().getMe();
+                      userState.setMe(account);
                     } on ApiException catch (e) {
                       ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(content: Text("error: ${e.message}")));
                     }
                   },
-                  child: const Text("Register"),
+                  child: Text(_isRegister ? "Register" : "Login"),
                 ),
+              ),
+              TextButton(
+                onPressed: () {
+                  setState(() {
+                    _isRegister = !_isRegister;
+                  });
+                },
+                child: Text.rich(TextSpan(
+                  text: _isRegister
+                      ? "Already have an account? "
+                      : "Don't have an account? ",
+                  style: const TextStyle(color: Colors.black),
+                  children: [
+                    TextSpan(
+                      text: _isRegister ? "Login" : "Sign Up",
+                      style: TextStyle(
+                        color: Theme.of(context).primaryColor,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    )
+                  ],
+                )),
               )
             ],
           ),
