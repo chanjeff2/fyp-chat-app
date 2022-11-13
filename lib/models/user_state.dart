@@ -22,7 +22,7 @@ class UserState extends ChangeNotifier {
     if (credential != null) {
       try {
         final token = await AuthApi().login(credential);
-        await CredentialStore().storeToken(token.accessToken);
+        await CredentialStore().storeToken(token);
         _isAccessTokenAvailable = true;
         final ac = await AccountApi().getMe();
         _me = ac;

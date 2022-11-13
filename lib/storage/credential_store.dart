@@ -1,3 +1,4 @@
+import 'package:fyp_chat_app/dto/access_token_dto.dart';
 import 'package:fyp_chat_app/storage/secure_storage.dart';
 
 import '../dto/login_dto.dart';
@@ -14,14 +15,18 @@ class CredentialStore {
   static const usernameKey = 'username_key';
   static const passwordKey = 'password_key';
   static const accessTokenKey = 'access_token_key';
+  static const refreshTokenKey = 'refresh_token_key';
 
   Future<void> storeCredential(String username, String password) async {
     await SecureStorage().write(key: usernameKey, value: username);
     await SecureStorage().write(key: passwordKey, value: password);
   }
 
-  Future<void> storeToken(String accessToken) async {
-    await SecureStorage().write(key: accessTokenKey, value: accessToken);
+  Future<void> storeToken(AccessTokenDto accessTokenDto) async {
+    await SecureStorage()
+        .write(key: accessTokenKey, value: accessTokenDto.accessToken);
+    await SecureStorage()
+        .write(key: refreshTokenKey, value: accessTokenDto.refreshToken);
   }
 
   Future<LoginDto?> getCredential() async {
@@ -33,9 +38,13 @@ class CredentialStore {
     return LoginDto(username: username, password: password);
   }
 
-  Future<String?> getToken() async {
+  Future<AccessTokenDto?> getToken() async {
     String? accessToken = await SecureStorage().read(key: accessTokenKey);
-    return accessToken;
+    String? refreshToken = await SecureStorage().read(key: refreshTokenKey);
+    if (accessToken == null || refreshToken == null) {
+      return null;
+    }
+    return AccessTokenDto(accessToken: accessToken, refreshToken: refreshToken);
   }
 
   Future<void> removeToken() async {

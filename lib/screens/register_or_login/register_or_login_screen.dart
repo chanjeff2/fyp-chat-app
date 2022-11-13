@@ -126,8 +126,7 @@ class _RegisterOrLoginScreenState extends State<RegisterOrLoginScreen> {
                       // store credential
                       await CredentialStore()
                           .storeCredential(username, password);
-                      await CredentialStore()
-                          .storeToken(accessToken.accessToken);
+                      await CredentialStore().storeToken(accessToken);
                       Provider.of<UserState>(context, listen: false)
                           .setAccessTokenStatus(true);
                       // get account profile
