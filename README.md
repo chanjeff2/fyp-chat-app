@@ -33,6 +33,7 @@ app state management
 pub.dev: https://pub.dev/packages/provider
 
 flutter doc: https://docs.flutter.dev/development/data-and-backend/state-mgmt/simple
+
 ---
 
 This project is a starting point for a Flutter application.
