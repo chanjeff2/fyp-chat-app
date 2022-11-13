@@ -1,5 +1,13 @@
+import 'package:json_annotation/json_annotation.dart';
+
+part 'account_dto.g.dart';
+
+@JsonSerializable()
 class AccountDto {
+  @JsonKey(required: true)
   String userId;
+
+  @JsonKey(required: true)
   String username;
   String? displayName;
 
@@ -9,8 +17,6 @@ class AccountDto {
     this.displayName,
   });
 
-  AccountDto.fromJson(Map<String, dynamic> json)
-      : userId = json['userId'],
-        username = json['username'],
-        displayName = json['displayName'];
+  factory AccountDto.fromJson(Map<String, dynamic> json) =>
+      _$AccountDtoFromJson(json);
 }

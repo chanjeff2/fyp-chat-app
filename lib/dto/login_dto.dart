@@ -1,3 +1,8 @@
+import 'package:json_annotation/json_annotation.dart';
+
+part 'login_dto.g.dart';
+
+@JsonSerializable()
 class LoginDto {
   String username;
   String password;
@@ -7,10 +12,5 @@ class LoginDto {
     required this.password,
   });
 
-  Map<String, dynamic> toJson() {
-    Map<String, dynamic> json = {};
-    json["username"] = username;
-    json["password"] = password;
-    return json;
-  }
+  Map<String, dynamic> toJson() => _$LoginDtoToJson(this);
 }
