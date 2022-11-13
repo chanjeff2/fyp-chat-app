@@ -6,5 +6,5 @@ class AccessTokenDto {
   });
 
   AccessTokenDto.fromJson(Map<String, dynamic> json)
-      : accessToken = json['access_token'];
+      : accessToken = json['accessToken'];
 }
