@@ -38,13 +38,20 @@ class _RegisterOrLoginScreenState extends State<RegisterOrLoginScreen> {
       body: Form(
         key: _formKey,
         child: Padding(
-          padding: const EdgeInsets.all(8.0),
+          padding: const EdgeInsets.all(30.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               TextFormField(
                 controller: _usernameController,
-                decoration: const InputDecoration(labelText: "Username"),
+                decoration: const InputDecoration(
+                  labelText: "Username",
+                  contentPadding: const EdgeInsets.symmetric(vertical: 15.0, horizontal: 15.0),
+                  border: OutlineInputBorder(
+                    borderRadius: const BorderRadius.all(const Radius.circular(10.0)),
+                    borderSide: BorderSide()
+                  )
+                ),
                 validator: (username) {
                   if (username?.isEmpty ?? true) {
                     return "username cannot be empty";
@@ -52,11 +59,17 @@ class _RegisterOrLoginScreenState extends State<RegisterOrLoginScreen> {
                   return null;
                 },
               ),
+              SizedBox(height: 15),
               TextFormField(
                 controller: _passwordController,
                 obscureText: !_isPasswordVisible,
                 decoration: InputDecoration(
                     labelText: "Password",
+                    contentPadding: const EdgeInsets.symmetric(vertical: 15.0, horizontal: 15.0),
+                    border: OutlineInputBorder(
+                      borderRadius: const BorderRadius.all(const Radius.circular(10.0)),
+                      borderSide: BorderSide()
+                    ),
                     suffixIcon: IconButton(
                       onPressed: () {
                         setState(() {
@@ -74,6 +87,7 @@ class _RegisterOrLoginScreenState extends State<RegisterOrLoginScreen> {
                   return null;
                 },
               ),
+              SizedBox(height: 15),
               if (_isRegister)
                 TextFormField(
                   controller: _confirmPasswordController,
@@ -81,6 +95,11 @@ class _RegisterOrLoginScreenState extends State<RegisterOrLoginScreen> {
                   enabled: _isRegister,
                   decoration: InputDecoration(
                       labelText: "Confirm Password",
+                      contentPadding: const EdgeInsets.symmetric(vertical: 15.0, horizontal: 15.0),
+                      border: OutlineInputBorder(
+                        borderRadius: const BorderRadius.all(const Radius.circular(10.0)),
+                        borderSide: BorderSide()
+                      ),
                       suffixIcon: IconButton(
                         onPressed: () {
                           setState(() {
