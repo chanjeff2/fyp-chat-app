@@ -5,6 +5,7 @@ import 'package:fyp_chat_app/dto/login_dto.dart';
 import 'package:fyp_chat_app/models/user_state.dart';
 import 'package:fyp_chat_app/network/account_api.dart';
 import 'package:fyp_chat_app/network/api.dart';
+import 'package:fyp_chat_app/screens/register_or_login/register_screen.dart';
 import 'package:fyp_chat_app/storage/credential_store.dart';
 import 'package:provider/provider.dart';
 
@@ -119,6 +120,11 @@ class _LoginScreenState extends State<LoginScreen> {
               TextButton(
                 onPressed: () {
                   //Negivate to Register screen
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => const RegisterScreen(),
+                    ),
+                  );
                 },
                 child: Text.rich(TextSpan(
                   text: "Don't have an account? ",

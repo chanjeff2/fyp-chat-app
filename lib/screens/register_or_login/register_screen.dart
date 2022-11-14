@@ -59,7 +59,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   return null;
                 },
               ),
-              SizedBox(height: 15),
+              const SizedBox(height: 16),
               TextFormField(
                 controller: _passwordController,
                 obscureText: !_isPasswordVisible,
@@ -87,7 +87,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   return null;
                 },
               ),
-              SizedBox(height: 15),
+              const SizedBox(height: 16),
               if (_isRegister)
                 TextFormField(
                   controller: _confirmPasswordController,
