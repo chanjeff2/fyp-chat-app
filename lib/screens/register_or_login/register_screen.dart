@@ -6,18 +6,17 @@ import 'package:fyp_chat_app/network/api.dart';
 import 'package:fyp_chat_app/storage/credential_store.dart';
 import 'package:provider/provider.dart';
 
-import '../../dto/access_token_dto.dart';
 import '../../dto/register_dto.dart';
 import '../../network/auth_api.dart';
 
-class RegisterOrLoginScreen extends StatefulWidget {
-  const RegisterOrLoginScreen({Key? key}) : super(key: key);
+class RegisterScreen extends StatefulWidget {
+  const RegisterScreen({Key? key}) : super(key: key);
 
   @override
-  State<RegisterOrLoginScreen> createState() => _RegisterOrLoginScreenState();
+  State<RegisterScreen> createState() => _RegisterScreenState();
 }
 
-class _RegisterOrLoginScreenState extends State<RegisterOrLoginScreen> {
+class _RegisterScreenState extends State<RegisterScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey();
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
@@ -25,7 +24,7 @@ class _RegisterOrLoginScreenState extends State<RegisterOrLoginScreen> {
       TextEditingController();
   bool _isPasswordVisible = false;
   bool _isConfirmPasswordVisible = false;
-  bool _isRegister = false;
+  bool _isRegister = true;
 
   String get username => _usernameController.text;
   String get password => _passwordController.text;
@@ -60,7 +59,7 @@ class _RegisterOrLoginScreenState extends State<RegisterOrLoginScreen> {
                   return null;
                 },
               ),
-              SizedBox(height: 15),
+              const SizedBox(height: 16),
               TextFormField(
                 controller: _passwordController,
                 obscureText: !_isPasswordVisible,
@@ -88,7 +87,7 @@ class _RegisterOrLoginScreenState extends State<RegisterOrLoginScreen> {
                   return null;
                 },
               ),
-              SizedBox(height: 15),
+              const SizedBox(height: 16),
               if (_isRegister)
                 TextFormField(
                   controller: _confirmPasswordController,
@@ -130,21 +129,19 @@ class _RegisterOrLoginScreenState extends State<RegisterOrLoginScreen> {
                       return;
                     }
                     try {
-                      late final AccessTokenDto accessToken;
                       if (_isRegister) {
                         // register
-                        accessToken = await AuthApi().register(
+                        await AuthApi().register(
                           RegisterDto(
                             username: username,
                             password: password,
                           ),
                         );
-                      } else {
-                        // login
-                        accessToken = await AuthApi().login(
-                          LoginDto(username: username, password: password),
-                        );
                       }
+                      // login
+                      final accessToken = await AuthApi().login(
+                        LoginDto(username: username, password: password),
+                      );
                       // store credential
                       await CredentialStore()
                           .storeCredential(username, password);

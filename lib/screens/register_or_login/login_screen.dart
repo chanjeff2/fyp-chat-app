@@ -1,31 +1,29 @@
+// ignore_for_file: unnecessary_const
+
 import 'package:flutter/material.dart';
 import 'package:fyp_chat_app/dto/login_dto.dart';
 import 'package:fyp_chat_app/models/user_state.dart';
 import 'package:fyp_chat_app/network/account_api.dart';
 import 'package:fyp_chat_app/network/api.dart';
+import 'package:fyp_chat_app/screens/register_or_login/register_screen.dart';
 import 'package:fyp_chat_app/storage/credential_store.dart';
 import 'package:provider/provider.dart';
 
-import '../../dto/access_token_dto.dart';
 import '../../dto/register_dto.dart';
 import '../../network/auth_api.dart';
 
-class RegisterOrLoginScreen extends StatefulWidget {
-  const RegisterOrLoginScreen({Key? key}) : super(key: key);
+class LoginScreen extends StatefulWidget {
+  const LoginScreen({Key? key}) : super(key: key);
 
   @override
-  State<RegisterOrLoginScreen> createState() => _RegisterOrLoginScreenState();
+  State<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _RegisterOrLoginScreenState extends State<RegisterOrLoginScreen> {
+class _LoginScreenState extends State<LoginScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey();
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController =
-      TextEditingController();
   bool _isPasswordVisible = false;
-  bool _isConfirmPasswordVisible = false;
-  bool _isRegister = false;
 
   String get username => _usernameController.text;
   String get password => _passwordController.text;
@@ -34,7 +32,7 @@ class _RegisterOrLoginScreenState extends State<RegisterOrLoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(_isRegister ? "Register" : "Login"),
+        title: const Text("Login"),
       ),
       body: Form(
         key: _formKey,
@@ -47,7 +45,7 @@ class _RegisterOrLoginScreenState extends State<RegisterOrLoginScreen> {
                 controller: _usernameController,
                 decoration: const InputDecoration(
                   labelText: "Username",
-                  contentPadding: const EdgeInsets.symmetric(vertical: 15.0, horizontal: 15.0),
+                  contentPadding: EdgeInsets.symmetric(vertical: 15.0, horizontal: 15.0),
                   border: OutlineInputBorder(
                     borderRadius: const BorderRadius.all(const Radius.circular(10.0)),
                     borderSide: BorderSide()
@@ -60,16 +58,17 @@ class _RegisterOrLoginScreenState extends State<RegisterOrLoginScreen> {
                   return null;
                 },
               ),
-              SizedBox(height: 15),
+              const SizedBox(height: 16),
               TextFormField(
                 controller: _passwordController,
                 obscureText: !_isPasswordVisible,
                 decoration: InputDecoration(
                     labelText: "Password",
                     contentPadding: const EdgeInsets.symmetric(vertical: 15.0, horizontal: 15.0),
+                    // ignore: prefer_const_constructors
                     border: OutlineInputBorder(
-                      borderRadius: const BorderRadius.all(const Radius.circular(10.0)),
-                      borderSide: BorderSide()
+                      borderRadius: const BorderRadius.all(Radius.circular(10.0)),
+                      borderSide: const BorderSide()
                     ),
                     suffixIcon: IconButton(
                       onPressed: () {
@@ -88,40 +87,7 @@ class _RegisterOrLoginScreenState extends State<RegisterOrLoginScreen> {
                   return null;
                 },
               ),
-              SizedBox(height: 15),
-              if (_isRegister)
-                TextFormField(
-                  controller: _confirmPasswordController,
-                  obscureText: !_isConfirmPasswordVisible,
-                  enabled: _isRegister,
-                  decoration: InputDecoration(
-                      labelText: "Confirm Password",
-                      contentPadding: const EdgeInsets.symmetric(vertical: 15.0, horizontal: 15.0),
-                      border: OutlineInputBorder(
-                        borderRadius: const BorderRadius.all(const Radius.circular(10.0)),
-                        borderSide: BorderSide()
-                      ),
-                      suffixIcon: IconButton(
-                        onPressed: () {
-                          setState(() {
-                            _isConfirmPasswordVisible =
-                                !_isConfirmPasswordVisible;
-                          });
-                        },
-                        icon: _isConfirmPasswordVisible
-                            ? const Icon(Icons.visibility)
-                            : const Icon(Icons.visibility_off),
-                      )),
-                  validator: (confirmPassword) {
-                    if (confirmPassword?.isEmpty ?? true) {
-                      return "please enter your password again";
-                    }
-                    if (confirmPassword != password) {
-                      return "please make sure your input is the same as the password";
-                    }
-                    return null;
-                  },
-                ),
+              const SizedBox(height: 16),
               Consumer<UserState>(
                 builder: (context, userState, child) => ElevatedButton(
                   onPressed: () async {
@@ -130,21 +96,10 @@ class _RegisterOrLoginScreenState extends State<RegisterOrLoginScreen> {
                       return;
                     }
                     try {
-                      late final AccessTokenDto accessToken;
-                      if (_isRegister) {
-                        // register
-                        accessToken = await AuthApi().register(
-                          RegisterDto(
-                            username: username,
-                            password: password,
-                          ),
-                        );
-                      } else {
-                        // login
-                        accessToken = await AuthApi().login(
-                          LoginDto(username: username, password: password),
-                        );
-                      }
+                      // login
+                      final accessToken = await AuthApi().login(
+                        LoginDto(username: username, password: password),
+                      );
                       // store credential
                       await CredentialStore()
                           .storeCredential(username, password);
@@ -159,23 +114,24 @@ class _RegisterOrLoginScreenState extends State<RegisterOrLoginScreen> {
                           SnackBar(content: Text("error: ${e.message}")));
                     }
                   },
-                  child: Text(_isRegister ? "Register" : "Login"),
+                  child: const Text("Login"),
                 ),
               ),
               TextButton(
                 onPressed: () {
-                  setState(() {
-                    _isRegister = !_isRegister;
-                  });
+                  //Negivate to Register screen
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => const RegisterScreen(),
+                    ),
+                  );
                 },
                 child: Text.rich(TextSpan(
-                  text: _isRegister
-                      ? "Already have an account? "
-                      : "Don't have an account? ",
+                  text: "Don't have an account? ",
                   style: const TextStyle(color: Colors.black),
                   children: [
                     TextSpan(
-                      text: _isRegister ? "Login" : "Sign Up",
+                      text: "Sign Up",
                       style: TextStyle(
                         color: Theme.of(context).primaryColor,
                         fontWeight: FontWeight.bold,
