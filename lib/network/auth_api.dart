@@ -1,5 +1,4 @@
 import 'package:fyp_chat_app/dto/access_token_dto.dart';
-import 'package:fyp_chat_app/dto/account_dto.dart';
 import 'package:fyp_chat_app/dto/login_dto.dart';
 import 'package:fyp_chat_app/dto/register_dto.dart';
 
@@ -17,9 +16,9 @@ class AuthApi extends Api {
   @override
   String pathPrefix = "/auth";
 
-  Future<AccountDto> register(RegisterDto registerDto) async {
+  Future<AccessTokenDto> register(RegisterDto registerDto) async {
     final json = await post("/register", body: registerDto.toJson());
-    return AccountDto.fromJson(json);
+    return AccessTokenDto.fromJson(json);
   }
 
   Future<AccessTokenDto> login(LoginDto loginDto) async {

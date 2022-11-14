@@ -6,6 +6,7 @@ import 'package:fyp_chat_app/network/api.dart';
 import 'package:fyp_chat_app/storage/credential_store.dart';
 import 'package:provider/provider.dart';
 
+import '../../dto/access_token_dto.dart';
 import '../../dto/register_dto.dart';
 import '../../network/auth_api.dart';
 
@@ -110,19 +111,21 @@ class _RegisterOrLoginScreenState extends State<RegisterOrLoginScreen> {
                       return;
                     }
                     try {
+                      late final AccessTokenDto accessToken;
                       if (_isRegister) {
                         // register
-                        await AuthApi().register(
+                        accessToken = await AuthApi().register(
                           RegisterDto(
                             username: username,
                             password: password,
                           ),
                         );
+                      } else {
+                        // login
+                        accessToken = await AuthApi().login(
+                          LoginDto(username: username, password: password),
+                        );
                       }
-                      // login
-                      final accessToken = await AuthApi().login(
-                        LoginDto(username: username, password: password),
-                      );
                       // store credential
                       await CredentialStore()
                           .storeCredential(username, password);
