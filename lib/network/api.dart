@@ -20,7 +20,8 @@ class AccessTokenNotFoundException implements Exception {
 
 abstract class Api {
   // use hostname -I to get wsl2 ip and replace the ip address
-  static const String baseUrl = "http://192.168.81.76:3000";
+  static const String baseUrl =
+      "https://fyp-chat-server-production.up.railway.app";
   abstract String pathPrefix;
 
   Map<String, dynamic> processResponse(http.Response response) {
