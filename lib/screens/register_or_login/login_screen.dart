@@ -39,7 +39,7 @@ class _LoginScreenState extends State<LoginScreen> {
       body: Form(
         key: _formKey,
         child: Padding(
-          padding: const EdgeInsets.all(8.0),
+          padding: const EdgeInsets.all(30.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -75,7 +75,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   return null;
                 },
               ),
-              
+              const SizedBox(height: 16),
               TextFormField(
                 controller: _confirmPasswordController,
                 obscureText: !_isConfirmPasswordVisible,
