@@ -1,3 +1,5 @@
+// ignore_for_file: unnecessary_const
+
 import 'package:flutter/material.dart';
 import 'package:fyp_chat_app/dto/login_dto.dart';
 import 'package:fyp_chat_app/models/user_state.dart';
@@ -6,7 +8,6 @@ import 'package:fyp_chat_app/network/api.dart';
 import 'package:fyp_chat_app/storage/credential_store.dart';
 import 'package:provider/provider.dart';
 
-import '../../dto/access_token_dto.dart';
 import '../../dto/register_dto.dart';
 import '../../network/auth_api.dart';
 
@@ -21,11 +22,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey();
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController =
-      TextEditingController();
   bool _isPasswordVisible = false;
-  bool _isConfirmPasswordVisible = false;
-  bool _isRegister = false;
 
   String get username => _usernameController.text;
   String get password => _passwordController.text;
@@ -39,13 +36,20 @@ class _LoginScreenState extends State<LoginScreen> {
       body: Form(
         key: _formKey,
         child: Padding(
-          padding: const EdgeInsets.all(8.0),
+          padding: const EdgeInsets.all(30.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               TextFormField(
                 controller: _usernameController,
-                decoration: const InputDecoration(labelText: "Username"),
+                decoration: const InputDecoration(
+                  labelText: "Username",
+                  contentPadding: EdgeInsets.symmetric(vertical: 15.0, horizontal: 15.0),
+                  border: OutlineInputBorder(
+                    borderRadius: const BorderRadius.all(const Radius.circular(10.0)),
+                    borderSide: BorderSide()
+                  )
+                ),
                 validator: (username) {
                   if (username?.isEmpty ?? true) {
                     return "username cannot be empty";
@@ -53,11 +57,18 @@ class _LoginScreenState extends State<LoginScreen> {
                   return null;
                 },
               ),
+              const SizedBox(height: 16),
               TextFormField(
                 controller: _passwordController,
                 obscureText: !_isPasswordVisible,
                 decoration: InputDecoration(
                     labelText: "Password",
+                    contentPadding: const EdgeInsets.symmetric(vertical: 15.0, horizontal: 15.0),
+                    // ignore: prefer_const_constructors
+                    border: OutlineInputBorder(
+                      borderRadius: const BorderRadius.all(Radius.circular(10.0)),
+                      borderSide: const BorderSide()
+                    ),
                     suffixIcon: IconButton(
                       onPressed: () {
                         setState(() {
@@ -75,34 +86,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   return null;
                 },
               ),
-              
-              TextFormField(
-                controller: _confirmPasswordController,
-                obscureText: !_isConfirmPasswordVisible,
-                enabled: _isRegister,
-                decoration: InputDecoration(
-                    labelText: "Confirm Password",
-                    suffixIcon: IconButton(
-                      onPressed: () {
-                        setState(() {
-                          _isConfirmPasswordVisible =
-                              !_isConfirmPasswordVisible;
-                        });
-                      },
-                      icon: _isConfirmPasswordVisible
-                          ? const Icon(Icons.visibility)
-                          : const Icon(Icons.visibility_off),
-                    )),
-                validator: (confirmPassword) {
-                  if (confirmPassword?.isEmpty ?? true) {
-                    return "please enter your password again";
-                  }
-                  if (confirmPassword != password) {
-                    return "please make sure your input is the same as the password";
-                  }
-                  return null;
-                },
-              ),
+              const SizedBox(height: 16),
               Consumer<UserState>(
                 builder: (context, userState, child) => ElevatedButton(
                   onPressed: () async {
@@ -111,9 +95,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       return;
                     }
                     try {
-                      late final AccessTokenDto accessToken;
                       // login
-                      accessToken = await AuthApi().login(
+                      final accessToken = await AuthApi().login(
                         LoginDto(username: username, password: password),
                       );
                       // store credential
@@ -135,7 +118,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               TextButton(
                 onPressed: () {
-                  //add a nevigator to register page
+                  //Negivate to Register screen
                 },
                 child: Text.rich(TextSpan(
                   text: "Don't have an account? ",
