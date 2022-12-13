@@ -97,8 +97,8 @@ class _RegisterOrLoginScreenState extends State<RegisterOrLoginScreen> {
                   decoration: InputDecoration(
                       labelText: "Confirm Password",
                       contentPadding: const EdgeInsets.symmetric(vertical: 15.0, horizontal: 15.0),
-                      border: OutlineInputBorder(
-                        borderRadius: const BorderRadius.all(const Radius.circular(10.0)),
+                      border: const OutlineInputBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(10.0)),
                         borderSide: BorderSide()
                       ),
                       suffixIcon: IconButton(
