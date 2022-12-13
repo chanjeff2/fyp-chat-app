@@ -2,6 +2,8 @@ import 'package:flutter/src/foundation/key.dart';
 import 'package:flutter/src/widgets/container.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter/material.dart';
+import 'package:fyp_chat_app/components/default_option.dart';
+import 'package:fyp_chat_app/components/contact_option.dart';
 
 class SelectContact extends StatefulWidget {
   const SelectContact({Key? key}) : super(key: key);
@@ -73,46 +75,7 @@ class _SelectContactState extends State<SelectContact> {
   }
 }
 
-// Class for default options
-class DefaultOption extends StatelessWidget {
-  const DefaultOption({Key? key, required this.name, required this.icon}) : super(key: key);
-  final String name;
-  final IconData icon;
-
-  @override
-  Widget build(BuildContext context) {
-    return ListTile(
-      leading: CircleAvatar(
-        radius: 24,
-        child: Icon(
-          icon,
-          size: 20,
-          color: Colors.white,
-        ),
-        backgroundColor: const Color(0xFF003366),
-      ),
-      title: Text(
-        name,
-        style: const TextStyle(
-          fontSize: 15,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-    );
-  }
-}
-
-// Placeholder class, as we haven't planned on how to fetch contact
-class ContactOption extends StatelessWidget {
-  const ContactOption({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container();
-  }
-}
-
-// modal class for Contact
+// modal class for Contact, can remove later
 class Contact {
    String nickname, status, id;
    Image img;
