@@ -5,10 +5,9 @@ import 'package:fyp_chat_app/dto/register_dto.dart';
 import 'api.dart';
 
 class AuthApi extends Api {
+  // singleton
   AuthApi._();
-
   static final AuthApi _instance = AuthApi._();
-
   factory AuthApi() {
     return _instance;
   }

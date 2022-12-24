@@ -3,10 +3,9 @@ import 'package:fyp_chat_app/dto/account_dto.dart';
 import 'api.dart';
 
 class AccountApi extends Api {
+  // singleton
   AccountApi._();
-
   static final AccountApi _instance = AccountApi._();
-
   factory AccountApi() {
     return _instance;
   }
