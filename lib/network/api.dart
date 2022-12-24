@@ -24,7 +24,7 @@ abstract class Api {
       "https://fyp-chat-server-production.up.railway.app";
   abstract String pathPrefix;
 
-  Map<String, dynamic> processResponse(http.Response response) {
+  dynamic processResponse(http.Response response) {
     final body = json.decode(response.body);
     if (response.statusCode < 200 || response.statusCode >= 300) {
       throw ApiException(response.statusCode, body["message"], body["error"]);
@@ -33,7 +33,7 @@ abstract class Api {
   }
 
   @protected
-  Future<Map<String, dynamic>> get(
+  Future<dynamic> get(
     String path, {
     Map<String, String>? query,
     bool useAuth = false,
@@ -56,7 +56,7 @@ abstract class Api {
   }
 
   @protected
-  Future<Map<String, dynamic>> post(
+  Future<dynamic> post(
     String path, {
     Map<String, dynamic>? body,
     bool useAuth = false,
