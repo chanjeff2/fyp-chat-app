@@ -1,3 +1,6 @@
+import 'dart:collection';
+import 'dart:typed_data';
+
 import 'package:libsignal_protocol_dart/libsignal_protocol_dart.dart';
 
 class DiskPreKeyStore extends PreKeyStore {
@@ -8,27 +11,36 @@ class DiskPreKeyStore extends PreKeyStore {
     return _instance;
   }
 
+  final store = HashMap<int, Uint8List>();
+
   @override
-  Future<bool> containsPreKey(int preKeyId) {
+  Future<bool> containsPreKey(int preKeyId) async {
     // TODO: implement containsPreKey
-    throw UnimplementedError();
+    return store.containsKey(preKeyId);
+    // throw UnimplementedError();
   }
 
   @override
-  Future<PreKeyRecord> loadPreKey(int preKeyId) {
+  Future<PreKeyRecord> loadPreKey(int preKeyId) async {
     // TODO: implement loadPreKey
-    throw UnimplementedError();
+    if (!store.containsKey(preKeyId)) {
+      throw InvalidKeyIdException('No such PreKeyRecord: $preKeyId');
+    }
+    return PreKeyRecord.fromBuffer(store[preKeyId]!);
+    //throw UnimplementedError();
   }
 
   @override
-  Future<void> removePreKey(int preKeyId) {
+  Future<void> removePreKey(int preKeyId) async {
     // TODO: implement removePreKey
-    throw UnimplementedError();
+    store.remove(preKeyId);
+    // throw UnimplementedError();
   }
 
   @override
-  Future<void> storePreKey(int preKeyId, PreKeyRecord record) {
+  Future<void> storePreKey(int preKeyId, PreKeyRecord record) async {
     // TODO: implement storePreKey
-    throw UnimplementedError();
+    store[preKeyId] = record.serialize();
+    // throw UnimplementedError();
   }
 }
