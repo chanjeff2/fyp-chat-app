@@ -15,14 +15,12 @@ class DiskSessionStore extends SessionStore {
 
   @override
   Future<bool> containsSession(SignalProtocolAddress address) async {
-    // TODO: implement containsSession
     return sessions.containsKey(address);
     // throw UnimplementedError();
   }
 
   @override
   Future<void> deleteAllSessions(String name) async {
-    // TODO: implement deleteAllSessions
     for (final k in sessions.keys.toList()) {
       if (k.getName() == name) {
         sessions.remove(k);
@@ -33,14 +31,12 @@ class DiskSessionStore extends SessionStore {
 
   @override
   Future<void> deleteSession(SignalProtocolAddress address) async {
-    // TODO: implement deleteSession
     sessions.remove(address);
     // throw UnimplementedError();
   }
 
   @override
   Future<List<int>> getSubDeviceSessions(String name) async {
-    // TODO: implement getSubDeviceSessions
     final deviceIds = <int>[];
 
     for (final key in sessions.keys) {
@@ -55,7 +51,6 @@ class DiskSessionStore extends SessionStore {
 
   @override
   Future<SessionRecord> loadSession(SignalProtocolAddress address) async {
-    // TODO: implement loadSession
     try {
       if (await containsSession(address)) {
         return SessionRecord.fromSerialized(sessions[address]!);
@@ -71,7 +66,6 @@ class DiskSessionStore extends SessionStore {
   @override
   Future<void> storeSession(
       SignalProtocolAddress address, SessionRecord record) async {
-    // TODO: implement storeSession
     sessions[address] = record.serialize();
     // throw UnimplementedError();
   }

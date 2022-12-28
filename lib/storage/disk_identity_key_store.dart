@@ -21,21 +21,18 @@ class DiskIdentityKeyStore extends IdentityKeyStore {
 
   @override
   Future<IdentityKey?> getIdentity(SignalProtocolAddress address) async {
-    // TODO: implement getIdentity
     return trustedKeys[address]!;
     // throw UnimplementedError();
   }
 
   @override
   Future<IdentityKeyPair> getIdentityKeyPair() async {
-    // TODO: implement getIdentityKeyPair
     return identityKeyPair;
     // throw UnimplementedError();
   }
 
   @override
   Future<int> getLocalRegistrationId() async {
-    // TODO: implement getLocalRegistrationId
     return localRegistrationId;
     // throw UnimplementedError();
   }
@@ -43,7 +40,6 @@ class DiskIdentityKeyStore extends IdentityKeyStore {
   @override
   Future<bool> isTrustedIdentity(SignalProtocolAddress address,
       IdentityKey? identityKey, Direction direction) async {
-    // TODO: implement isTrustedIdentity
     final trusted = trustedKeys[address];
     if (identityKey == null || trusted == null) {
       return false;
@@ -55,7 +51,6 @@ class DiskIdentityKeyStore extends IdentityKeyStore {
   @override
   Future<bool> saveIdentity(
       SignalProtocolAddress address, IdentityKey? identityKey) async {
-    // TODO: implement saveIdentity
     final existing = trustedKeys[address];
     if (identityKey == null) {
       return false;

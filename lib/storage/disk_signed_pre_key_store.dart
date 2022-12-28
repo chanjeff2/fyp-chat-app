@@ -15,14 +15,12 @@ class DiskSignedPreKeyStore extends SignedPreKeyStore {
 
   @override
   Future<bool> containsSignedPreKey(int signedPreKeyId) async {
-    // TODO: implement containsSignedPreKey
     return store.containsKey(signedPreKeyId);
     // throw UnimplementedError();
   }
 
   @override
   Future<SignedPreKeyRecord> loadSignedPreKey(int signedPreKeyId) async {
-    // TODO: implement loadSignedPreKey
     if (!store.containsKey(signedPreKeyId)) {
       throw InvalidKeyIdException(
           'No such signedprekeyrecord! $signedPreKeyId');
@@ -33,7 +31,6 @@ class DiskSignedPreKeyStore extends SignedPreKeyStore {
 
   @override
   Future<List<SignedPreKeyRecord>> loadSignedPreKeys() async {
-    // TODO: implement loadSignedPreKeys
     final results = <SignedPreKeyRecord>[];
     for (final serialized in store.values) {
       results.add(SignedPreKeyRecord.fromSerialized(serialized));
@@ -44,7 +41,6 @@ class DiskSignedPreKeyStore extends SignedPreKeyStore {
 
   @override
   Future<void> removeSignedPreKey(int signedPreKeyId) async {
-    // TODO: implement removeSignedPreKey
     store.remove(signedPreKeyId);
     // throw UnimplementedError();
   }
@@ -52,7 +48,6 @@ class DiskSignedPreKeyStore extends SignedPreKeyStore {
   @override
   Future<void> storeSignedPreKey(
       int signedPreKeyId, SignedPreKeyRecord record) async {
-    // TODO: implement storeSignedPreKey
     store[signedPreKeyId] = record.serialize();
     // throw UnimplementedError();
   }

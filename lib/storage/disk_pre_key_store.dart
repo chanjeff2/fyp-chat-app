@@ -15,14 +15,12 @@ class DiskPreKeyStore extends PreKeyStore {
 
   @override
   Future<bool> containsPreKey(int preKeyId) async {
-    // TODO: implement containsPreKey
     return store.containsKey(preKeyId);
     // throw UnimplementedError();
   }
 
   @override
   Future<PreKeyRecord> loadPreKey(int preKeyId) async {
-    // TODO: implement loadPreKey
     if (!store.containsKey(preKeyId)) {
       throw InvalidKeyIdException('No such PreKeyRecord: $preKeyId');
     }
@@ -32,14 +30,12 @@ class DiskPreKeyStore extends PreKeyStore {
 
   @override
   Future<void> removePreKey(int preKeyId) async {
-    // TODO: implement removePreKey
     store.remove(preKeyId);
     // throw UnimplementedError();
   }
 
   @override
   Future<void> storePreKey(int preKeyId, PreKeyRecord record) async {
-    // TODO: implement storePreKey
     store[preKeyId] = record.serialize();
     // throw UnimplementedError();
   }

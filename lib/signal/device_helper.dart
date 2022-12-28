@@ -11,6 +11,8 @@ class DeviceInfoHelper {
     return _instance;
   }
 
+  static const deviceIdKey = 'device_id';
+
   // should only be called once in app life time (during register/login)
   Future<CreateDeviceDto> initDevice() async {
     final registrationId = generateRegistrationId(false);
@@ -19,16 +21,14 @@ class DeviceInfoHelper {
   }
 
   Future<void> setDeviceId(int deviceId) async {
-    // TODO: implement setDeviceId
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setInt("deviceId", deviceId);
+    await prefs.setInt(deviceIdKey, deviceId);
     // throw UnimplementedError();
   }
 
   Future<int> getDeviceId() async {
-    // TODO: implement getDeviceId
     final prefs = await SharedPreferences.getInstance();
-    var id = prefs.getInt("deviceId")!;
+    var id = prefs.getInt(deviceIdKey)!;
     return id;
   }
 }
