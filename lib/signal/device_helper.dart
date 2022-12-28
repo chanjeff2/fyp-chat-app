@@ -1,5 +1,5 @@
-import 'package:fyp_chat_app/storage/secure_storage.dart';
 import 'package:libsignal_protocol_dart/libsignal_protocol_dart.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../dto/create_device_dto.dart';
 
@@ -20,16 +20,15 @@ class DeviceInfoHelper {
 
   Future<void> setDeviceId(int deviceId) async {
     // TODO: implement setDeviceId
-    await SecureStorage().write(key: "deviceId", value: deviceId.toString());
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt("deviceId", deviceId);
     // throw UnimplementedError();
   }
 
   Future<int> getDeviceId() async {
     // TODO: implement getDeviceId
-    var id = await SecureStorage().read(key: "deviceId");
-    if (id != null) {
-      return int.parse(id);
-    }
-    return 1; // or throw error?
+    final prefs = await SharedPreferences.getInstance();
+    var id = prefs.getInt("deviceId")!;
+    return id;
   }
 }
