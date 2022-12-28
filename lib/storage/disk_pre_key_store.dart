@@ -1,6 +1,4 @@
-import 'dart:collection';
-import 'dart:typed_data';
-
+import 'package:fyp_chat_app/storage/disk_storage.dart';
 import 'package:libsignal_protocol_dart/libsignal_protocol_dart.dart';
 
 class DiskPreKeyStore extends PreKeyStore {
@@ -11,32 +9,40 @@ class DiskPreKeyStore extends PreKeyStore {
     return _instance;
   }
 
-  final store = HashMap<int, Uint8List>();
+  static const store = 'preKey';
+  // final store = HashMap<int, Uint8List>();
 
   @override
   Future<bool> containsPreKey(int preKeyId) async {
-    return store.containsKey(preKeyId);
+    var check = await DiskStorage().queryRow(store, preKeyId);
+    return check.isNotEmpty;
     // throw UnimplementedError();
   }
 
   @override
   Future<PreKeyRecord> loadPreKey(int preKeyId) async {
-    if (!store.containsKey(preKeyId)) {
+    var check = await DiskStorage().queryRow(store, preKeyId);
+    if (check.isEmpty) {
       throw InvalidKeyIdException('No such PreKeyRecord: $preKeyId');
     }
-    return PreKeyRecord.fromBuffer(store[preKeyId]!);
+    return PreKeyRecord.fromBuffer(check[0]["preKey"]);
     //throw UnimplementedError();
   }
 
   @override
   Future<void> removePreKey(int preKeyId) async {
-    store.remove(preKeyId);
+    await DiskStorage().delete(store, preKeyId);
     // throw UnimplementedError();
   }
 
   @override
   Future<void> storePreKey(int preKeyId, PreKeyRecord record) async {
-    store[preKeyId] = record.serialize();
+    var preKeyMap = {
+      'id': preKeyId,
+      'preKey': record.serialize(),
+    };
+    var change = await DiskStorage().update(store, preKeyMap);
+      if (change == 0) await DiskStorage().insert(store, preKeyMap);
     // throw UnimplementedError();
   }
 }
