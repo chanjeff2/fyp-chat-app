@@ -41,6 +41,7 @@ dependencies:
   flutter_secure_storage: ^6.0.0
   json_annotation : ^4.7.0
   sqflite: ^2.2.2
+  sqflite_sqlcipher: ^2.1.1+1
 
 dev_dependencies:
   flutter_test:

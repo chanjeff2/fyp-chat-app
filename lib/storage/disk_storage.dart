@@ -1,6 +1,4 @@
-import 'dart:collection';
-import 'package:collection/collection.dart';
-import 'package:sqflite/sqflite.dart';
+import 'package:sqflite_sqlcipher/sqflite.dart';
 import 'package:path/path.dart';
 
 // Class for accessing storage that handles all key store
@@ -48,6 +46,7 @@ class DiskStorage {
   Future<Database> _initDatabase() async {
      return await openDatabase(
        join(await getDatabasesPath(), databasePath),
+       password: "TODO: Find a way to encrypt this shit",
        onCreate: (db, version) {
           db.execute(
            "CREATE TABLE $trustedKeys($deviceId INTEGER, $deviceName STRING, $userPublicKey STRING, PRIMARY KEY ($deviceId, $deviceName));",
