@@ -13,7 +13,6 @@ class DiskStorage {
   }
 
   static const databasePath = "USTalk.db";
-  static const columnId = 'id'; // Primary key name
 
   // Tables available
   // DiskIdentityKeyStore
@@ -28,6 +27,18 @@ class DiskStorage {
   // DiskSessionStore
   static const sessions = 'sessions';
 
+  // Field Storages
+  static const columnId = 'id';
+  static const deviceId = 'deviceId';
+  static const deviceName = 'deviceName';
+  static const userPublicKey = 'userPublicKey';
+  static const publicKey = 'publicKey';
+  static const privateKey = 'privateKey';
+  static const regId = 'localRegistrationId';
+  static const preKeyField = 'preKey';
+  static const signedPreKeyField = 'signedPreKey';
+  static const sessionField = 'session';
+
   static Database? _database;
 
   Future<Database> get database async {
@@ -39,26 +50,24 @@ class DiskStorage {
        join(await getDatabasesPath(), databasePath),
        onCreate: (db, version) {
           db.execute(
-           "CREATE TABLE $trustedKeys(deviceId INTEGER, deviceName STRING, userPublicKey BLOB, PRIMARY KEY (deviceId, deviceName));",
+           "CREATE TABLE $trustedKeys($deviceId INTEGER, $deviceName STRING, $userPublicKey STRING, PRIMARY KEY ($deviceId, $deviceName));",
           );
           db.execute(
-           "CREATE TABLE $identityKeyPair($columnId INTEGER PRIMARY KEY, publicKey BLOB, privateKey BLOB);",
+           "CREATE TABLE $identityKeyPair($columnId INTEGER PRIMARY KEY, $publicKey STRING, $privateKey STRING);",
           );
           db.execute(
-           "CREATE TABLE $localRegistrationId($columnId INTEGER PRIMARY KEY, localRegistrationId INTEGER);",
+           "CREATE TABLE $localRegistrationId($columnId INTEGER PRIMARY KEY, $regId INTEGER);",
           );
           db.execute(
-           "CREATE TABLE $preKey($columnId INTEGER PRIMARY KEY, preKey BLOB);",
+           "CREATE TABLE $preKey($columnId INTEGER PRIMARY KEY, $preKeyField STRING);",
           );
           db.execute(
-           "CREATE TABLE $signedPreKey($columnId INTEGER PRIMARY KEY, signedPreKey BLOB);",
+           "CREATE TABLE $signedPreKey($columnId INTEGER PRIMARY KEY, $signedPreKeyField STRING);",
           );
           db.execute(
-           "CREATE TABLE $sessions(deviceId INTEGER, deviceName STRING, session BLOB, PRIMARY KEY (deviceId, deviceName));",
+           "CREATE TABLE $sessions($deviceId INTEGER, $deviceName STRING, $sessionField STRING, PRIMARY KEY ($deviceId, $deviceName));",
           );
        },
-
-       version: 5,
      );
   }
 

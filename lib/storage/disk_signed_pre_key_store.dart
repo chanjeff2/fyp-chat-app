@@ -1,4 +1,5 @@
 import 'dart:collection';
+import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:fyp_chat_app/storage/disk_storage.dart';
@@ -13,7 +14,10 @@ class DiskSignedPreKeyStore extends SignedPreKeyStore {
   }
 
   static const store = 'signedPreKey';
-  // final store = HashMap<int, Uint8List>();
+
+  // Fields used in table
+  static const id = "id";
+  static const signedPreKey = "signedPreKey";
 
   @override
   Future<bool> containsSignedPreKey(int signedPreKeyId) async {
@@ -29,7 +33,7 @@ class DiskSignedPreKeyStore extends SignedPreKeyStore {
       throw InvalidKeyIdException(
           'No such signedprekeyrecord: $signedPreKeyId');
     }
-    return SignedPreKeyRecord.fromSerialized(check[0]["signedPreKey"]);
+    return SignedPreKeyRecord.fromSerialized(base64.decode(check[0][signedPreKey]));
     // throw UnimplementedError();
   }
 
@@ -38,7 +42,7 @@ class DiskSignedPreKeyStore extends SignedPreKeyStore {
     final results = <SignedPreKeyRecord>[];
     final allKeys = await DiskStorage().queryAllRows(store);
     for (final serialized in allKeys) {
-      results.add(SignedPreKeyRecord.fromSerialized(serialized["signedPreKey"]));
+      results.add(SignedPreKeyRecord.fromSerialized(base64.decode(serialized[signedPreKey])));
     }
     return results;
     // throw UnimplementedError();
@@ -54,8 +58,8 @@ class DiskSignedPreKeyStore extends SignedPreKeyStore {
   Future<void> storeSignedPreKey(
       int signedPreKeyId, SignedPreKeyRecord record) async {
     var signedPreKeyMap = {
-      'id': signedPreKeyId,
-      'preKey': record.serialize(),
+      id: signedPreKeyId,
+      signedPreKey: base64.encode(record.serialize()),
     };
     var change = await DiskStorage().update(store, signedPreKeyMap);
     if (change == 0) await DiskStorage().insert(store, signedPreKeyMap);

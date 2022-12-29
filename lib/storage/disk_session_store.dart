@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:fyp_chat_app/storage/disk_storage.dart';
 import 'package:libsignal_protocol_dart/libsignal_protocol_dart.dart';
 
@@ -10,7 +12,11 @@ class DiskSessionStore extends SessionStore {
   }
 
   static const sessions = 'sessions';
-  // HashMap<SignalProtocolAddress, Uint8List> sessions = HashMap<SignalProtocolAddress, Uint8List>();
+
+  // Fields used in table
+  static const deviceId = "deviceId";
+  static const deviceName = "deviceName";
+  static const sessionField = 'session';
 
   @override
   Future<bool> containsSession(SignalProtocolAddress address) async {
@@ -21,7 +27,7 @@ class DiskSessionStore extends SessionStore {
 
   @override
   Future<void> deleteAllSessions(String name) async {
-    await DiskStorage().deleteWithQuery(sessions, "deviceName", name);
+    await DiskStorage().deleteWithQuery(sessions, deviceName, name);
     // throw UnimplementedError();
   }
 
@@ -36,8 +42,8 @@ class DiskSessionStore extends SessionStore {
     final deviceIds = <int>[];
     final keys = await DiskStorage().queryByDeviceName(sessions, name);
     for (final key in keys) {
-      if (key["deviceId"] != 1) {
-        deviceIds.add(key["deviceId"]);
+      if (key[deviceId] != 1) {
+        deviceIds.add(key[deviceId]);
       }
     }
 
@@ -50,7 +56,7 @@ class DiskSessionStore extends SessionStore {
     try {
       var check = await DiskStorage().queryByAddress(sessions, address.getDeviceId(), address.getName());
       if (check.isNotEmpty) {
-        return SessionRecord.fromSerialized(check[0]["session"]);
+        return SessionRecord.fromSerialized(base64.decode(check[0][sessionField]));
       } else {
         return SessionRecord();
       }
@@ -64,9 +70,9 @@ class DiskSessionStore extends SessionStore {
   Future<void> storeSession(
       SignalProtocolAddress address, SessionRecord record) async {
     final sessionMap = {
-        'deviceId': address.getDeviceId(),
-        'deviceName': address.getName(),
-        'userPublicKey': record.serialize(),
+        deviceId: address.getDeviceId(),
+        deviceName: address.getName(),
+        sessionField: base64.encode(record.serialize()),
     };
     var change = await DiskStorage().update(sessions, sessionMap);
     if (change == 0) await DiskStorage().insert(sessions, sessionMap);

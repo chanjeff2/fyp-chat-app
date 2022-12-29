@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:fyp_chat_app/storage/disk_storage.dart';
 import 'package:libsignal_protocol_dart/libsignal_protocol_dart.dart';
 
@@ -10,7 +12,10 @@ class DiskPreKeyStore extends PreKeyStore {
   }
 
   static const store = 'preKey';
-  // final store = HashMap<int, Uint8List>();
+
+  // Fields used in table
+  static const id = "id";
+  static const preKey = 'preKey';
 
   @override
   Future<bool> containsPreKey(int preKeyId) async {
@@ -25,7 +30,7 @@ class DiskPreKeyStore extends PreKeyStore {
     if (check.isEmpty) {
       throw InvalidKeyIdException('No such PreKeyRecord: $preKeyId');
     }
-    return PreKeyRecord.fromBuffer(check[0]["preKey"]);
+    return PreKeyRecord.fromBuffer(base64.decode(check[0][preKey]));
     //throw UnimplementedError();
   }
 
@@ -38,8 +43,8 @@ class DiskPreKeyStore extends PreKeyStore {
   @override
   Future<void> storePreKey(int preKeyId, PreKeyRecord record) async {
     var preKeyMap = {
-      'id': preKeyId,
-      'preKey': record.serialize(),
+      id: preKeyId,
+      preKey: base64.encode(record.serialize()),
     };
     var change = await DiskStorage().update(store, preKeyMap);
       if (change == 0) await DiskStorage().insert(store, preKeyMap);
