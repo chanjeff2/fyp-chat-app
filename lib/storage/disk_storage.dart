@@ -46,7 +46,7 @@ class DiskStorage {
   Future<Database> _initDatabase() async {
      return await openDatabase(
        join(await getDatabasesPath(), databasePath),
-       password: "TODO: Find a way to encrypt this shit",
+       password: "password", // TODO: Find a way to make a secure password and save it in SecureStorage
        onCreate: (db, version) {
           db.execute(
            "CREATE TABLE $trustedKeys($deviceId INTEGER, $deviceName STRING, $userPublicKey STRING, PRIMARY KEY ($deviceId, $deviceName));",
