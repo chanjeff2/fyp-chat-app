@@ -50,6 +50,8 @@ class ChatRoomScreen extends StatelessWidget {
             child: Row(children: <Widget>[
               Flexible(
                 child: TextField(
+                  maxLines: 4,
+                  minLines: 1,
                   decoration: const InputDecoration(
                       contentPadding: EdgeInsets.all(16.0),
                       border: OutlineInputBorder(),
