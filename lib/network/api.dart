@@ -27,11 +27,14 @@ abstract class Api {
   abstract String pathPrefix;
 
   dynamic _processResponse(http.Response response) {
-    final body = json.decode(response.body);
     if (response.statusCode < 200 || response.statusCode >= 300) {
+      final body = json.decode(response.body);
       throw ApiException(response.statusCode, body["message"], body["error"]);
     }
-    return body;
+    if (response.body.isEmpty) {
+      return response.body;
+    }
+    return json.decode(response.body);
   }
 
   @protected

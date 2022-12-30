@@ -14,7 +14,7 @@ class KeysApi extends Api {
   String pathPrefix = "/keys";
 
   Future<void> updateKeys(UpdateKeysDto dto) async {
-    final json = await patch("/update-keys", body: dto.toJson(), useAuth: true);
+    await patch("/update-keys", body: dto.toJson(), useAuth: true);
   }
 
   Future<KeyBundleDto> getKeyBundle(String userId, int deviceId) async {
