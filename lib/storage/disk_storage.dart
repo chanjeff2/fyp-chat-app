@@ -1,5 +1,7 @@
 import 'package:sqflite_sqlcipher/sqflite.dart';
 import 'package:path/path.dart';
+import 'dart:math';
+import 'dart:convert';
 
 // Class for accessing storage that handles all key store
 class DiskStorage {
@@ -44,30 +46,36 @@ class DiskStorage {
   }
 
   Future<Database> _initDatabase() async {
-     return await openDatabase(
-       join(await getDatabasesPath(), databasePath),
-       password: "password", // TODO: Find a way to make a secure password and save it in SecureStorage
-       onCreate: (db, version) {
-          db.execute(
-           "CREATE TABLE $trustedKeys($deviceId INTEGER, $deviceName STRING, $userPublicKey STRING, PRIMARY KEY ($deviceId, $deviceName));",
-          );
-          db.execute(
-           "CREATE TABLE $identityKeyPair($columnId INTEGER PRIMARY KEY, $publicKey STRING, $privateKey STRING);",
-          );
-          db.execute(
-           "CREATE TABLE $localRegistrationId($columnId INTEGER PRIMARY KEY, $regId INTEGER);",
-          );
-          db.execute(
-           "CREATE TABLE $preKey($columnId INTEGER PRIMARY KEY, $preKeyField STRING);",
-          );
-          db.execute(
-           "CREATE TABLE $signedPreKey($columnId INTEGER PRIMARY KEY, $signedPreKeyField STRING);",
-          );
-          db.execute(
-           "CREATE TABLE $sessions($deviceId INTEGER, $deviceName STRING, $sessionField STRING, PRIMARY KEY ($deviceId, $deviceName));",
-          );
-       },
-     );
+    var random = Random.secure();
+    var values = List<int>.generate(
+        32,
+        (i) => random.nextInt(
+            255)); //generate random int with 32 digits, 256 is the max value, used in generating random password for the database in base64 encoding
+    return await openDatabase(
+      join(await getDatabasesPath(), databasePath),
+      password: base64UrlEncode(
+          values), // TODO: Find a way to make a secure password and save it in SecureStorage
+      onCreate: (db, version) {
+        db.execute(
+          "CREATE TABLE $trustedKeys($deviceId INTEGER, $deviceName STRING, $userPublicKey STRING, PRIMARY KEY ($deviceId, $deviceName));",
+        );
+        db.execute(
+          "CREATE TABLE $identityKeyPair($columnId INTEGER PRIMARY KEY, $publicKey STRING, $privateKey STRING);",
+        );
+        db.execute(
+          "CREATE TABLE $localRegistrationId($columnId INTEGER PRIMARY KEY, $regId INTEGER);",
+        );
+        db.execute(
+          "CREATE TABLE $preKey($columnId INTEGER PRIMARY KEY, $preKeyField STRING);",
+        );
+        db.execute(
+          "CREATE TABLE $signedPreKey($columnId INTEGER PRIMARY KEY, $signedPreKeyField STRING);",
+        );
+        db.execute(
+          "CREATE TABLE $sessions($deviceId INTEGER, $deviceName STRING, $sessionField STRING, PRIMARY KEY ($deviceId, $deviceName));",
+        );
+      },
+    );
   }
 
   // Inserting to table
@@ -87,14 +95,17 @@ class DiskStorage {
     return await db.query(table, where: '$columnId = ?', whereArgs: [id]);
   }
 
-  Future<List<Map<String, dynamic>>> queryByDeviceName(String table, String name) async {
+  Future<List<Map<String, dynamic>>> queryByDeviceName(
+      String table, String name) async {
     Database db = await _instance.database;
     return await db.query(table, where: 'deviceName = ?', whereArgs: [name]);
   }
 
-  Future<List<Map<String, dynamic>>> queryByAddress(String table, int id, String name) async {
+  Future<List<Map<String, dynamic>>> queryByAddress(
+      String table, int id, String name) async {
     Database db = await _instance.database;
-    return await db.query(table, where: 'id = ? AND deviceName = ?', whereArgs: [id, name]);
+    return await db.query(table,
+        where: 'id = ? AND deviceName = ?', whereArgs: [id, name]);
   }
 
   // Update a table instance
@@ -113,9 +124,10 @@ class DiskStorage {
     Database db = await _instance.database;
     return await db.delete(table, where: '$field = ?', whereArgs: [args]);
   }
-  
+
   Future<int> deleteByAddress(String table, int id, String name) async {
     Database db = await _instance.database;
-    return await db.delete(table, where: 'id = ? AND deviceName = ?', whereArgs: [id, name]);
+    return await db.delete(table,
+        where: 'id = ? AND deviceName = ?', whereArgs: [id, name]);
   }
 }
