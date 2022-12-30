@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fyp_chat_app/models/user_state.dart';
 import 'package:provider/provider.dart';
+import 'package:fyp_chat_app/screens/chatroom/message_bubble.dart';
 
 class ChatRoomScreen extends StatefulWidget {
   const ChatRoomScreen({Key? key}) : super(key: key);
@@ -20,7 +21,10 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
     //add the text into message array for temporary storage
     setState(() {
       _messages.insert(
-          0, Container(child: Text(message), alignment: Alignment.centerRight));
+          0,
+          Container(
+              child: MessageBubble(text: message, isCurrentUser: true),
+              alignment: Alignment.centerRight));
     });
     _messageController.clear();
     _textMessage = false;
@@ -52,7 +56,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
             ),
           ),
           //top bar with pop up menu button
-          title: const Text("ChatRoom with"),
+          title: const Text("ChatRoom with"), //TODO: add target name to title
           actions: [
             PopupMenuButton(
               itemBuilder: (context) => [
