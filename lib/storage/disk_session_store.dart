@@ -1,5 +1,4 @@
-import 'dart:convert';
-
+import 'package:fyp_chat_app/models/session.dart';
 import 'package:fyp_chat_app/storage/disk_storage.dart';
 import 'package:libsignal_protocol_dart/libsignal_protocol_dart.dart';
 
@@ -11,7 +10,7 @@ class DiskSessionStore extends SessionStore {
     return _instance;
   }
 
-  static const sessions = 'sessions';
+  static const table = 'sessions';
 
   // Fields used in table
   static const deviceId = "deviceId";
@@ -20,62 +19,86 @@ class DiskSessionStore extends SessionStore {
 
   @override
   Future<bool> containsSession(SignalProtocolAddress address) async {
-    var check = await DiskStorage().queryRow(sessions, address.getDeviceId());
-    return check.isNotEmpty;
-    // throw UnimplementedError();
+    final db = await DiskStorage().db;
+    final result = await db.query(
+      table,
+      where: '${Session.columnName} = ? AND ${Session.columnDeviceId} = ?',
+      whereArgs: [address.getName(), address.getDeviceId()],
+    );
+    return result.isNotEmpty;
   }
 
   @override
   Future<void> deleteAllSessions(String name) async {
-    await DiskStorage().deleteWithQuery(sessions, deviceName, name);
-    // throw UnimplementedError();
+    final db = await DiskStorage().db;
+    await db.delete(
+      table,
+      where: '${Session.columnName} = ?',
+      whereArgs: [name],
+    );
   }
 
   @override
   Future<void> deleteSession(SignalProtocolAddress address) async {
-    await DiskStorage().deleteByAddress(sessions, address.getDeviceId(), address.getName());
-    // throw UnimplementedError();
+    final db = await DiskStorage().db;
+    await db.delete(
+      table,
+      where: '${Session.columnName} = ? AND ${Session.columnDeviceId} = ?',
+      whereArgs: [address.getName(), address.getDeviceId()],
+    );
   }
 
   @override
   Future<List<int>> getSubDeviceSessions(String name) async {
-    final deviceIds = <int>[];
-    final keys = await DiskStorage().queryByDeviceName(sessions, name);
-    for (final key in keys) {
-      if (key[deviceId] != 1) {
-        deviceIds.add(key[deviceId]);
-      }
-    }
-
+    final db = await DiskStorage().db;
+    final result = await db.query(
+      table,
+      where: '${Session.columnName} = ?',
+      whereArgs: [name],
+    );
+    final deviceIds = result
+        .map((e) => Session.fromJson(e).deviceId)
+        .where((deviceId) => deviceId != 1)
+        .toList();
     return deviceIds;
-    // throw UnimplementedError();
   }
 
   @override
   Future<SessionRecord> loadSession(SignalProtocolAddress address) async {
+    final db = await DiskStorage().db;
     try {
-      var check = await DiskStorage().queryByAddress(sessions, address.getDeviceId(), address.getName());
-      if (check.isNotEmpty) {
-        return SessionRecord.fromSerialized(base64.decode(check[0][sessionField]));
+      final result = await db.query(
+        table,
+        where: '${Session.columnName} = ? AND ${Session.columnDeviceId} = ?',
+        whereArgs: [address.getName(), address.getDeviceId()],
+      );
+      if (result.isNotEmpty) {
+        return Session.fromJson(result[0]).toSessionRecord();
       } else {
         return SessionRecord();
       }
     } on Exception catch (e) {
       throw AssertionError(e);
     }
-    // throw UnimplementedError();
   }
 
   @override
   Future<void> storeSession(
       SignalProtocolAddress address, SessionRecord record) async {
-    final sessionMap = {
-        deviceId: address.getDeviceId(),
-        deviceName: address.getName(),
-        sessionField: base64.encode(record.serialize()),
-    };
-    var change = await DiskStorage().update(sessions, sessionMap);
-    if (change == 0) await DiskStorage().insert(sessions, sessionMap);
-    // throw UnimplementedError();
+    final sessionMap = Session.fromSessionRecord(
+      name: address.getName(),
+      deviceId: address.getDeviceId(),
+      record: record,
+    ).toJson();
+    // try update
+    final db = await DiskStorage().db;
+    final count = await db.update(
+      table,
+      sessionMap,
+      where: '${Session.columnName} = ? AND ${Session.columnDeviceId} = ?',
+      whereArgs: [address.getName(), address.getDeviceId()],
+    );
+    // if no existing record, insert new record
+    if (count == 0) await db.insert(table, sessionMap);
   }
 }

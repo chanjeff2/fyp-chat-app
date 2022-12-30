@@ -11,28 +11,38 @@ class DiskSignedPreKeyStore extends SignedPreKeyStore {
     return _instance;
   }
 
-  static const store = 'signedPreKey';
+  static const table = 'signedPreKey';
 
   @override
   Future<bool> containsSignedPreKey(int signedPreKeyId) async {
-    var check = await DiskStorage().queryRow(store, signedPreKeyId);
-    return check.isNotEmpty;
-    // throw UnimplementedError();
+    final db = await DiskStorage().db;
+    final result = await db.query(
+      table,
+      where: '${SignedPreKeyPair.columnId} = ?',
+      whereArgs: [signedPreKeyId],
+    );
+    return result.isNotEmpty;
   }
 
   @override
   Future<SignedPreKeyRecord> loadSignedPreKey(int signedPreKeyId) async {
-    var check = await DiskStorage().queryRow(store, signedPreKeyId);
-    if (check.isEmpty) {
+    final db = await DiskStorage().db;
+    final result = await db.query(
+      table,
+      where: '${SignedPreKeyPair.columnId} = ?',
+      whereArgs: [signedPreKeyId],
+    );
+    if (result.isEmpty) {
       throw InvalidKeyIdException(
-          'No such signedprekeyrecord: $signedPreKeyId');
+          'No such SignedPreKeyRecord: $signedPreKeyId');
     }
-    return SignedPreKeyPair.fromJson(check[0]).toSignedPreKeyRecord();
+    return SignedPreKeyPair.fromJson(result[0]).toSignedPreKeyRecord();
   }
 
   @override
   Future<List<SignedPreKeyRecord>> loadSignedPreKeys() async {
-    final allKeys = await DiskStorage().queryAllRows(store);
+    final db = await DiskStorage().db;
+    final allKeys = await db.query(table);
     return allKeys
         .map((e) => SignedPreKeyPair.fromJson(e).toSignedPreKeyRecord())
         .toList();
@@ -40,7 +50,12 @@ class DiskSignedPreKeyStore extends SignedPreKeyStore {
 
   @override
   Future<void> removeSignedPreKey(int signedPreKeyId) async {
-    await DiskStorage().delete(store, signedPreKeyId);
+    final db = await DiskStorage().db;
+    await db.delete(
+      table,
+      where: '${SignedPreKeyPair.columnId} = ?',
+      whereArgs: [signedPreKeyId],
+    );
   }
 
   @override
@@ -48,7 +63,15 @@ class DiskSignedPreKeyStore extends SignedPreKeyStore {
       int signedPreKeyId, SignedPreKeyRecord record) async {
     final signedPreKeyMap =
         SignedPreKeyPair.fromSignedPreKeyRecord(record).toJson();
-    var change = await DiskStorage().update(store, signedPreKeyMap);
-    if (change == 0) await DiskStorage().insert(store, signedPreKeyMap);
+    // try update
+    final db = await DiskStorage().db;
+    final count = await db.update(
+      table,
+      signedPreKeyMap,
+      where: '${SignedPreKeyPair.columnId} = ?',
+      whereArgs: [signedPreKeyId],
+    );
+    // if no existing record, insert new record
+    if (count == 0) await db.insert(table, signedPreKeyMap);
   }
 }

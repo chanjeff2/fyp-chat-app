@@ -11,32 +11,55 @@ class DiskPreKeyStore extends PreKeyStore {
     return _instance;
   }
 
-  static const store = 'preKey';
+  static const table = 'preKey';
 
   @override
   Future<bool> containsPreKey(int preKeyId) async {
-    var check = await DiskStorage().queryRow(store, preKeyId);
-    return check.isNotEmpty;
+    final db = await DiskStorage().db;
+    final result = await db.query(
+      table,
+      where: '${PreKeyPair.columnId} = ?',
+      whereArgs: [preKeyId],
+    );
+    return result.isNotEmpty;
   }
 
   @override
   Future<PreKeyRecord> loadPreKey(int preKeyId) async {
-    var check = await DiskStorage().queryRow(store, preKeyId);
-    if (check.isEmpty) {
+    final db = await DiskStorage().db;
+    final result = await db.query(
+      table,
+      where: '${PreKeyPair.columnId} = ?',
+      whereArgs: [preKeyId],
+    );
+    if (result.isEmpty) {
       throw InvalidKeyIdException('No such PreKeyRecord: $preKeyId');
     }
-    return PreKeyPair.fromJson(check[0]).toPreKeyRecord();
+    return PreKeyPair.fromJson(result[0]).toPreKeyRecord();
   }
 
   @override
   Future<void> removePreKey(int preKeyId) async {
-    await DiskStorage().delete(store, preKeyId);
+    final db = await DiskStorage().db;
+    await db.delete(
+      table,
+      where: '${PreKeyPair.columnId} = ?',
+      whereArgs: [preKeyId],
+    );
   }
 
   @override
   Future<void> storePreKey(int preKeyId, PreKeyRecord record) async {
     final preKeyMap = PreKeyPair.fromPreKeyRecord(record).toJson();
-    var change = await DiskStorage().update(store, preKeyMap);
-    if (change == 0) await DiskStorage().insert(store, preKeyMap);
+    // try update
+    final db = await DiskStorage().db;
+    final count = await db.update(
+      table,
+      preKeyMap,
+      where: '${PreKeyPair.columnId} = ?',
+      whereArgs: [preKeyId],
+    );
+    // if no existing record, insert new record
+    if (count == 0) await db.insert(table, preKeyMap);
   }
 }

@@ -7,10 +7,15 @@ part 'pre_key_pair.g.dart';
 
 @JsonSerializable()
 class PreKeyPair {
-  @JsonKey(required: true)
+  static const String createTableCommandFields =
+      "$columnId INTEGER PRIMARY KEY, $columnKeyPair TEXT";
+
+  static const columnId = "id";
+  @JsonKey(required: true, name: columnId)
   final int id;
 
-  @JsonKey(required: true)
+  static const columnKeyPair = "keyPair";
+  @JsonKey(required: true, name: columnKeyPair)
   final String keyPair;
 
   PreKeyPair(this.id, this.keyPair);
