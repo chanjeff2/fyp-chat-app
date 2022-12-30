@@ -5,6 +5,9 @@ import 'package:provider/provider.dart';
 
 class ChatRoomScreen extends StatefulWidget {
   const ChatRoomScreen({Key? key}) : super(key: key);
+  void _submitMsg(String text) {
+    print(text);
+  }
 
   @override
   State<ChatRoomScreen> createState() => _ChatRoomScreenState();
@@ -20,6 +23,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final TextEditingController _textController = TextEditingController();
     return Consumer<UserState>(
       builder: (context, userState, child) => Scaffold(
         appBar: AppBar(
