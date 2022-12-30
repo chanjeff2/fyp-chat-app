@@ -5,7 +5,7 @@ import 'package:fyp_chat_app/storage/disk_storage.dart';
 
 import 'package:libsignal_protocol_dart/libsignal_protocol_dart.dart';
 
-
+/// store our and others identity keys
 class DiskIdentityKeyStore extends IdentityKeyStore {
   // singleton
   DiskIdentityKeyStore._();
@@ -47,16 +47,20 @@ class DiskIdentityKeyStore extends IdentityKeyStore {
     };
     // Upsert the items to the table
     var changes = await DiskStorage().update(identityKeyPairTab, mappedKeyPair);
-    if (changes == 0) await DiskStorage().insert(identityKeyPairTab, mappedKeyPair);
+    if (changes == 0)
+      await DiskStorage().insert(identityKeyPairTab, mappedKeyPair);
     changes = await DiskStorage().update(localRegistrationIdTab, mappedRegId);
-    if (changes == 0) await DiskStorage().insert(localRegistrationIdTab, mappedRegId);
+    if (changes == 0)
+      await DiskStorage().insert(localRegistrationIdTab, mappedRegId);
   }
 
   @override
   Future<IdentityKey?> getIdentity(SignalProtocolAddress address) async {
-    var identity = await DiskStorage().queryRow(trustedKeysTab, address.getDeviceId());
+    var identity =
+        await DiskStorage().queryRow(trustedKeysTab, address.getDeviceId());
     if (identity.isEmpty) return null;
-    return IdentityKey(DjbECPublicKey(base64.decode(identity[0][userPublicKey])));
+    return IdentityKey(
+        DjbECPublicKey(base64.decode(identity[0][userPublicKey])));
     // throw UnimplementedError();
   }
 
@@ -75,18 +79,22 @@ class DiskIdentityKeyStore extends IdentityKeyStore {
   @override
   Future<bool> isTrustedIdentity(SignalProtocolAddress address,
       IdentityKey? identityKey, Direction direction) async {
-    final identityOnCheck = await DiskStorage().queryRow(trustedKeysTab, address.getDeviceId());
+    final identityOnCheck =
+        await DiskStorage().queryRow(trustedKeysTab, address.getDeviceId());
     if (identityKey == null || identityOnCheck.isEmpty) {
       return false;
     }
-    return const ListEquality().equals(base64.decode(identityOnCheck[0][userPublicKey]), identityKey.serialize());
+    return const ListEquality().equals(
+        base64.decode(identityOnCheck[0][userPublicKey]),
+        identityKey.serialize());
     // throw UnimplementedError();
   }
 
   @override
   Future<bool> saveIdentity(
       SignalProtocolAddress address, IdentityKey? identityKey) async {
-    final identityOnCheck = await DiskStorage().queryRow(trustedKeysTab, address.getDeviceId());
+    final identityOnCheck =
+        await DiskStorage().queryRow(trustedKeysTab, address.getDeviceId());
     final existing = identityOnCheck[0][userPublicKey];
     if (identityKey == null) {
       return false;
@@ -98,7 +106,8 @@ class DiskIdentityKeyStore extends IdentityKeyStore {
         userPublicKey: base64.encode(identityKey.serialize()),
       };
       var change = await DiskStorage().update(trustedKeysTab, trustedKeyMap);
-      if (change == 0) await DiskStorage().insert(trustedKeysTab, trustedKeyMap);
+      if (change == 0)
+        await DiskStorage().insert(trustedKeysTab, trustedKeyMap);
       return true;
     } else {
       return false;

@@ -1,10 +1,8 @@
-import 'dart:collection';
-import 'dart:convert';
-import 'dart:typed_data';
-
+import 'package:fyp_chat_app/models/signed_pre_key_pair.dart';
 import 'package:fyp_chat_app/storage/disk_storage.dart';
 import 'package:libsignal_protocol_dart/libsignal_protocol_dart.dart';
 
+/// store only our signed pre keys
 class DiskSignedPreKeyStore extends SignedPreKeyStore {
   // singleton
   DiskSignedPreKeyStore._();
@@ -14,10 +12,6 @@ class DiskSignedPreKeyStore extends SignedPreKeyStore {
   }
 
   static const store = 'signedPreKey';
-
-  // Fields used in table
-  static const id = "id";
-  static const signedPreKey = "signedPreKey";
 
   @override
   Future<bool> containsSignedPreKey(int signedPreKeyId) async {
@@ -33,36 +27,28 @@ class DiskSignedPreKeyStore extends SignedPreKeyStore {
       throw InvalidKeyIdException(
           'No such signedprekeyrecord: $signedPreKeyId');
     }
-    return SignedPreKeyRecord.fromSerialized(base64.decode(check[0][signedPreKey]));
-    // throw UnimplementedError();
+    return SignedPreKeyPair.fromJson(check[0]).toSignedPreKeyRecord();
   }
 
   @override
   Future<List<SignedPreKeyRecord>> loadSignedPreKeys() async {
-    final results = <SignedPreKeyRecord>[];
     final allKeys = await DiskStorage().queryAllRows(store);
-    for (final serialized in allKeys) {
-      results.add(SignedPreKeyRecord.fromSerialized(base64.decode(serialized[signedPreKey])));
-    }
-    return results;
-    // throw UnimplementedError();
+    return allKeys
+        .map((e) => SignedPreKeyPair.fromJson(e).toSignedPreKeyRecord())
+        .toList();
   }
 
   @override
   Future<void> removeSignedPreKey(int signedPreKeyId) async {
     await DiskStorage().delete(store, signedPreKeyId);
-    // throw UnimplementedError();
   }
 
   @override
   Future<void> storeSignedPreKey(
       int signedPreKeyId, SignedPreKeyRecord record) async {
-    var signedPreKeyMap = {
-      id: signedPreKeyId,
-      signedPreKey: base64.encode(record.serialize()),
-    };
+    final signedPreKeyMap =
+        SignedPreKeyPair.fromSignedPreKeyRecord(record).toJson();
     var change = await DiskStorage().update(store, signedPreKeyMap);
     if (change == 0) await DiskStorage().insert(store, signedPreKeyMap);
-    // throw UnimplementedError();
   }
 }

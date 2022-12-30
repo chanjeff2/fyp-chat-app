@@ -1,8 +1,8 @@
-import 'dart:convert';
-
+import 'package:fyp_chat_app/models/pre_key_pair.dart';
 import 'package:fyp_chat_app/storage/disk_storage.dart';
 import 'package:libsignal_protocol_dart/libsignal_protocol_dart.dart';
 
+/// store only our pre keys/one time keys
 class DiskPreKeyStore extends PreKeyStore {
   // singleton
   DiskPreKeyStore._();
@@ -13,15 +13,10 @@ class DiskPreKeyStore extends PreKeyStore {
 
   static const store = 'preKey';
 
-  // Fields used in table
-  static const id = "id";
-  static const preKey = 'preKey';
-
   @override
   Future<bool> containsPreKey(int preKeyId) async {
     var check = await DiskStorage().queryRow(store, preKeyId);
     return check.isNotEmpty;
-    // throw UnimplementedError();
   }
 
   @override
@@ -30,24 +25,18 @@ class DiskPreKeyStore extends PreKeyStore {
     if (check.isEmpty) {
       throw InvalidKeyIdException('No such PreKeyRecord: $preKeyId');
     }
-    return PreKeyRecord.fromBuffer(base64.decode(check[0][preKey]));
-    //throw UnimplementedError();
+    return PreKeyPair.fromJson(check[0]).toPreKeyRecord();
   }
 
   @override
   Future<void> removePreKey(int preKeyId) async {
     await DiskStorage().delete(store, preKeyId);
-    // throw UnimplementedError();
   }
 
   @override
   Future<void> storePreKey(int preKeyId, PreKeyRecord record) async {
-    var preKeyMap = {
-      id: preKeyId,
-      preKey: base64.encode(record.serialize()),
-    };
+    final preKeyMap = PreKeyPair.fromPreKeyRecord(record).toJson();
     var change = await DiskStorage().update(store, preKeyMap);
-      if (change == 0) await DiskStorage().insert(store, preKeyMap);
-    // throw UnimplementedError();
+    if (change == 0) await DiskStorage().insert(store, preKeyMap);
   }
 }
