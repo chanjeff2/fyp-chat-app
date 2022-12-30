@@ -1,8 +1,13 @@
+import 'dart:convert';
+
 import 'package:collection/collection.dart';
 import 'package:fyp_chat_app/models/their_identity_key.dart';
+import 'package:fyp_chat_app/signal/device_helper.dart';
 import 'package:fyp_chat_app/storage/disk_storage.dart';
+import 'package:fyp_chat_app/storage/secure_storage.dart';
 
 import 'package:libsignal_protocol_dart/libsignal_protocol_dart.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 /// store our and others identity keys
 class DiskIdentityKeyStore extends IdentityKeyStore {
@@ -15,6 +20,15 @@ class DiskIdentityKeyStore extends IdentityKeyStore {
 
   // List of tables
   static const table = "identityKey";
+
+  static const identityKeyPairKey = "identityKeyPair";
+
+  Future<void> storeIdentityKeyPair(IdentityKeyPair identityKeyPair) async {
+    await SecureStorage().write(
+      key: identityKeyPairKey,
+      value: base64.encode(identityKeyPair.serialize()),
+    );
+  }
 
   @override
   Future<IdentityKey?> getIdentity(SignalProtocolAddress address) async {
@@ -31,12 +45,17 @@ class DiskIdentityKeyStore extends IdentityKeyStore {
 
   @override
   Future<IdentityKeyPair> getIdentityKeyPair() async {
-    throw UnimplementedError();
+    final result = await SecureStorage().read(key: identityKeyPairKey);
+    final serialized = base64.decode(result!);
+    return IdentityKeyPair.fromSerialized(serialized);
   }
 
   @override
   Future<int> getLocalRegistrationId() async {
-    throw UnimplementedError();
+    final prefs = await SharedPreferences.getInstance();
+    final registrationId =
+        await prefs.getInt(DeviceInfoHelper.registrationIdKey);
+    return registrationId!;
   }
 
   @override
