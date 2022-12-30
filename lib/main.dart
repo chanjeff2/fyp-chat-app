@@ -3,6 +3,7 @@ import 'package:fyp_chat_app/models/user_state.dart';
 import 'package:fyp_chat_app/screens/home/home_screen.dart';
 import 'package:fyp_chat_app/screens/register_or_login/register_or_login_screen.dart';
 import 'package:provider/provider.dart';
+import 'package:fyp_chat_app/components/palette.dart';
 
 void main() {
   runApp(
@@ -31,7 +32,7 @@ class MyApp extends StatelessWidget {
         // or simply save your changes to "hot reload" in a Flutter IDE).
         // Notice that the counter didn't reset back to zero; the application
         // is not restarted.
-        primarySwatch: Colors.blue,
+        primarySwatch: Palette.ustBlue,
       ),
       home: const MyHomePage(),
     );

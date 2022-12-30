@@ -1,25 +1,47 @@
 import 'package:flutter/material.dart';
 import 'package:fyp_chat_app/models/user_state.dart';
+import 'package:fyp_chat_app/screens/home/select_contact.dart';
 import 'package:fyp_chat_app/storage/credential_store.dart';
 import 'package:provider/provider.dart';
 
-class HomeScreen extends StatelessWidget {
+
+class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  int _moreMenuItemIndex = 0;  
+  var appBarHeight = AppBar().preferredSize.height;
 
   @override
   Widget build(BuildContext context) {
     return Consumer<UserState>(
       builder: (context, userState, child) => Scaffold(
         appBar: AppBar(
-          title: const Text("Home"),
+          title: const Text("USTalk"),
           actions: [
             IconButton(
               onPressed: () {
-                CredentialStore().removeCredential();
-                userState.clearState();
+                print("Search - To be implemented");
               },
-              icon: const Icon(Icons.logout_outlined),
-            )
+              icon: const Icon(Icons.search),
+            ),
+            PopupMenuButton(
+              offset: Offset(0.0, appBarHeight),
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(8.0)),
+              ),
+              onSelected: (value) {
+                _onMenuItemSelected(value as int, userState);
+              },
+              itemBuilder: (context) => [
+                _buildPopupMenuItem('  Settings', Icons.settings, 0),
+                _buildPopupMenuItem('  Logout', Icons.logout, 1),
+              ],
+            ),
           ],
         ),
         body: Center(
@@ -40,5 +62,44 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  addContact() {}
+  addContact() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => const SelectContact(),
+      ),
+    );
+  }
+
+  /* Codes of handling more menu items here */
+  // Create a popup menu item that is in the form of Icon + text
+  PopupMenuItem _buildPopupMenuItem(
+      String title, IconData iconData, int positon) {
+    return PopupMenuItem(
+      value: positon,
+      child:  Row(
+        children: [
+          Icon(iconData, color: Colors.black,),
+          Text(title),
+        ],
+      ),
+    );
+  }
+
+  _onMenuItemSelected(int value, UserState userState) {
+    setState(() {
+      _moreMenuItemIndex = value;
+    });
+
+    switch (value) {
+      case 0: {
+        break;
+      }
+      case 1: {
+        CredentialStore().removeCredential();
+        userState.clearState();
+        break;
+      }
+    }
+  }
+
 }
