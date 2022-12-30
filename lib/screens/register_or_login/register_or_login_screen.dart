@@ -1,20 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:fyp_chat_app/dto/create_device_dto.dart';
 import 'package:fyp_chat_app/dto/login_dto.dart';
 import 'package:fyp_chat_app/models/user_state.dart';
 import 'package:fyp_chat_app/network/account_api.dart';
 import 'package:fyp_chat_app/network/api.dart';
-import 'package:fyp_chat_app/signal/device_helper.dart';
+import 'package:fyp_chat_app/signal/signal_client.dart';
 import 'package:fyp_chat_app/storage/credential_store.dart';
-import 'package:fyp_chat_app/storage/disk_pre_key_store.dart';
-import 'package:fyp_chat_app/storage/disk_signed_pre_key_store.dart';
-import 'package:libsignal_protocol_dart/libsignal_protocol_dart.dart';
 import 'package:provider/provider.dart';
 
 import '../../dto/access_token_dto.dart';
 import '../../dto/register_dto.dart';
 import '../../network/auth_api.dart';
-import '../../network/devices_api.dart';
 
 class RegisterOrLoginScreen extends StatefulWidget {
   const RegisterOrLoginScreen({Key? key}) : super(key: key);
@@ -165,23 +160,8 @@ class _RegisterOrLoginScreenState extends State<RegisterOrLoginScreen> {
                       await CredentialStore().storeToken(accessToken);
                       Provider.of<UserState>(context, listen: false)
                           .setAccessTokenStatus(true);
-                      // register device
-                      final device = await DevicesApi()
-                          .addDevice(await DeviceInfoHelper().initDevice());
-                      await DeviceInfoHelper().setDeviceId(device.deviceId);
-                      // generate keys
-                      final identityKeyPair = generateIdentityKeyPair();
-                      final oneTimeKeys = generatePreKeys(0, 110);
-                      final signedPreKey =
-                          generateSignedPreKey(identityKeyPair, 0);
-                      // cache keys
-                      for (var p in oneTimeKeys) {
-                        await DiskPreKeyStore().storePreKey(p.id, p);
-                      }
-                      await DiskSignedPreKeyStore()
-                          .storeSignedPreKey(signedPreKey.id, signedPreKey);
-                      // upload keys to server
-
+                      // init signal stuffs
+                      await SignalClient().initialize();
                       // get account profile
                       final account = await AccountApi().getMe();
                       userState.setMe(account);
