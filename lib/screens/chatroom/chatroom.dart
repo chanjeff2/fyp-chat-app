@@ -186,7 +186,9 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                   icon: _textMessage
                       ? const Icon(Icons.send, color: Colors.white)
                       : const Icon(Icons.mic, color: Colors.white),
-                  onPressed: () => _submitMsg(_messageController.text),
+                  onPressed: () => {
+                    if (_textMessage) {_submitMsg(_messageController.text)}
+                  },
                 ),
               ),
             ]),
