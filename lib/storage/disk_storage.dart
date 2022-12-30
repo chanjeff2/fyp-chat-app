@@ -53,8 +53,8 @@ class DiskStorage {
             255)); //generate random int with 32 digits, 256 is the max value, used in generating random password for the database in base64 encoding
     return await openDatabase(
       join(await getDatabasesPath(), databasePath),
-      password: base64UrlEncode(
-          values), // TODO: Find a way to make a secure password and save it in SecureStorage
+      password: base64UrlEncode(values),
+      version: 5,
       onCreate: (db, version) {
         db.execute(
           "CREATE TABLE $trustedKeys($deviceId INTEGER, $deviceName STRING, $userPublicKey STRING, PRIMARY KEY ($deviceId, $deviceName));",
