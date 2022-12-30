@@ -5,9 +5,13 @@ import 'package:provider/provider.dart';
 
 class ChatRoomScreen extends StatelessWidget {
   const ChatRoomScreen({Key? key}) : super(key: key);
+  void _submitMsg(String text) {
+    print(text);
+  }
 
   @override
   Widget build(BuildContext context) {
+    final TextEditingController _textController = TextEditingController();
     return Consumer<UserState>(
       builder: (context, userState, child) => Scaffold(
         appBar: AppBar(
@@ -38,23 +42,25 @@ class ChatRoomScreen extends StatelessWidget {
           ],
         ),
         body: Column(children: <Widget>[
-          Expanded(
+          const Expanded(
             child: Text('Test Screen'),
           ),
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 8, vertical: 16),
-            child: Row(children: const <Widget>[
+            child: Row(children: <Widget>[
               Flexible(
                 child: TextField(
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                       contentPadding: EdgeInsets.all(16.0),
                       border: OutlineInputBorder(),
                       hintText: 'Type something...'),
+                  controller: _textController,
+                  onSubmitted: _submitMsg,
                 ),
               ),
               IconButton(
                 icon: Icon(Icons.send),
-                onPressed: null,
+                onPressed: () => _submitMsg(_textController.text),
               ),
             ]),
           ),
