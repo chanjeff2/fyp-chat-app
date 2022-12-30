@@ -28,6 +28,6 @@ Map<String, dynamic> _$UpdateKeysDtoToJson(UpdateKeysDto instance) =>
     <String, dynamic>{
       'deviceId': instance.deviceId,
       'identityKey': instance.identityKey,
-      'signedPreKey': instance.signedPreKey,
-      'oneTimeKeys': instance.oneTimeKeys,
+      'signedPreKey': instance.signedPreKey?.toJson(),
+      'oneTimeKeys': instance.oneTimeKeys?.map((e) => e.toJson()).toList(),
     };

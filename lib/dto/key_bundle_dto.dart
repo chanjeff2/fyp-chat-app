@@ -4,7 +4,7 @@ import 'device_key_bundle_dto.dart';
 
 part 'key_bundle_dto.g.dart';
 
-@JsonSerializable()
+@JsonSerializable(explicitToJson: true)
 class KeyBundleDto {
   String identityKey;
   List<DeviceKeyBundleDto> deviceKeyBundles;

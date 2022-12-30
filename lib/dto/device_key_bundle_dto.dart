@@ -4,7 +4,7 @@ import 'package:json_annotation/json_annotation.dart';
 
 part 'device_key_bundle_dto.g.dart';
 
-@JsonSerializable()
+@JsonSerializable(explicitToJson: true)
 class DeviceKeyBundleDto {
   int deviceId;
   int registrationId;

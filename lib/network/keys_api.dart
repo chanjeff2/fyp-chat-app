@@ -1,5 +1,3 @@
-import '../dto/create_device_dto.dart';
-import '../dto/device_dto.dart';
 import '../dto/key_bundle_dto.dart';
 import '../dto/update_keys_dto.dart';
 import 'api.dart';
@@ -16,16 +14,16 @@ class KeysApi extends Api {
   String pathPrefix = "/keys";
 
   Future<void> updateKeys(UpdateKeysDto dto) async {
-    final json = await patch("/update-keys", body: dto.toJson());
+    final json = await patch("/update-keys", body: dto.toJson(), useAuth: true);
   }
 
   Future<KeyBundleDto> getKeyBundle(String userId, int deviceId) async {
-    final json = await get("/$userId/devices/$deviceId");
+    final json = await get("/$userId/devices/$deviceId", useAuth: true);
     return KeyBundleDto.fromJson(json);
   }
 
   Future<KeyBundleDto> getAllKeyBundle(String userId) async {
-    final json = await get("/$userId/devices");
+    final json = await get("/$userId/devices", useAuth: true);
     return KeyBundleDto.fromJson(json);
   }
 }
