@@ -37,18 +37,26 @@ class ChatRoomScreen extends StatelessWidget {
             )
           ],
         ),
-        body: Column(children: const <Widget>[
+        body: Column(children: <Widget>[
           Expanded(
             child: Text('Test Screen'),
           ),
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 8, vertical: 16),
-            child: TextField(
-              decoration: InputDecoration(
-                  contentPadding: EdgeInsets.all(16.0),
-                  border: OutlineInputBorder(),
-                  hintText: 'Type something...'),
-            ),
+            child: Row(children: const <Widget>[
+              Flexible(
+                child: TextField(
+                  decoration: InputDecoration(
+                      contentPadding: EdgeInsets.all(16.0),
+                      border: OutlineInputBorder(),
+                      hintText: 'Type something...'),
+                ),
+              ),
+              IconButton(
+                icon: Icon(Icons.send),
+                onPressed: null,
+              ),
+            ]),
           ),
         ]),
       ),
