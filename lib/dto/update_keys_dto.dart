@@ -4,7 +4,7 @@ import 'package:json_annotation/json_annotation.dart';
 
 part 'update_keys_dto.g.dart';
 
-@JsonSerializable()
+@JsonSerializable(explicitToJson: true)
 class UpdateKeysDto {
   @JsonKey(required: true)
   int deviceId;

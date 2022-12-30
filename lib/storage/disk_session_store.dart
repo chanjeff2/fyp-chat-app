@@ -1,6 +1,5 @@
-import 'dart:collection';
-import 'dart:typed_data';
-
+import 'package:fyp_chat_app/models/session.dart';
+import 'package:fyp_chat_app/storage/disk_storage.dart';
 import 'package:libsignal_protocol_dart/libsignal_protocol_dart.dart';
 
 class DiskSessionStore extends SessionStore {
@@ -11,62 +10,95 @@ class DiskSessionStore extends SessionStore {
     return _instance;
   }
 
-  HashMap<SignalProtocolAddress, Uint8List> sessions = HashMap<SignalProtocolAddress, Uint8List>();
+  static const table = 'sessions';
+
+  // Fields used in table
+  static const deviceId = "deviceId";
+  static const deviceName = "deviceName";
+  static const sessionField = 'session';
 
   @override
   Future<bool> containsSession(SignalProtocolAddress address) async {
-    return sessions.containsKey(address);
-    // throw UnimplementedError();
+    final db = await DiskStorage().db;
+    final result = await db.query(
+      table,
+      where: '${Session.columnName} = ? AND ${Session.columnDeviceId} = ?',
+      whereArgs: [address.getName(), address.getDeviceId()],
+    );
+    return result.isNotEmpty;
   }
 
   @override
   Future<void> deleteAllSessions(String name) async {
-    for (final k in sessions.keys.toList()) {
-      if (k.getName() == name) {
-        sessions.remove(k);
-      }
-    }
-    // throw UnimplementedError();
+    final db = await DiskStorage().db;
+    await db.delete(
+      table,
+      where: '${Session.columnName} = ?',
+      whereArgs: [name],
+    );
   }
 
   @override
   Future<void> deleteSession(SignalProtocolAddress address) async {
-    sessions.remove(address);
-    // throw UnimplementedError();
+    final db = await DiskStorage().db;
+    await db.delete(
+      table,
+      where: '${Session.columnName} = ? AND ${Session.columnDeviceId} = ?',
+      whereArgs: [address.getName(), address.getDeviceId()],
+    );
   }
 
   @override
   Future<List<int>> getSubDeviceSessions(String name) async {
-    final deviceIds = <int>[];
-
-    for (final key in sessions.keys) {
-      if (key.getName() == name && key.getDeviceId() != 1) {
-        deviceIds.add(key.getDeviceId());
-      }
-    }
-
+    final db = await DiskStorage().db;
+    final result = await db.query(
+      table,
+      where: '${Session.columnName} = ?',
+      whereArgs: [name],
+    );
+    final deviceIds = result
+        .map((e) => Session.fromJson(e).deviceId)
+        .where((deviceId) => deviceId != 1)
+        .toList();
     return deviceIds;
-    // throw UnimplementedError();
   }
 
   @override
   Future<SessionRecord> loadSession(SignalProtocolAddress address) async {
+    final db = await DiskStorage().db;
     try {
-      if (await containsSession(address)) {
-        return SessionRecord.fromSerialized(sessions[address]!);
+      final result = await db.query(
+        table,
+        where: '${Session.columnName} = ? AND ${Session.columnDeviceId} = ?',
+        whereArgs: [address.getName(), address.getDeviceId()],
+      );
+      if (result.isNotEmpty) {
+        return Session.fromJson(result[0]).toSessionRecord();
       } else {
         return SessionRecord();
       }
     } on Exception catch (e) {
       throw AssertionError(e);
     }
-    // throw UnimplementedError();
   }
 
   @override
   Future<void> storeSession(
       SignalProtocolAddress address, SessionRecord record) async {
-    sessions[address] = record.serialize();
-    // throw UnimplementedError();
+    final sessionMap = Session.fromSessionRecord(
+      name: address.getName(),
+      deviceId: address.getDeviceId(),
+      record: record,
+    ).toJson();
+    // try update
+    final db = await DiskStorage().db;
+    final count = await db.update(
+      table,
+      sessionMap,
+      where: '${Session.columnName} = ? AND ${Session.columnDeviceId} = ?',
+      whereArgs: [address.getName(), address.getDeviceId()],
+    );
+    // if no existing record, insert new record
+    if (count == 0) await db.insert(table, sessionMap);
   }
 }

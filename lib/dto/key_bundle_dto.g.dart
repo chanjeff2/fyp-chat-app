@@ -16,5 +16,6 @@ KeyBundleDto _$KeyBundleDtoFromJson(Map<String, dynamic> json) => KeyBundleDto(
 Map<String, dynamic> _$KeyBundleDtoToJson(KeyBundleDto instance) =>
     <String, dynamic>{
       'identityKey': instance.identityKey,
-      'deviceKeyBundles': instance.deviceKeyBundles,
+      'deviceKeyBundles':
+          instance.deviceKeyBundles.map((e) => e.toJson()).toList(),
     };

@@ -21,6 +21,6 @@ Map<String, dynamic> _$DeviceKeyBundleDtoToJson(DeviceKeyBundleDto instance) =>
     <String, dynamic>{
       'deviceId': instance.deviceId,
       'registrationId': instance.registrationId,
-      'signedPreKey': instance.signedPreKey,
-      'oneTimeKey': instance.oneTimeKey,
+      'signedPreKey': instance.signedPreKey.toJson(),
+      'oneTimeKey': instance.oneTimeKey?.toJson(),
     };

@@ -1,8 +1,8 @@
-import 'dart:collection';
-import 'dart:typed_data';
-
+import 'package:fyp_chat_app/models/signed_pre_key_pair.dart';
+import 'package:fyp_chat_app/storage/disk_storage.dart';
 import 'package:libsignal_protocol_dart/libsignal_protocol_dart.dart';
 
+/// store only our signed pre keys
 class DiskSignedPreKeyStore extends SignedPreKeyStore {
   // singleton
   DiskSignedPreKeyStore._();
@@ -11,44 +11,67 @@ class DiskSignedPreKeyStore extends SignedPreKeyStore {
     return _instance;
   }
 
-  final store = HashMap<int, Uint8List>();
+  static const table = 'signedPreKey';
 
   @override
   Future<bool> containsSignedPreKey(int signedPreKeyId) async {
-    return store.containsKey(signedPreKeyId);
-    // throw UnimplementedError();
+    final db = await DiskStorage().db;
+    final result = await db.query(
+      table,
+      where: '${SignedPreKeyPair.columnId} = ?',
+      whereArgs: [signedPreKeyId],
+    );
+    return result.isNotEmpty;
   }
 
   @override
   Future<SignedPreKeyRecord> loadSignedPreKey(int signedPreKeyId) async {
-    if (!store.containsKey(signedPreKeyId)) {
+    final db = await DiskStorage().db;
+    final result = await db.query(
+      table,
+      where: '${SignedPreKeyPair.columnId} = ?',
+      whereArgs: [signedPreKeyId],
+    );
+    if (result.isEmpty) {
       throw InvalidKeyIdException(
-          'No such signedprekeyrecord! $signedPreKeyId');
+          'No such SignedPreKeyRecord: $signedPreKeyId');
     }
-    return SignedPreKeyRecord.fromSerialized(store[signedPreKeyId]!);
-    // throw UnimplementedError();
+    return SignedPreKeyPair.fromJson(result[0]).toSignedPreKeyRecord();
   }
 
   @override
   Future<List<SignedPreKeyRecord>> loadSignedPreKeys() async {
-    final results = <SignedPreKeyRecord>[];
-    for (final serialized in store.values) {
-      results.add(SignedPreKeyRecord.fromSerialized(serialized));
-    }
-    return results;
-    // throw UnimplementedError();
+    final db = await DiskStorage().db;
+    final allKeys = await db.query(table);
+    return allKeys
+        .map((e) => SignedPreKeyPair.fromJson(e).toSignedPreKeyRecord())
+        .toList();
   }
 
   @override
   Future<void> removeSignedPreKey(int signedPreKeyId) async {
-    store.remove(signedPreKeyId);
-    // throw UnimplementedError();
+    final db = await DiskStorage().db;
+    await db.delete(
+      table,
+      where: '${SignedPreKeyPair.columnId} = ?',
+      whereArgs: [signedPreKeyId],
+    );
   }
 
   @override
   Future<void> storeSignedPreKey(
       int signedPreKeyId, SignedPreKeyRecord record) async {
-    store[signedPreKeyId] = record.serialize();
-    // throw UnimplementedError();
+    final signedPreKeyMap =
+        SignedPreKeyPair.fromSignedPreKeyRecord(record).toJson();
+    // try update
+    final db = await DiskStorage().db;
+    final count = await db.update(
+      table,
+      signedPreKeyMap,
+      where: '${SignedPreKeyPair.columnId} = ?',
+      whereArgs: [signedPreKeyId],
+    );
+    // if no existing record, insert new record
+    if (count == 0) await db.insert(table, signedPreKeyMap);
   }
 }
