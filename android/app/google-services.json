@@ -29,6 +29,13 @@
             {
               "client_id": "473497146879-glve1im56r3fmib4ngjsp4q5j7uaho0b.apps.googleusercontent.com",
               "client_type": 3
+            },
+            {
+              "client_id": "473497146879-vv685875secf9327r4g87n6dl5eb207q.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.fypChatApp"
+              }
             }
           ]
         }
