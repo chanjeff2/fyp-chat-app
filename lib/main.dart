@@ -1,5 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:fyp_chat_app/firebase/fcm_handler.dart';
 import 'package:fyp_chat_app/models/user_state.dart';
 import 'package:fyp_chat_app/screens/home/home_screen.dart';
 import 'package:fyp_chat_app/screens/register_or_login/register_or_login_screen.dart';
@@ -8,11 +10,18 @@ import 'package:fyp_chat_app/components/palette.dart';
 
 import 'firebase_options.dart';
 
+@pragma('vm:entry-point')
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) {
+  return FCMHandler.onBackgroundMessage(message);
+}
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  // handle message received on background
+  FirebaseMessaging.onBackgroundMessage(FCMHandler.onBackgroundMessage);
   runApp(
     ChangeNotifierProvider(
       create: (context) => UserState(),
@@ -21,8 +30,38 @@ Future<void> main() async {
   );
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({Key? key}) : super(key: key);
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  @override
+  void initState() {
+    super.initState();
+
+    // handle fcm message
+    // handle message received on foreground
+    FirebaseMessaging.onMessage.listen(FCMHandler.onForegroundMessage);
+    setUpFCMInteractedMessage();
+  }
+
+  Future<void> setUpFCMInteractedMessage() async {
+    // Get any messages which caused the application to open from
+    // a terminated state.
+    RemoteMessage? initialMessage =
+        await FirebaseMessaging.instance.getInitialMessage();
+
+    // handle the message
+    if (initialMessage != null) {
+      FCMHandler.onMessageOpenedApp(initialMessage);
+    }
+
+    // when the app is opened from background (not terminated)
+    FirebaseMessaging.onMessageOpenedApp.listen(FCMHandler.onMessageOpenedApp);
+  }
 
   // This widget is the root of your application.
   @override
