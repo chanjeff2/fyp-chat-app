@@ -1,3 +1,4 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:fyp_chat_app/models/user_state.dart';
 import 'package:fyp_chat_app/screens/home/home_screen.dart';
@@ -5,7 +6,12 @@ import 'package:fyp_chat_app/screens/register_or_login/register_or_login_screen.
 import 'package:provider/provider.dart';
 import 'package:fyp_chat_app/components/palette.dart';
 
-void main() {
+import 'firebase_options.dart';
+
+Future<void> main() async {
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(
     ChangeNotifierProvider(
       create: (context) => UserState(),
