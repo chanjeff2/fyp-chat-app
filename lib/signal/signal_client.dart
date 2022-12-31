@@ -46,12 +46,13 @@ class SignalClient {
         .storeSignedPreKey(signedPreKey.id, signedPreKey);
 
     // upload keys to Server
-    final dto = UpdateKeysDto(await DeviceInfoHelper().getDeviceId(),
-        identityKey: base64.encode(identityKeyPair.getPublicKey().serialize()),
-        oneTimeKeys:
-            oneTimeKeys.map((e) => PreKey.fromPreKeyRecord(e).toDto()).toList(),
-        signedPreKey:
-            SignedPreKey.fromSignedPreKeyRecord(signedPreKey).toDto());
+    final dto = UpdateKeysDto(
+      (await DeviceInfoHelper().getDeviceId())!,
+      identityKey: base64.encode(identityKeyPair.getPublicKey().serialize()),
+      oneTimeKeys:
+          oneTimeKeys.map((e) => PreKey.fromPreKeyRecord(e).toDto()).toList(),
+      signedPreKey: SignedPreKey.fromSignedPreKeyRecord(signedPreKey).toDto(),
+    );
     await KeysApi().updateKeys(dto);
   }
 }

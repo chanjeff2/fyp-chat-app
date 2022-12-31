@@ -31,12 +31,11 @@ class DeviceInfoHelper {
   Future<void> setDeviceId(int deviceId) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt(deviceIdKey, deviceId);
-    // throw UnimplementedError();
   }
 
-  Future<int> getDeviceId() async {
+  Future<int?> getDeviceId() async {
     final prefs = await SharedPreferences.getInstance();
-    var id = prefs.getInt(deviceIdKey)!;
+    var id = prefs.getInt(deviceIdKey);
     return id;
   }
 }
