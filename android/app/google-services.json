@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "473497146879",
+    "project_id": "ustalk-7fd5b",
+    "storage_bucket": "ustalk-7fd5b.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:473497146879:android:399ea83a4f515e061e03ca",
+        "android_client_info": {
+          "package_name": "com.example.fyp_chat_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "473497146879-glve1im56r3fmib4ngjsp4q5j7uaho0b.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAqTQIzXDWLU4cl0BFz1Q_lf0IY1bliwEQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "473497146879-glve1im56r3fmib4ngjsp4q5j7uaho0b.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "473497146879-vv685875secf9327r4g87n6dl5eb207q.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.fypChatApp"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

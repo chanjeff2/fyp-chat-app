@@ -10,9 +10,13 @@ class CreateDeviceDto {
   @JsonKey(required: true)
   String name;
 
+  @JsonKey(required: true)
+  String firebaseMessagingToken;
+
   CreateDeviceDto({
     required this.registrationId,
     required this.name,
+    required this.firebaseMessagingToken,
   });
 
   Map<String, dynamic> toJson() => _$CreateDeviceDtoToJson(this);
