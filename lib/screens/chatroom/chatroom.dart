@@ -3,6 +3,8 @@ import 'package:fyp_chat_app/models/user_state.dart';
 import 'package:provider/provider.dart';
 import 'package:fyp_chat_app/screens/chatroom/message_bubble.dart';
 
+import '../../components/palette.dart';
+
 class ChatRoomScreen extends StatefulWidget {
   const ChatRoomScreen({Key? key}) : super(key: key);
 
@@ -18,12 +20,15 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
   final List<Widget> _messages = [];
 
   void _submitMsg(String message) {
+    // Get the current time
+    DateTime now = DateTime.now();
+    String parsedTime = now.hour.toString() + ":" + now.minute.toString();
     //add the text into message array for temporary storage
     setState(() {
       _messages.insert(
           0,
           Container(
-              child: MessageBubble(text: message, isCurrentUser: true),
+              child: MessageBubble(text: message, time: parsedTime, isCurrentUser: true),
               alignment: Alignment.centerRight));
     });
     _messageController.clear();
@@ -39,24 +44,41 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
             onTap: () {
               Navigator.pop(context);
             },
+            borderRadius: BorderRadius.circular(40.0),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.max,
               children: const [
-                Icon(
-                  Icons.arrow_back,
-                  size: 24,
+                Expanded(
+                  child: Icon(
+                    Icons.arrow_back,
+                  ),
                 ),
-                CircleAvatar(
-                  // child: profilePicture ?? Icon(Icons.person, size: 24),
-                  child: Icon(Icons.person, size: 24, color: Colors.white),
-                  radius: 16,
-                  backgroundColor: Colors.blueGrey,
+                // SizedBox(width: 4),
+                Expanded(
+                  child: CircleAvatar(
+                  // child: profilePicture ? null : Icon(Icons.person, size: 48),
+                    child: Icon(Icons.person, size: 20, color: Colors.white),
+                    radius: 32,
+                    backgroundColor: Colors.blueGrey,
+                  ),
                 ),
               ],
             ),
           ),
           //top bar with pop up menu button
-          title: const Text("ChatRoom with"), //TODO: add target name to title
+          title: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: const [
+              Text("Test user"), //TODO: add target name to title
+              Text("Online",
+                style: TextStyle(
+                  fontWeight: FontWeight.normal,
+                  fontSize: 14
+                ),
+              ),
+            ],
+          ),
           actions: [
             PopupMenuButton(
               itemBuilder: (context) => [
@@ -79,14 +101,10 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                   ),
                 ),
                 PopupMenuItem(
-                  padding: const EdgeInsets.symmetric(horizontal: 24.0),
                   child: PopupMenuButton(
-                      child: const Text(
-                        "More...",
-                        style: TextStyle(
-                            color: Colors.blue,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500),
+                      child: TextButton(
+                        onPressed: () {},
+                        child: const Text("More..."),
                       ),
                       itemBuilder: (context) => [
                             PopupMenuItem(
@@ -185,7 +203,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
               const SizedBox(width: 8),
               CircleAvatar(
                 radius: 25,
-                backgroundColor: const Color(0xFF003366),
+                backgroundColor: Theme.of(context).primaryColor,
                 child: IconButton(
                   icon: _textMessage
                       ? const Icon(Icons.send, color: Colors.white)

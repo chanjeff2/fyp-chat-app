@@ -4,9 +4,11 @@ class MessageBubble extends StatelessWidget {
   const MessageBubble({
     Key? key,
     required this.text,
+    required this.time,
     required this.isCurrentUser,
   }) : super(key: key);
   final String text;
+  final String time;
   final bool isCurrentUser;
 
   @override
@@ -26,15 +28,27 @@ class MessageBubble extends StatelessWidget {
           // chat bubble decoration
           decoration: BoxDecoration(
             color: isCurrentUser ? Colors.blue : Colors.grey[300],
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(24),
           ),
           child: Padding(
-            padding: const EdgeInsets.all(12),
-            child: Text(
-              text,
-              style: Theme.of(context).textTheme.bodyText1!.copyWith(
-                  color: isCurrentUser ? Colors.white : Colors.black87),
-            ),
+            padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  text,
+                  style: Theme.of(context).textTheme.bodyText1!.copyWith(
+                      color: isCurrentUser ? Colors.white : Colors.black87),
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  time,
+                  style: Theme.of(context).textTheme.bodyText1!.copyWith(
+                      color: isCurrentUser ? Colors.grey.shade200 : Colors.grey.shade800, fontSize: 10),
+                )
+              ],
+            )
           ),
         ),
       ),
