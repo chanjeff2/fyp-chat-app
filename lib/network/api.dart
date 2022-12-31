@@ -22,18 +22,23 @@ abstract class Api {
   // use hostname -I to get wsl2 ip and replace the ip address
   static const String baseUrl =
       "https://fyp-chat-server-production.up.railway.app";
+  // static const String baseUrl = "https://fyp-chat-server.onrender.com";
+  // static const String baseUrl = "http://localhost:3000";
   abstract String pathPrefix;
 
-  Map<String, dynamic> processResponse(http.Response response) {
-    final body = json.decode(response.body);
+  dynamic _processResponse(http.Response response) {
     if (response.statusCode < 200 || response.statusCode >= 300) {
+      final body = json.decode(response.body);
       throw ApiException(response.statusCode, body["message"], body["error"]);
     }
-    return body;
+    if (response.body.isEmpty) {
+      return response.body;
+    }
+    return json.decode(response.body);
   }
 
   @protected
-  Future<Map<String, dynamic>> get(
+  Future<dynamic> get(
     String path, {
     Map<String, String>? query,
     bool useAuth = false,
@@ -52,11 +57,11 @@ abstract class Api {
       url,
       headers: headers,
     );
-    return processResponse(response);
+    return _processResponse(response);
   }
 
   @protected
-  Future<Map<String, dynamic>> post(
+  Future<dynamic> post(
     String path, {
     Map<String, dynamic>? body,
     bool useAuth = false,
@@ -73,6 +78,27 @@ abstract class Api {
     }
     final response =
         await http.post(url, headers: headers, body: json.encode(body));
-    return processResponse(response);
+    return _processResponse(response);
+  }
+
+  @protected
+  Future<dynamic> patch(
+    String path, {
+    Map<String, dynamic>? body,
+    bool useAuth = false,
+  }) async {
+    final url = Uri.parse("$baseUrl$pathPrefix$path");
+    final headers = <String, String>{};
+    headers['Content-Type'] = 'application/json; charset=UTF-8';
+    if (useAuth) {
+      AccessTokenDto? accessTokenDto = await CredentialStore().getToken();
+      if (accessTokenDto == null) {
+        throw AccessTokenNotFoundException();
+      }
+      headers['Authorization'] = 'Bearer ${accessTokenDto.accessToken}';
+    }
+    final response =
+        await http.patch(url, headers: headers, body: json.encode(body));
+    return _processResponse(response);
   }
 }

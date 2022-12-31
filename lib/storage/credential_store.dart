@@ -4,10 +4,9 @@ import 'package:fyp_chat_app/storage/secure_storage.dart';
 import '../dto/login_dto.dart';
 
 class CredentialStore {
+  // singleton
   CredentialStore._();
-
   static final CredentialStore _instance = CredentialStore._();
-
   factory CredentialStore() {
     return _instance;
   }

@@ -1,6 +1,15 @@
-import 'package:fyp_chat_app/models/signal_keys_db.dart';
+import 'dart:convert';
+
+import 'package:fyp_chat_app/dto/update_keys_dto.dart';
+import 'package:fyp_chat_app/models/pre_key.dart';
+import 'package:fyp_chat_app/models/signed_pre_key.dart';
+import 'package:fyp_chat_app/network/devices_api.dart';
+import 'package:fyp_chat_app/network/keys_api.dart';
+import 'package:fyp_chat_app/signal/device_helper.dart';
+import 'package:fyp_chat_app/storage/disk_identity_key_store.dart';
+import 'package:fyp_chat_app/storage/disk_pre_key_store.dart';
+import 'package:fyp_chat_app/storage/disk_signed_pre_key_store.dart';
 import 'package:libsignal_protocol_dart/libsignal_protocol_dart.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class SignalClient {
   SignalClient._();
@@ -11,56 +20,38 @@ class SignalClient {
     return _instance;
   }
 
-  late final int registrationId;
-  late final IdentityKeyPair identityKeyPair;
-  late final SignedPreKeyRecord signedPreKey;
-  late final List<PreKeyRecord> preKeys;
-
-  final sessionStore = InMemorySessionStore();
-  final preKeyStore = InMemoryPreKeyStore();
-  final signedPreKeyStore = InMemorySignedPreKeyStore();
-  late final InMemoryIdentityKeyStore identityStore;
-
-  Future<void> install() async {
-    registrationId = generateRegistrationId(false);
-    identityKeyPair = generateIdentityKeyPair();
-    signedPreKey = generateSignedPreKey(identityKeyPair, 0);
-    preKeys = generatePreKeys(0, 110);
-
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setInt("registrationId", registrationId);
-    await prefs.setString("identityKeyPair",
-        IdentityKeyPairDb.fromIdentityKeyPair(identityKeyPair).buffer);
-    await prefs.setString("signedPreKey",
-        SignedPreKeyRecordDb.fromSignedPreKeyRecord(signedPreKey).buffer);
-    await prefs.setStringList("preKeys",
-        preKeys.map((e) => PreKeyRecordDb.fromPreKeyRecord(e).buffer).toList());
-
-    identityStore = InMemoryIdentityKeyStore(identityKeyPair, registrationId);
-
-    for (var p in preKeys) {
-      await preKeyStore.storePreKey(p.id, p);
-    }
-    await signedPreKeyStore.storeSignedPreKey(signedPreKey.id, signedPreKey);
+  Future<void> initialize() async {
+    await registerDevice();
+    await generateAndStoreKeys();
   }
 
-  Future<void> loadKeys() async {
-    final prefs = await SharedPreferences.getInstance();
-    registrationId = prefs.getInt("registrationId")!;
-    identityKeyPair = IdentityKeyPairDb(prefs.getString("identityKeyPair")!)
-        .toIdentityKeyPair();
-    signedPreKey =
-        SignedPreKeyRecordDb(prefs.getString("signedPreKey")!).toPreKeyRecord();
-    preKeys = prefs
-        .getStringList("preKeys")!
-        .map((e) => PreKeyRecordDb(e).toPreKeyRecord())
-        .toList();
+  Future<void> registerDevice() async {
+    final dto = await DeviceInfoHelper().initDevice();
+    final device = await DevicesApi().addDevice(dto);
+    await DeviceInfoHelper().setDeviceId(device.deviceId);
+  }
 
-    identityStore = InMemoryIdentityKeyStore(identityKeyPair, registrationId);
+  Future<void> generateAndStoreKeys() async {
+    // generate keys
+    final identityKeyPair = generateIdentityKeyPair();
+    final oneTimeKeys = generatePreKeys(0, 110);
+    final signedPreKey = generateSignedPreKey(identityKeyPair, 0);
 
-    for (var p in preKeys) {
-      await preKeyStore.storePreKey(p.id, p);
+    // store keys
+    await DiskIdentityKeyStore().storeIdentityKeyPair(identityKeyPair);
+    for (var p in oneTimeKeys) {
+      await DiskPreKeyStore().storePreKey(p.id, p);
     }
-    await signedPreKeyStore.storeSignedPreKey(signedPreKey.id, signedPreKey);
+    await DiskSignedPreKeyStore()
+        .storeSignedPreKey(signedPreKey.id, signedPreKey);
+
+    // upload keys to Server
+    final dto = UpdateKeysDto(await DeviceInfoHelper().getDeviceId(),
+        identityKey: base64.encode(identityKeyPair.getPublicKey().serialize()),
+        oneTimeKeys:
+            oneTimeKeys.map((e) => PreKey.fromPreKeyRecord(e).toDto()).toList(),
+        signedPreKey:
+            SignedPreKey.fromSignedPreKeyRecord(signedPreKey).toDto());
+    await KeysApi().updateKeys(dto);
   }
 }

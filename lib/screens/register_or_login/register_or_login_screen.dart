@@ -3,6 +3,7 @@ import 'package:fyp_chat_app/dto/login_dto.dart';
 import 'package:fyp_chat_app/models/user_state.dart';
 import 'package:fyp_chat_app/network/account_api.dart';
 import 'package:fyp_chat_app/network/api.dart';
+import 'package:fyp_chat_app/signal/signal_client.dart';
 import 'package:fyp_chat_app/storage/credential_store.dart';
 import 'package:provider/provider.dart';
 
@@ -47,11 +48,14 @@ class _RegisterOrLoginScreenState extends State<RegisterOrLoginScreen> {
                 controller: _usernameController,
                 decoration: const InputDecoration(
                   labelText: "Username",
-                  contentPadding: const EdgeInsets.symmetric(vertical: 15.0, horizontal: 15.0),
+                  contentPadding: const EdgeInsets.symmetric(
+                    vertical: 15.0,
+                    horizontal: 15.0,
+                  ),
                   border: OutlineInputBorder(
-                    borderRadius: const BorderRadius.all(const Radius.circular(10.0)),
-                    borderSide: BorderSide()
-                  )
+                      borderRadius:
+                          const BorderRadius.all(const Radius.circular(10.0)),
+                      borderSide: BorderSide()),
                 ),
                 validator: (username) {
                   if (username?.isEmpty ?? true) {
@@ -66,10 +70,14 @@ class _RegisterOrLoginScreenState extends State<RegisterOrLoginScreen> {
                 obscureText: !_isPasswordVisible,
                 decoration: InputDecoration(
                     labelText: "Password",
-                    contentPadding: const EdgeInsets.symmetric(vertical: 15.0, horizontal: 15.0),
+                    contentPadding: const EdgeInsets.symmetric(
+                      vertical: 15.0,
+                      horizontal: 15.0,
+                    ),
                     border: OutlineInputBorder(
-                      borderRadius: const BorderRadius.all(const Radius.circular(10.0)),
-                      borderSide: BorderSide()
+                      borderRadius:
+                          const BorderRadius.all(const Radius.circular(10.0)),
+                      borderSide: BorderSide(),
                     ),
                     suffixIcon: IconButton(
                       onPressed: () {
@@ -96,11 +104,12 @@ class _RegisterOrLoginScreenState extends State<RegisterOrLoginScreen> {
                   enabled: _isRegister,
                   decoration: InputDecoration(
                       labelText: "Confirm Password",
-                      contentPadding: const EdgeInsets.symmetric(vertical: 15.0, horizontal: 15.0),
-                      border: const OutlineInputBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(10.0)),
-                        borderSide: BorderSide()
-                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                          vertical: 15.0, horizontal: 15.0),
+                      border: OutlineInputBorder(
+                          borderRadius: const BorderRadius.all(
+                              const Radius.circular(10.0)),
+                          borderSide: BorderSide()),
                       suffixIcon: IconButton(
                         onPressed: () {
                           setState(() {
@@ -151,6 +160,8 @@ class _RegisterOrLoginScreenState extends State<RegisterOrLoginScreen> {
                       await CredentialStore().storeToken(accessToken);
                       Provider.of<UserState>(context, listen: false)
                           .setAccessTokenStatus(true);
+                      // init signal stuffs
+                      await SignalClient().initialize();
                       // get account profile
                       final account = await AccountApi().getMe();
                       userState.setMe(account);
