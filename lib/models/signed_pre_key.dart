@@ -6,7 +6,7 @@ import 'package:fyp_chat_app/models/pre_key.dart';
 import 'package:libsignal_protocol_dart/libsignal_protocol_dart.dart';
 
 class SignedPreKey extends PreKey {
-  Uint8List signature;
+  final Uint8List signature;
   SignedPreKey(int id, ECPublicKey key, this.signature) : super(id, key);
 
   SignedPreKey.fromDto(SignedPreKeyDto dto)

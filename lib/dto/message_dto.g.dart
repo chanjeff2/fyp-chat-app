@@ -13,7 +13,7 @@ MessageDto _$MessageDtoFromJson(Map<String, dynamic> json) {
   );
   return MessageDto(
     json['senderUserId'] as String,
-    int.parse(json['senderDeviceId'] as String),
+    json['senderDeviceId'] as String,
     json['content'] as String,
   );
 }
@@ -21,6 +21,6 @@ MessageDto _$MessageDtoFromJson(Map<String, dynamic> json) {
 Map<String, dynamic> _$MessageDtoToJson(MessageDto instance) =>
     <String, dynamic>{
       'senderUserId': instance.senderUserId,
-      'senderDeviceId': MessageDto.intToString(instance.senderDeviceId),
+      'senderDeviceId': instance.senderDeviceId,
       'content': instance.content,
     };
