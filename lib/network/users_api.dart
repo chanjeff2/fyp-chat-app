@@ -1,3 +1,4 @@
+import '../dto/user_dto.dart';
 import 'api.dart';
 
 class UsersApi extends Api {
@@ -10,4 +11,14 @@ class UsersApi extends Api {
 
   @override
   String pathPrefix = "/users";
+
+  Future<UserDto> getUserById(String id) async {
+    final json = await get("/id/$id", useAuth: true);
+    return UserDto.fromJson(json);
+  }
+
+  Future<UserDto> getUserByUsername(String username) async {
+    final json = await get("/username/$username", useAuth: true);
+    return UserDto.fromJson(json);
+  }
 }
