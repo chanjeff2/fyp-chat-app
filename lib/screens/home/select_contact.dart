@@ -28,49 +28,53 @@ class _SelectContactState extends State<SelectContact> {
       appBar: AppBar(
         title: Text("Select Contact"),
       ),
-      body: ListView.builder(
-      itemCount: _contacts.length + 3,
-      itemBuilder: (context, index) {
-        switch (index) {
-          case 0: {
-            return InkWell(
-              onTap: () {
-                /*
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (builder) => CreateGroup()));
-                */
-              },
-              child: const DefaultOption(
-                icon: Icons.group_add,
-                name: "Add group",
-              ),
-            );
+      body: Padding(
+        padding: const EdgeInsets.only(top: 8),
+        child: ListView.builder(
+        itemCount: _contacts.length + 3,
+        itemBuilder: (context, index) {
+          switch (index) {
+            case 0: {
+              return InkWell(
+                onTap: () {
+                  /*
+                  Navigator.push(context,
+                      MaterialPageRoute(builder: (builder) => CreateGroup()));
+                  */
+                },
+                child: const DefaultOption(
+                  icon: Icons.group_add,
+                  name: "Add group",
+                ),
+              );
+            }
+            case 1: {
+              return InkWell(
+                onTap: () {
+                  /*
+                  Navigator.push(context,
+                      MaterialPageRoute(builder: (builder) => AddContacts()));
+                  */
+                },
+                child: const DefaultOption(
+                  icon: Icons.person_add,
+                  name: "Add contact",
+                ),
+              );
+            }
+            case 2: {
+              return const Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+                          child: Text("Contacts on USTalk",
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                      );
+            }
+            default: { return const ContactOption(); }
           }
-          case 1: {
-            return InkWell(
-              onTap: () {
-                /*
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (builder) => AddContacts()));
-                */
-              },
-              child: const DefaultOption(
-                icon: Icons.person_add,
-                name: "Add contact",
-              ),
-            );
-          }
-          case 2: {
-            return const Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-                        child: Text("Contacts on USTalk",
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                    );
-          }
-          default: { return const ContactOption(); }
-        }
-      })
+        }),
+      ) 
+      
     );
   }
 }

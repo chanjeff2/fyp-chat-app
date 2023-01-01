@@ -12,18 +12,22 @@ class ChatRoomScreen extends StatefulWidget {
 
 class _ChatRoomScreenState extends State<ChatRoomScreen> {
   final TextEditingController _messageController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
   bool _textMessage = false;
   bool _emojiBoardShown = false;
   //temporary message storage in array
   final List<Widget> _messages = [];
 
   void _submitMsg(String message) {
+    // Get the current time
+    DateTime now = DateTime.now();
+    String parsedTime = "${now.hour.toString().padLeft(2,'0')}:${now.minute.toString().padLeft(2,'0')}";
     //add the text into message array for temporary storage
     setState(() {
       _messages.insert(
           0,
           Container(
-              child: MessageBubble(text: message, isCurrentUser: true),
+              child: MessageBubble(text: message, time: parsedTime, isCurrentUser: true),
               alignment: Alignment.centerRight));
     });
     _messageController.clear();
@@ -39,69 +43,81 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
             onTap: () {
               Navigator.pop(context);
             },
+            borderRadius: BorderRadius.circular(40.0),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.max,
               children: const [
-                Icon(
-                  Icons.arrow_back,
-                  size: 24,
+                Expanded(
+                  child: Icon(
+                    Icons.arrow_back,
+                  ),
                 ),
-                CircleAvatar(
-                  // child: profilePicture ?? Icon(Icons.person, size: 24),
-                  child: Icon(Icons.person, size: 24, color: Colors.white),
-                  radius: 16,
-                  backgroundColor: Colors.blueGrey,
+                // SizedBox(width: 4),
+                Expanded(
+                  child: CircleAvatar(
+                  // child: profilePicture ? null : Icon(Icons.person, size: 48),
+                    child: Icon(Icons.person, size: 20, color: Colors.white),
+                    radius: 32,
+                    backgroundColor: Colors.blueGrey,
+                  ),
                 ),
               ],
             ),
           ),
           //top bar with pop up menu button
-          title: const Text("ChatRoom with"), //TODO: add target name to title
+          title: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: const [
+              Text("Test user"), //TODO: add target name to title
+              Text("Online",
+                style: TextStyle(
+                  fontWeight: FontWeight.normal,
+                  fontSize: 14
+                ),
+              ),
+            ],
+          ),
           actions: [
             PopupMenuButton(
+              onSelected: (value) {
+                _onMenuItemSelected(value as int, userState);
+              },
               itemBuilder: (context) => [
+                _buildPopupMenuItem("Add to Contact", 0),
+                _buildPopupMenuItem("Search", 1),
+                _buildPopupMenuItem("Mute Notifications", 2),
                 PopupMenuItem(
-                  child: TextButton(
-                    onPressed: () {},
-                    child: const Text("Add to Contact"),
-                  ),
-                ),
-                PopupMenuItem(
-                  child: TextButton(
-                    onPressed: () {},
-                    child: const Text("Search"),
-                  ),
-                ),
-                PopupMenuItem(
-                  child: TextButton(
-                    onPressed: () {},
-                    child: const Text("Mute Notifications"),
-                  ),
-                ),
-                PopupMenuItem(
-                  padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                  value: 3,
                   child: PopupMenuButton(
-                      child: const Text(
-                        "More...",
-                        style: TextStyle(
-                            color: Colors.blue,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500),
-                      ),
-                      itemBuilder: (context) => [
-                            PopupMenuItem(
-                              child: TextButton(
-                                onPressed: () {},
-                                child: const Text("Report user"),
-                              ),
+                    padding: EdgeInsets.zero,
+                    child: Container(
+                      alignment: Alignment.center,
+                      height: 48.0, //default height
+                      width: double.infinity,
+                      child: Row(
+                              children: const <Widget>[
+                                Text("More"),
+                                Spacer(),
+                                Icon(Icons.keyboard_arrow_right, color: Colors.grey,),
+                              ],
                             ),
-                            PopupMenuItem(
-                              child: TextButton(
-                                onPressed: () {},
-                                child: const Text("Block user"),
-                              ),
-                            ),
-                          ]),
+                    ),
+                    itemBuilder: (innerContext) {
+                      return [
+                        PopupMenuItem(
+                          value: 101,
+                          child: const Text("Block User"),
+                          onTap: () { Navigator.of(innerContext).pop(); },
+                        ),
+                        PopupMenuItem(
+                          value: 102,
+                          child: const Text("Report User"),
+                          onTap: () { Navigator.of(innerContext).pop(); },
+                        ),
+                      ];
+                    },
+                    ),
                 ),
               ],
             )
@@ -111,7 +127,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
           //show chat messages on screen
           Expanded(
             child: ListView.builder(
-              padding: new EdgeInsets.all(8.0),
+              padding: const EdgeInsets.all(8.0),
               itemBuilder: (context, index) => _messages[index],
               itemCount: _messages.length,
               reverse: true,
@@ -122,70 +138,76 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
             child: Row(children: <Widget>[
               Flexible(
-                child: TextFormField(
-                  controller: _messageController,
-                  style: const TextStyle(color: Colors.white),
-                  cursorColor: Colors.lime[800],
-                  decoration: InputDecoration(
-                    contentPadding: const EdgeInsets.all(16.0),
-                    filled: true,
-                    fillColor: Colors.blueGrey[900],
-                    border: const OutlineInputBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(24.0)),
-                    ),
-                    focusedBorder: const OutlineInputBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(24.0)),
-                    ),
-                    hintText: 'Message',
-                    hintStyle: TextStyle(color: Colors.grey[400]),
-                    prefixIcon: IconButton(
-                      icon: _emojiBoardShown
-                          ? const Icon(Icons.keyboard, color: Colors.grey)
-                          : const Icon(Icons.emoji_emotions_outlined,
-                              color: Colors.grey),
-                      onPressed: () {
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  alignment: Alignment.centerLeft,
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.grey.shade600),
+                    borderRadius: BorderRadius.circular(16.0)
+                  ),
+                  child: Scrollbar(
+                    controller: _scrollController,
+                    child: TextField(
+                      textAlignVertical: TextAlignVertical.center,
+                      keyboardType: TextInputType.multiline,
+                      controller: _messageController,
+                      style: const TextStyle(color: Colors.black),
+                      cursorColor: Colors.blue.shade900,
+                      decoration: InputDecoration(
+                        contentPadding: EdgeInsets.zero,
+                        isCollapsed: true,
+                        filled: true,
+                        fillColor: Colors.white70,
+                        hintText: 'Message',
+                        hintStyle: TextStyle(color: Colors.grey.shade600),
+                        border: InputBorder.none,
+                        prefixIcon: IconButton(
+                            icon: _emojiBoardShown
+                                ? Icon(Icons.keyboard, color: Colors.grey.shade600)
+                                : Icon(Icons.emoji_emotions_outlined, color: Colors.grey.shade600),
+                            onPressed: () {
+                              setState(() {
+                                _emojiBoardShown = !_emojiBoardShown;
+                              });
+                            },
+                          ),
+                        suffixIcon: (_textMessage)
+                            ? null
+                            : Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  IconButton(
+                                    icon: Icon(Icons.attach_file, color: Colors.grey.shade600),
+                                    onPressed: () {},
+                                  ),
+                                  IconButton(
+                                    icon: Icon(Icons.camera_alt, color: Colors.grey.shade600),
+                                    onPressed: () {
+                                      // Navigator.push(
+                                      //     context,
+                                      //     MaterialPageRoute(
+                                      //         builder: (builder) =>
+                                      //             CameraApp()));
+                                    },
+                                  ),
+                                ],
+                              ),
+                      ),
+                      onChanged: (text) {
                         setState(() {
-                          _emojiBoardShown = !_emojiBoardShown;
+                          _textMessage = text.isNotEmpty;
                         });
                       },
+                      minLines: 1,
+                      maxLines: 5,
                     ),
-                    suffixIcon: (_textMessage)
-                        ? null
-                        : Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              IconButton(
-                                icon: const Icon(Icons.attach_file,
-                                    color: Colors.grey),
-                                onPressed: () {},
-                              ),
-                              IconButton(
-                                icon: const Icon(Icons.camera_alt,
-                                    color: Colors.grey),
-                                onPressed: () {
-                                  // Navigator.push(
-                                  //     context,
-                                  //     MaterialPageRoute(
-                                  //         builder: (builder) =>
-                                  //             CameraApp()));
-                                },
-                              ),
-                            ],
-                          ),
                   ),
-                  onChanged: (text) {
-                    setState(() {
-                      _textMessage = text.isNotEmpty;
-                    });
-                  },
-                  minLines: 1,
-                  maxLines: 5,
                 ),
               ),
               const SizedBox(width: 8),
               CircleAvatar(
                 radius: 25,
-                backgroundColor: const Color(0xFF003366),
+                backgroundColor: Theme.of(context).primaryColor,
                 child: IconButton(
                   icon: _textMessage
                       ? const Icon(Icons.send, color: Colors.white)
@@ -200,5 +222,29 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
         ]),
       ),
     );
+  }
+
+  PopupMenuItem _buildPopupMenuItem(String title, int positon) {
+    return PopupMenuItem(
+      value: positon,
+      child: Text(title),
+    );
+  }
+
+  _onMenuItemSelected(int value, UserState userState) {
+    switch (value) {
+      case 0: {
+        break;
+      }
+      case 1: {
+        break;
+      }
+      case 2: {
+        break;
+      }
+      case 3: {
+        break;
+      }
+    }
   }
 }
