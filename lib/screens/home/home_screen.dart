@@ -1,4 +1,7 @@
+import 'dart:math'; // For testing purposes, delete later
+
 import 'package:flutter/material.dart';
+import 'package:fyp_chat_app/components/contact_option.dart';
 import 'package:fyp_chat_app/models/user_state.dart';
 import 'package:fyp_chat_app/screens/home/select_contact.dart';
 import 'package:fyp_chat_app/screens/settings/settings_screen.dart';
@@ -13,9 +16,10 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
-  int _moreMenuItemIndex = 0;  
+class _HomeScreenState extends State<HomeScreen> {  
   var appBarHeight = AppBar().preferredSize.height;
+  var _rng = new Random();
+  final List<Widget> _contacts = [];
 
   @override
   Widget build(BuildContext context) {
@@ -24,6 +28,13 @@ class _HomeScreenState extends State<HomeScreen> {
         appBar: AppBar(
           title: const Text("USTalk"),
           actions: [
+            IconButton(onPressed: () {
+                setState(() {
+                  _contacts.insert(0, HomeContact(notifications: _rng.nextInt(15)));
+                });
+              },
+              icon: const Icon(Icons.add),
+            ),
             IconButton(
               onPressed: () {
                 print("Search - To be implemented");
@@ -47,11 +58,19 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         body: Center(
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisAlignment: _contacts.isEmpty ? MainAxisAlignment.center : MainAxisAlignment.start,
             children: <Widget>[
               // 'Hi ${userState.me!.displayName ?? userState.me!.username}. You have no contacts'
-              Text(
-                  'Hi guest. You have no contacts'),
+              if (_contacts.isEmpty)
+              ...[const Text('Hi guest. You have no contacts')]
+              else ...[
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: _contacts.length,
+                    itemBuilder: (context, index) => _contacts[index],
+                  )
+                ),
+              ],
             ],
           ),
         ),
@@ -96,10 +115,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   _onMenuItemSelected(int value, UserState userState) {
-    setState(() {
-      _moreMenuItemIndex = value;
-    });
-
     switch (value) {
       case 0: {
         Navigator.of(context).push(_route(const SettingsScreen()));
@@ -112,5 +127,4 @@ class _HomeScreenState extends State<HomeScreen> {
       }
     }
   }
-
 }

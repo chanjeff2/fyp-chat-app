@@ -66,8 +66,6 @@ class SettingsScreen extends StatelessWidget {
           const Divider(thickness: 2, indent: 8, endIndent: 8),
           _renderOption(chat, Icons.chat, context),
           _renderOption(notifications, Icons.notifications, context),
-          const Divider(thickness: 2, indent: 8, endIndent: 8),
-          _renderOption("Chatroom testing", Icons.group, context)
           ],
         ),
       )

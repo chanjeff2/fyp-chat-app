@@ -3,8 +3,6 @@ import 'package:fyp_chat_app/models/user_state.dart';
 import 'package:provider/provider.dart';
 import 'package:fyp_chat_app/screens/chatroom/message_bubble.dart';
 
-import '../../components/palette.dart';
-
 class ChatRoomScreen extends StatefulWidget {
   const ChatRoomScreen({Key? key}) : super(key: key);
 
@@ -14,6 +12,7 @@ class ChatRoomScreen extends StatefulWidget {
 
 class _ChatRoomScreenState extends State<ChatRoomScreen> {
   final TextEditingController _messageController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
   bool _textMessage = false;
   bool _emojiBoardShown = false;
   //temporary message storage in array
@@ -22,7 +21,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
   void _submitMsg(String message) {
     // Get the current time
     DateTime now = DateTime.now();
-    String parsedTime = now.hour.toString() + ":" + now.minute.toString();
+    String parsedTime = "${now.hour.toString().padLeft(2,'0')}:${now.minute.toString().padLeft(2,'0')}";
     //add the text into message array for temporary storage
     setState(() {
       _messages.insert(
@@ -81,45 +80,44 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
           ),
           actions: [
             PopupMenuButton(
+              onSelected: (value) {
+                _onMenuItemSelected(value as int, userState);
+              },
               itemBuilder: (context) => [
+                _buildPopupMenuItem("Add to Contact", 0),
+                _buildPopupMenuItem("Search", 1),
+                _buildPopupMenuItem("Mute Notifications", 2),
                 PopupMenuItem(
-                  child: TextButton(
-                    onPressed: () {},
-                    child: const Text("Add to Contact"),
-                  ),
-                ),
-                PopupMenuItem(
-                  child: TextButton(
-                    onPressed: () {},
-                    child: const Text("Search"),
-                  ),
-                ),
-                PopupMenuItem(
-                  child: TextButton(
-                    onPressed: () {},
-                    child: const Text("Mute Notifications"),
-                  ),
-                ),
-                PopupMenuItem(
+                  value: 3,
                   child: PopupMenuButton(
-                      child: TextButton(
-                        onPressed: () {},
-                        child: const Text("More..."),
-                      ),
-                      itemBuilder: (context) => [
-                            PopupMenuItem(
-                              child: TextButton(
-                                onPressed: () {},
-                                child: const Text("Report user"),
-                              ),
+                    padding: EdgeInsets.zero,
+                    child: Container(
+                      alignment: Alignment.center,
+                      height: 48.0, //default height
+                      width: double.infinity,
+                      child: Row(
+                              children: const <Widget>[
+                                Text("More"),
+                                Spacer(),
+                                Icon(Icons.keyboard_arrow_right, color: Colors.grey,),
+                              ],
                             ),
-                            PopupMenuItem(
-                              child: TextButton(
-                                onPressed: () {},
-                                child: const Text("Block user"),
-                              ),
-                            ),
-                          ]),
+                    ),
+                    itemBuilder: (innerContext) {
+                      return [
+                        PopupMenuItem(
+                          value: 101,
+                          child: const Text("Block User"),
+                          onTap: () { Navigator.of(innerContext).pop(); },
+                        ),
+                        PopupMenuItem(
+                          value: 102,
+                          child: const Text("Report User"),
+                          onTap: () { Navigator.of(innerContext).pop(); },
+                        ),
+                      ];
+                    },
+                    ),
                 ),
               ],
             )
@@ -129,7 +127,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
           //show chat messages on screen
           Expanded(
             child: ListView.builder(
-              padding: new EdgeInsets.all(8.0),
+              padding: const EdgeInsets.all(8.0),
               itemBuilder: (context, index) => _messages[index],
               itemCount: _messages.length,
               reverse: true,
@@ -140,64 +138,70 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
             child: Row(children: <Widget>[
               Flexible(
-                child: TextFormField(
-                  controller: _messageController,
-                  style: const TextStyle(color: Colors.white),
-                  cursorColor: Colors.lime[800],
-                  decoration: InputDecoration(
-                    contentPadding: const EdgeInsets.all(16.0),
-                    filled: true,
-                    fillColor: Colors.blueGrey[900],
-                    border: const OutlineInputBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(24.0)),
-                    ),
-                    focusedBorder: const OutlineInputBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(24.0)),
-                    ),
-                    hintText: 'Message',
-                    hintStyle: TextStyle(color: Colors.grey[400]),
-                    prefixIcon: IconButton(
-                      icon: _emojiBoardShown
-                          ? const Icon(Icons.keyboard, color: Colors.grey)
-                          : const Icon(Icons.emoji_emotions_outlined,
-                              color: Colors.grey),
-                      onPressed: () {
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  alignment: Alignment.centerLeft,
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.grey.shade600),
+                    borderRadius: BorderRadius.circular(16.0)
+                  ),
+                  child: Scrollbar(
+                    controller: _scrollController,
+                    child: TextField(
+                      textAlignVertical: TextAlignVertical.center,
+                      keyboardType: TextInputType.multiline,
+                      controller: _messageController,
+                      style: const TextStyle(color: Colors.black),
+                      cursorColor: Colors.blue.shade900,
+                      decoration: InputDecoration(
+                        contentPadding: EdgeInsets.zero,
+                        isCollapsed: true,
+                        filled: true,
+                        fillColor: Colors.white70,
+                        hintText: 'Message',
+                        hintStyle: TextStyle(color: Colors.grey.shade600),
+                        border: InputBorder.none,
+                        prefixIcon: IconButton(
+                            icon: _emojiBoardShown
+                                ? Icon(Icons.keyboard, color: Colors.grey.shade600)
+                                : Icon(Icons.emoji_emotions_outlined, color: Colors.grey.shade600),
+                            onPressed: () {
+                              setState(() {
+                                _emojiBoardShown = !_emojiBoardShown;
+                              });
+                            },
+                          ),
+                        suffixIcon: (_textMessage)
+                            ? null
+                            : Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  IconButton(
+                                    icon: Icon(Icons.attach_file, color: Colors.grey.shade600),
+                                    onPressed: () {},
+                                  ),
+                                  IconButton(
+                                    icon: Icon(Icons.camera_alt, color: Colors.grey.shade600),
+                                    onPressed: () {
+                                      // Navigator.push(
+                                      //     context,
+                                      //     MaterialPageRoute(
+                                      //         builder: (builder) =>
+                                      //             CameraApp()));
+                                    },
+                                  ),
+                                ],
+                              ),
+                      ),
+                      onChanged: (text) {
                         setState(() {
-                          _emojiBoardShown = !_emojiBoardShown;
+                          _textMessage = text.isNotEmpty;
                         });
                       },
+                      minLines: 1,
+                      maxLines: 5,
                     ),
-                    suffixIcon: (_textMessage)
-                        ? null
-                        : Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              IconButton(
-                                icon: const Icon(Icons.attach_file,
-                                    color: Colors.grey),
-                                onPressed: () {},
-                              ),
-                              IconButton(
-                                icon: const Icon(Icons.camera_alt,
-                                    color: Colors.grey),
-                                onPressed: () {
-                                  // Navigator.push(
-                                  //     context,
-                                  //     MaterialPageRoute(
-                                  //         builder: (builder) =>
-                                  //             CameraApp()));
-                                },
-                              ),
-                            ],
-                          ),
                   ),
-                  onChanged: (text) {
-                    setState(() {
-                      _textMessage = text.isNotEmpty;
-                    });
-                  },
-                  minLines: 1,
-                  maxLines: 5,
                 ),
               ),
               const SizedBox(width: 8),
@@ -218,5 +222,29 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
         ]),
       ),
     );
+  }
+
+  PopupMenuItem _buildPopupMenuItem(String title, int positon) {
+    return PopupMenuItem(
+      value: positon,
+      child: Text(title),
+    );
+  }
+
+  _onMenuItemSelected(int value, UserState userState) {
+    switch (value) {
+      case 0: {
+        break;
+      }
+      case 1: {
+        break;
+      }
+      case 2: {
+        break;
+      }
+      case 3: {
+        break;
+      }
+    }
   }
 }
