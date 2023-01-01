@@ -1,13 +1,17 @@
 import 'dart:convert';
 
 import 'package:fyp_chat_app/dto/update_keys_dto.dart';
+import 'package:fyp_chat_app/models/key_bundle.dart';
+import 'package:fyp_chat_app/models/message.dart';
 import 'package:fyp_chat_app/models/pre_key.dart';
 import 'package:fyp_chat_app/models/signed_pre_key.dart';
 import 'package:fyp_chat_app/network/devices_api.dart';
 import 'package:fyp_chat_app/network/keys_api.dart';
+import 'package:fyp_chat_app/network/users_api.dart';
 import 'package:fyp_chat_app/signal/device_helper.dart';
 import 'package:fyp_chat_app/storage/disk_identity_key_store.dart';
 import 'package:fyp_chat_app/storage/disk_pre_key_store.dart';
+import 'package:fyp_chat_app/storage/disk_session_store.dart';
 import 'package:fyp_chat_app/storage/disk_signed_pre_key_store.dart';
 import 'package:libsignal_protocol_dart/libsignal_protocol_dart.dart';
 
@@ -54,5 +58,55 @@ class SignalClient {
       signedPreKey: SignedPreKey.fromSignedPreKeyRecord(signedPreKey).toDto(),
     );
     await KeysApi().updateKeys(dto);
+  }
+
+  Future<String> receiveMessage(Message message) async {
+    // TODO: existing contacts should be cached
+    final user = await UsersApi().getUserById(message.senderUserId);
+    final remoteAddress = SignalProtocolAddress(
+      user.username,
+      message.senderDeviceId,
+    );
+    final containsSession =
+        await DiskSessionStore().containsSession(remoteAddress);
+    if (!containsSession) {
+      // init session
+      final sessionBuilder = SessionBuilder(
+        DiskSessionStore(),
+        DiskPreKeyStore(),
+        DiskSignedPreKeyStore(),
+        DiskIdentityKeyStore(),
+        remoteAddress,
+      );
+      final keyBundleDto = await KeysApi()
+          .getKeyBundle(message.senderUserId, message.senderDeviceId);
+      final keyBundle = KeyBundle.fromDto(keyBundleDto);
+      final oneTimeKey = keyBundle.deviceKeyBundles[0].oneTimeKey;
+      final signedPreKey = keyBundle.deviceKeyBundles[0].signedPreKey;
+      final retrievedPreKey = PreKeyBundle(
+        await DiskIdentityKeyStore().getLocalRegistrationId(),
+        (await DeviceInfoHelper().getDeviceId())!,
+        oneTimeKey?.id,
+        oneTimeKey?.key,
+        signedPreKey.id,
+        signedPreKey.key,
+        signedPreKey.signature,
+        keyBundle.identityKey,
+      );
+      await sessionBuilder.processPreKeyBundle(retrievedPreKey);
+    }
+
+    final remoteSessionCipher = SessionCipher(
+      DiskSessionStore(),
+      DiskPreKeyStore(),
+      DiskSignedPreKeyStore(),
+      DiskIdentityKeyStore(),
+      remoteAddress,
+    );
+
+    final plaintext =
+        utf8.decode(await remoteSessionCipher.decrypt(message.content));
+
+    return plaintext;
   }
 }
