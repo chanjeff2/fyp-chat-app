@@ -35,5 +35,7 @@ Color shadeColor(Color color, double factor) => Color.fromRGBO(
     1);
 
 class Palette {
+  Palette._();
+
   static MaterialColor ustBlue = generateMaterialColor(const Color(0xFF003366));
 }
