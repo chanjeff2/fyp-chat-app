@@ -40,15 +40,15 @@ class SettingsScreen extends StatelessWidget {
                   Column(
                     mainAxisAlignment: MainAxisAlignment.start,
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const <Text>[
+                    children: <Text>[
                       Text(
-                        'guest', // '${userState.me!.displayName ?? userState.me!.username}'
-                        style: TextStyle(
+                        userState.me!.displayName ?? userState.me!.username,
+                        style: const TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      Text(
+                      const Text(
                         "Hi! I'm using USTalk.", // Status
                         style: TextStyle(
                           fontSize: 14,

@@ -60,9 +60,8 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Column(
             mainAxisAlignment: _contacts.isEmpty ? MainAxisAlignment.center : MainAxisAlignment.start,
             children: <Widget>[
-              // 'Hi ${userState.me!.displayName ?? userState.me!.username}. You have no contacts'
               if (_contacts.isEmpty)
-              ...[const Text('Hi guest. You have no contacts')]
+              ...[Text('Hi ${userState.me!.displayName ?? userState.me!.username}. You have no contacts')]
               else ...[
                 Expanded(
                   child: ListView.builder(

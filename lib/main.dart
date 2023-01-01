@@ -102,7 +102,7 @@ class MyHomePage extends StatelessWidget {
         }
 
         if (!userState.isLoggedIn) {
-          return const HomeScreen();
+          return const RegisterOrLoginScreen();
         }
 
         return const HomeScreen();

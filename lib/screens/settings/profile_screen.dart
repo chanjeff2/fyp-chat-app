@@ -63,7 +63,7 @@ class ProfileScreen extends StatelessWidget {
             InkWell(
               onTap: () {},
               child: Padding(
-                padding: EdgeInsets.symmetric(vertical: 16),
+                padding: const EdgeInsets.symmetric(vertical: 16),
                 child: Row(
                   children: [
                     const SizedBox(width: 16),
@@ -77,9 +77,8 @@ class ProfileScreen extends StatelessWidget {
                         ),
                         
                         Text(
-                          // ${userState.me!.displayName ?? userState.me!.username}
-                          "guest",
-                          style: TextStyle(fontSize: 18),
+                          userState.me!.displayName ?? userState.me!.username,
+                          style: const TextStyle(fontSize: 18),
                         ),
                       ],
                     ),
