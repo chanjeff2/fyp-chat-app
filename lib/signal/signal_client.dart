@@ -60,6 +60,11 @@ class SignalClient {
     await KeysApi().updateKeys(dto);
   }
 
+  Future<void> sendMessage(String recipientUserId, String content) async {
+    // TODO: implement this
+    // use SendMessageDao.toDto(), EventsApi(), etc
+  }
+
   Future<String> receiveMessage(Message message) async {
     // TODO: existing contacts should be cached
     final user = await UsersApi().getUserById(message.senderUserId);

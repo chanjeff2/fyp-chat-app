@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:libsignal_protocol_dart/libsignal_protocol_dart.dart';
 
 import '../dto/key_bundle_dto.dart';
-import 'device_key_bundle_dto.dart';
+import 'device_key_bundle.dart';
 
 class KeyBundle {
   final IdentityKey identityKey;
