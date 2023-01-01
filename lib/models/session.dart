@@ -8,7 +8,7 @@ part 'session.g.dart';
 @JsonSerializable()
 class Session {
   static const String createTableCommandFields =
-      "$columnDeviceId INTEGER, $columnName TEXT, $columnSession TEXT, PRIMARY KEY ($columnDeviceId, $columnName)";
+      "$columnDeviceId INTEGER, $columnName TEXT, $columnSession TEXT, PRIMARY KEY ($columnDeviceId, $columnName), UNIQUE ($columnDeviceId, $columnName)";
 
   static const columnDeviceId = "deviceId";
   @JsonKey(required: true, name: columnDeviceId)
