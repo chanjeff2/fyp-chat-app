@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:fyp_chat_app/models/user_state.dart';
-import 'package:fyp_chat_app/screens/chatroom/chatroom.dart';
 import 'package:fyp_chat_app/screens/settings/profile_screen.dart';
 import 'package:provider/provider.dart';
 
@@ -95,12 +94,6 @@ class SettingsScreen extends StatelessWidget {
       case privacy: { print("Privacy"); break; }
       case chat: { print("Chat"); break; }
       case notifications: { print("Notifications"); break; }
-      case "Chatroom testing": {
-        Navigator.of(context).push(MaterialPageRoute(
-          builder: (context) => const ChatRoomScreen()
-        ));
-        break;
-      }
     }
   }
 }

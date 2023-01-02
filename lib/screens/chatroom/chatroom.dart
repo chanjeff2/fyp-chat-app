@@ -1,7 +1,12 @@
+import 'dart:io' show Platform;
+
 import 'package:flutter/material.dart';
 import 'package:fyp_chat_app/models/user_state.dart';
+import 'package:fyp_chat_app/screens/chatroom/contact_info.dart';
 import 'package:provider/provider.dart';
 import 'package:fyp_chat_app/screens/chatroom/message_bubble.dart';
+
+import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 
 class ChatRoomScreen extends StatefulWidget {
   const ChatRoomScreen({Key? key}) : super(key: key);
@@ -17,6 +22,8 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
   bool _emojiBoardShown = false;
   //temporary message storage in array
   final List<Widget> _messages = [];
+
+  String get message => _messageController.text;
 
   void _submitMsg(String message) {
     // Get the current time
@@ -39,6 +46,8 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
     return Consumer<UserState>(
       builder: (context, userState, child) => Scaffold(
         appBar: AppBar(
+          leadingWidth: 72,
+          titleSpacing: 8,
           leading: InkWell(
             onTap: () {
               Navigator.pop(context);
@@ -66,17 +75,25 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
             ),
           ),
           //top bar with pop up menu button
-          title: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: const [
-              Text("Test user"), //TODO: add target name to title
-              Text("Online",
-                style: TextStyle(
-                  fontWeight: FontWeight.normal,
-                  fontSize: 14
-                ),
+          title: SizedBox(
+            width: MediaQuery.of(context).size.width,
+            child: InkWell(
+              onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                            builder: (context) => const ContactInfo()
+                          )),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: const [
+                  Text("Test user"), //TODO: add target name to title
+                  Text("Online",
+                    style: TextStyle(
+                      fontWeight: FontWeight.normal,
+                      fontSize: 14
+                    ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
           actions: [
             PopupMenuButton(
@@ -152,7 +169,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                       keyboardType: TextInputType.multiline,
                       controller: _messageController,
                       style: const TextStyle(color: Colors.black),
-                      cursorColor: Colors.blue.shade900,
+                      cursorColor: Theme.of(context).primaryColor,
                       decoration: InputDecoration(
                         contentPadding: EdgeInsets.zero,
                         isCollapsed: true,
@@ -166,6 +183,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                                 ? Icon(Icons.keyboard, color: Colors.grey.shade600)
                                 : Icon(Icons.emoji_emotions_outlined, color: Colors.grey.shade600),
                             onPressed: () {
+                              FocusManager.instance.primaryFocus?.unfocus();
                               setState(() {
                                 _emojiBoardShown = !_emojiBoardShown;
                               });
@@ -195,7 +213,12 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                       ),
                       onChanged: (text) {
                         setState(() {
-                          _textMessage = text.isNotEmpty;
+                          _textMessage = text.trim().isNotEmpty;
+                        });
+                      },
+                      onTap: () {
+                        setState(() {
+                          _emojiBoardShown = false;
                         });
                       },
                       minLines: 1,
@@ -213,11 +236,58 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                       ? const Icon(Icons.send, color: Colors.white)
                       : const Icon(Icons.mic, color: Colors.white),
                   onPressed: () => {
-                    if (_textMessage) {_submitMsg(_messageController.text)}
+                    if (message.trim().isNotEmpty) {_submitMsg(message)}
                   },
                 ),
               ),
             ]),
+          ),
+          Offstage(
+            offstage: !_emojiBoardShown,
+            child: SizedBox(
+              height: 250,
+              child: EmojiPicker(
+                textEditingController: _messageController,
+                onEmojiSelected: (category, emoji) {
+                  setState(() {
+                    _textMessage = message.trim().isNotEmpty;
+                  });
+                },
+                onBackspacePressed: () {
+                  setState(() {
+                    _textMessage = message.trim().isNotEmpty;
+                  });
+                },
+                config: Config(
+                  columns: 8,
+                  emojiSizeMax: 32 * (Platform.isIOS ? 1.30 : 1.0),
+                  verticalSpacing: 0,
+                  horizontalSpacing: 0,
+                  gridPadding: EdgeInsets.zero,
+                  initCategory: Category.RECENT,
+                  bgColor: const Color(0xFFF2F2F2),
+                  indicatorColor: Theme.of(context).primaryColor,
+                  iconColor: Colors.grey,
+                  iconColorSelected: Theme.of(context).primaryColor,
+                  backspaceColor: Theme.of(context).primaryColor,
+                  skinToneDialogBgColor: Colors.white,
+                  skinToneIndicatorColor: Colors.grey,
+                  enableSkinTones: true,
+                  showRecentsTab: true,
+                  recentsLimit: 28,
+                  replaceEmojiOnLimitExceed: false,
+                  noRecents: const Text(
+                    'No Recents',
+                    style: TextStyle(fontSize: 20, color: Colors.black26),
+                    textAlign: TextAlign.center,
+                  ),
+                  loadingIndicator: const SizedBox.shrink(),
+                  tabIndicatorAnimDuration: kTabScrollDuration,
+                  categoryIcons: const CategoryIcons(),
+                  buttonMode: ButtonMode.MATERIAL,
+                  checkPlatformCompatibility: true,
+                ),
+              )),
           ),
         ]),
       ),
