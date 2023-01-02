@@ -5,7 +5,7 @@ part 'plain_message.g.dart';
 @JsonSerializable()
 class PlainMessage {
   static const String createTableCommandFields =
-      "$columnId INTEGER PRIMARY KEY AUTOINCREMENT, $columnSenderUserId TEXT, $columnSenderUsername TEXT, $columnContent TEXT";
+      "$columnId INTEGER PRIMARY KEY AUTOINCREMENT, $columnSenderUserId TEXT, $columnSenderUsername TEXT, $columnContent TEXT, $columnIsRead INTEGER";
 
   static const columnId = "id";
   @JsonKey(name: columnId, includeIfNull: false)
@@ -32,12 +32,22 @@ class PlainMessage {
   )
   final DateTime sentAt;
 
+  static const columnIsRead = "isRead";
+  @JsonKey(
+    required: true,
+    name: columnIsRead,
+    fromJson: intToBool,
+    toJson: boolToInt,
+  )
+  final bool isRead;
+
   PlainMessage({
     this.id,
     required this.senderUserId,
     required this.senderUsername,
     required this.content,
     required this.sentAt,
+    this.isRead = false,
   });
 
   Map<String, dynamic> toJson() => _$PlainMessageToJson(this);
@@ -48,4 +58,12 @@ class PlainMessage {
 
 String toIso8601String(DateTime dateTime) {
   return dateTime.toIso8601String();
+}
+
+bool intToBool(int i) {
+  return i == 1;
+}
+
+int boolToInt(bool isTrue) {
+  return isTrue ? 1 : 0;
 }

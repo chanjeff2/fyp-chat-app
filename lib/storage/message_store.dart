@@ -59,4 +59,15 @@ class MessageStore {
     final id = await db.insert(table, messageMap);
     return id;
   }
+
+  Future<bool> readMessage(int messageId) async {
+    final db = await DiskStorage().db;
+    final count = await db.update(
+      table,
+      {PlainMessage.columnIsRead: 1},
+      where: '${PlainMessage.columnId} = ?',
+      whereArgs: [messageId],
+    );
+    return count > 0;
+  }
 }
