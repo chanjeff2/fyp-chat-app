@@ -1,7 +1,6 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:fyp_chat_app/dto/message_dto.dart';
-import 'package:fyp_chat_app/network/users_api.dart';
 import 'package:fyp_chat_app/signal/signal_client.dart';
 
 import '../models/message.dart' as message_model;
@@ -30,11 +29,14 @@ class FCMHandler {
     final messageDto = MessageDto.fromJson(remoteMessage.data);
     final message = message_model.Message.fromDto(messageDto);
     final plainMessage = await SignalClient().processMessage(message);
+    if (plainMessage == null) {
+      return; // abort if cannot process message
+    }
 
     FlutterLocalNotificationsPlugin().show(
-        plainMessage.id!,
-        plainMessage.senderUsername,
-        plainMessage.content,
+        plainMessage.message.id!,
+        plainMessage.sender.name,
+        plainMessage.message.content,
         const NotificationDetails(
           android: AndroidNotificationDetails(
             channelId,

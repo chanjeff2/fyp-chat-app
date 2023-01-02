@@ -7,6 +7,7 @@ import 'package:fyp_chat_app/models/key_bundle.dart';
 import 'package:fyp_chat_app/models/message.dart';
 import 'package:fyp_chat_app/models/plain_message.dart';
 import 'package:fyp_chat_app/models/pre_key.dart';
+import 'package:fyp_chat_app/models/received_plain_message.dart';
 import 'package:fyp_chat_app/models/signed_pre_key.dart';
 import 'package:fyp_chat_app/models/user.dart';
 import 'package:fyp_chat_app/network/devices_api.dart';
@@ -15,6 +16,7 @@ import 'package:fyp_chat_app/network/account_api.dart';
 import 'package:fyp_chat_app/network/keys_api.dart';
 import 'package:fyp_chat_app/network/users_api.dart';
 import 'package:fyp_chat_app/signal/device_helper.dart';
+import 'package:fyp_chat_app/storage/account_store.dart';
 import 'package:fyp_chat_app/storage/contact_store.dart';
 import 'package:fyp_chat_app/storage/disk_identity_key_store.dart';
 import 'package:fyp_chat_app/storage/disk_pre_key_store.dart';
@@ -145,17 +147,21 @@ class SignalClient {
     plainMessage.id = messageId;
   }
 
-  Future<PlainMessage> processMessage(Message message) async {
-    final User user;
+  Future<ReceivedPlainMessage?> processMessage(Message message) async {
+    final me = await AccountStore().getAccount();
+    if (me == null) {
+      return null; // user not yet login (tho it should not happen)
+    }
+    final User sender;
     // try to find user in disk
-    final userInDisk =
+    final senderInDisk =
         await ContactStore().getContactById(message.senderUserId);
-    if (userInDisk != null) {
-      user = userInDisk;
+    if (senderInDisk != null) {
+      sender = senderInDisk;
     } else {
       // get user from server
       final userDto = await UsersApi().getUserById(message.senderUserId);
-      user = User.fromDto(userDto);
+      sender = User.fromDto(userDto);
     }
     // set up address
     final remoteAddress = SignalProtocolAddress(
@@ -204,8 +210,8 @@ class SignalClient {
         utf8.decode(await remoteSessionCipher.decrypt(message.content));
 
     final plainMessage = PlainMessage(
-      senderUserId: message.senderUserId,
-      senderUsername: user.username,
+      senderUserId: sender.userId,
+      recipientUserId: me.userId,
       content: plaintext,
       sentAt: message.sentAt,
     );
@@ -213,6 +219,11 @@ class SignalClient {
     // save message to disk
     final messageId = await MessageStore().storeMessage(plainMessage);
     plainMessage.id = messageId;
-    return plainMessage;
+
+    final receivedPlainMessage = ReceivedPlainMessage(
+      sender: sender,
+      message: plainMessage,
+    );
+    return receivedPlainMessage;
   }
 }
