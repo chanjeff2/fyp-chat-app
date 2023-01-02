@@ -83,7 +83,7 @@ class SignalClient {
     }
     // set up address
     final remoteAddress = SignalProtocolAddress(
-      user.username,
+      message.senderUserId,
       message.senderDeviceId,
     );
     // check if session exist

@@ -9,11 +9,11 @@ part of 'their_identity_key.dart';
 TheirIdentityKey _$TheirIdentityKeyFromJson(Map<String, dynamic> json) {
   $checkKeys(
     json,
-    requiredKeys: const ['deviceId', 'name', 'key'],
+    requiredKeys: const ['deviceId', 'userId', 'key'],
   );
   return TheirIdentityKey(
     json['deviceId'] as int,
-    json['name'] as String,
+    json['userId'] as String,
     json['key'] as String,
   );
 }
@@ -21,6 +21,6 @@ TheirIdentityKey _$TheirIdentityKeyFromJson(Map<String, dynamic> json) {
 Map<String, dynamic> _$TheirIdentityKeyToJson(TheirIdentityKey instance) =>
     <String, dynamic>{
       'deviceId': instance.deviceId,
-      'name': instance.name,
+      'userId': instance.userId,
       'key': instance.key,
     };

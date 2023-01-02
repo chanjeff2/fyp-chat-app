@@ -9,17 +9,17 @@ part of 'session.dart';
 Session _$SessionFromJson(Map<String, dynamic> json) {
   $checkKeys(
     json,
-    requiredKeys: const ['deviceId', 'name', 'session'],
+    requiredKeys: const ['deviceId', 'userId', 'session'],
   );
   return Session(
     json['deviceId'] as int,
-    json['name'] as String,
+    json['userId'] as String,
     json['session'] as String,
   );
 }
 
 Map<String, dynamic> _$SessionToJson(Session instance) => <String, dynamic>{
       'deviceId': instance.deviceId,
-      'name': instance.name,
+      'userId': instance.userId,
       'session': instance.session,
     };
