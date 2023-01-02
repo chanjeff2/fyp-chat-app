@@ -8,7 +8,6 @@ import 'package:fyp_chat_app/screens/home/home_screen.dart';
 import 'package:fyp_chat_app/screens/register_or_login/register_or_login_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:fyp_chat_app/components/palette.dart';
-import 'package:flutter_native_splash/flutter_native_splash.dart';
 
 import 'firebase_options.dart';
 
@@ -22,12 +21,8 @@ Future<void> main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-
   // handle message received on background
   FirebaseMessaging.onBackgroundMessage(FCMHandler.onBackgroundMessage);
-
-  FlutterNativeSplash.remove();
-
   runApp(
     ChangeNotifierProvider(
       create: (context) => UserState(),
