@@ -4,8 +4,8 @@ import 'package:fyp_chat_app/dto/pre_key_dto.dart';
 import 'package:libsignal_protocol_dart/libsignal_protocol_dart.dart';
 
 class PreKey {
-  int id;
-  ECPublicKey key;
+  final int id;
+  final ECPublicKey key;
 
   PreKey(this.id, this.key);
 

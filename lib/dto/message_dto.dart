@@ -7,16 +7,8 @@ class MessageDto {
   @JsonKey(required: true)
   final String senderUserId;
 
-  @JsonKey(
-    required: true,
-    fromJson: int.parse,
-    toJson: intToString,
-  )
-  final int senderDeviceId;
-
-  static String intToString(int number) {
-    return number.toString();
-  }
+  @JsonKey(required: true)
+  final String senderDeviceId;
 
   @JsonKey(required: true)
   final String content;

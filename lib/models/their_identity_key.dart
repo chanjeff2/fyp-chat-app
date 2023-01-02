@@ -8,7 +8,7 @@ part 'their_identity_key.g.dart';
 @JsonSerializable()
 class TheirIdentityKey {
   static const String createTableCommandFields =
-      "$columnDeviceId INTEGER, $columnName TEXT, $columnKey, PRIMARY KEY ($columnDeviceId, $columnName)";
+      "$columnDeviceId INTEGER, $columnName TEXT, $columnKey, PRIMARY KEY ($columnDeviceId, $columnName), UNIQUE ($columnDeviceId, $columnName)";
 
   static const columnDeviceId = "deviceId";
   @JsonKey(required: true, name: columnDeviceId)
