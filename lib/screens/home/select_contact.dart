@@ -8,6 +8,8 @@ import 'package:fyp_chat_app/models/user.dart';
 import 'package:fyp_chat_app/network/api.dart';
 import 'package:fyp_chat_app/network/users_api.dart';
 
+import '../../storage/contact_store.dart';
+
 class SelectContact extends StatefulWidget {
   const SelectContact({Key? key}) : super(key: key);
 
@@ -16,7 +18,7 @@ class SelectContact extends StatefulWidget {
 }
 
 class _SelectContactState extends State<SelectContact> {
-  List<Contact> _contacts = [
+  final List<Contact> _contacts = [
     Contact(username: 'test', id: 'test'),
     Contact(username: 'test2', id: 'test2')
   ];
@@ -82,9 +84,15 @@ class _SelectContactState extends State<SelectContact> {
                           try {
                             User addUser = User.fromDto(await UsersApi()
                                 .getUserByUsername(addContactInput));
-                            _contacts.add(Contact(
-                                username: addUser.username,
-                                id: addUser.userId));
+                            setState(() {
+                              //temp storage as prototype
+                              _contacts.add(Contact(
+                                  username: addUser.username,
+                                  id: addUser.userId));
+                              //local storage on disk
+                              ContactStore().storeContact(addUser);
+                            });
+
                             //print(_contacts.length);
                           } on ApiException catch (e) {
                             ScaffoldMessenger.of(context).showSnackBar(
