@@ -1,14 +1,24 @@
 import 'dart:convert';
 
 import 'package:fyp_chat_app/dto/update_keys_dto.dart';
+import 'package:fyp_chat_app/models/key_bundle.dart';
+import 'package:fyp_chat_app/models/message.dart';
+import 'package:fyp_chat_app/models/plain_message.dart';
 import 'package:fyp_chat_app/models/pre_key.dart';
+import 'package:fyp_chat_app/models/received_plain_message.dart';
 import 'package:fyp_chat_app/models/signed_pre_key.dart';
+import 'package:fyp_chat_app/models/user.dart';
 import 'package:fyp_chat_app/network/devices_api.dart';
 import 'package:fyp_chat_app/network/keys_api.dart';
+import 'package:fyp_chat_app/network/users_api.dart';
 import 'package:fyp_chat_app/signal/device_helper.dart';
+import 'package:fyp_chat_app/storage/account_store.dart';
+import 'package:fyp_chat_app/storage/contact_store.dart';
 import 'package:fyp_chat_app/storage/disk_identity_key_store.dart';
 import 'package:fyp_chat_app/storage/disk_pre_key_store.dart';
+import 'package:fyp_chat_app/storage/disk_session_store.dart';
 import 'package:fyp_chat_app/storage/disk_signed_pre_key_store.dart';
+import 'package:fyp_chat_app/storage/message_store.dart';
 import 'package:libsignal_protocol_dart/libsignal_protocol_dart.dart';
 
 class SignalClient {
@@ -54,5 +64,90 @@ class SignalClient {
       signedPreKey: SignedPreKey.fromSignedPreKeyRecord(signedPreKey).toDto(),
     );
     await KeysApi().updateKeys(dto);
+  }
+
+  Future<void> sendMessage(String recipientUserId, String content) async {
+    // TODO: implement this
+    // use SendMessageDao.toDto(), EventsApi(), etc
+  }
+
+  Future<ReceivedPlainMessage?> processMessage(Message message) async {
+    final me = await AccountStore().getAccount();
+    if (me == null) {
+      return null; // user not yet login (tho it should not happen)
+    }
+    final User sender;
+    // try to find user in disk
+    final senderInDisk =
+        await ContactStore().getContactById(message.senderUserId);
+    if (senderInDisk != null) {
+      sender = senderInDisk;
+    } else {
+      // get user from server
+      final userDto = await UsersApi().getUserById(message.senderUserId);
+      sender = User.fromDto(userDto);
+    }
+    // set up address
+    final remoteAddress = SignalProtocolAddress(
+      message.senderUserId,
+      message.senderDeviceId,
+    );
+    // check if session exist
+    final containsSession =
+        await DiskSessionStore().containsSession(remoteAddress);
+    if (!containsSession) {
+      // init session
+      final sessionBuilder = SessionBuilder(
+        DiskSessionStore(),
+        DiskPreKeyStore(),
+        DiskSignedPreKeyStore(),
+        DiskIdentityKeyStore(),
+        remoteAddress,
+      );
+      final keyBundleDto = await KeysApi()
+          .getKeyBundle(message.senderUserId, message.senderDeviceId);
+      final keyBundle = KeyBundle.fromDto(keyBundleDto);
+      final oneTimeKey = keyBundle.deviceKeyBundles[0].oneTimeKey;
+      final signedPreKey = keyBundle.deviceKeyBundles[0].signedPreKey;
+      final retrievedPreKey = PreKeyBundle(
+        await DiskIdentityKeyStore().getLocalRegistrationId(),
+        (await DeviceInfoHelper().getDeviceId())!,
+        oneTimeKey?.id,
+        oneTimeKey?.key,
+        signedPreKey.id,
+        signedPreKey.key,
+        signedPreKey.signature,
+        keyBundle.identityKey,
+      );
+      await sessionBuilder.processPreKeyBundle(retrievedPreKey);
+    }
+    // decrypt message
+    final remoteSessionCipher = SessionCipher(
+      DiskSessionStore(),
+      DiskPreKeyStore(),
+      DiskSignedPreKeyStore(),
+      DiskIdentityKeyStore(),
+      remoteAddress,
+    );
+
+    final plaintext =
+        utf8.decode(await remoteSessionCipher.decrypt(message.content));
+
+    final plainMessage = PlainMessage(
+      senderUserId: sender.userId,
+      recipientUserId: me.userId,
+      content: plaintext,
+      sentAt: message.sentAt,
+    );
+
+    // save message to disk
+    final messageId = await MessageStore().storeMessage(plainMessage);
+    plainMessage.id = messageId;
+
+    final receivedPlainMessage = ReceivedPlainMessage(
+      sender: sender,
+      message: plainMessage,
+    );
+    return receivedPlainMessage;
   }
 }

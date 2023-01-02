@@ -22,7 +22,7 @@ class DiskSessionStore extends SessionStore {
     final db = await DiskStorage().db;
     final result = await db.query(
       table,
-      where: '${Session.columnName} = ? AND ${Session.columnDeviceId} = ?',
+      where: '${Session.columnUserId} = ? AND ${Session.columnDeviceId} = ?',
       whereArgs: [address.getName(), address.getDeviceId()],
     );
     return result.isNotEmpty;
@@ -33,7 +33,7 @@ class DiskSessionStore extends SessionStore {
     final db = await DiskStorage().db;
     await db.delete(
       table,
-      where: '${Session.columnName} = ?',
+      where: '${Session.columnUserId} = ?',
       whereArgs: [name],
     );
   }
@@ -43,7 +43,7 @@ class DiskSessionStore extends SessionStore {
     final db = await DiskStorage().db;
     await db.delete(
       table,
-      where: '${Session.columnName} = ? AND ${Session.columnDeviceId} = ?',
+      where: '${Session.columnUserId} = ? AND ${Session.columnDeviceId} = ?',
       whereArgs: [address.getName(), address.getDeviceId()],
     );
   }
@@ -53,7 +53,7 @@ class DiskSessionStore extends SessionStore {
     final db = await DiskStorage().db;
     final result = await db.query(
       table,
-      where: '${Session.columnName} = ?',
+      where: '${Session.columnUserId} = ?',
       whereArgs: [name],
     );
     final deviceIds = result
@@ -69,7 +69,7 @@ class DiskSessionStore extends SessionStore {
     try {
       final result = await db.query(
         table,
-        where: '${Session.columnName} = ? AND ${Session.columnDeviceId} = ?',
+        where: '${Session.columnUserId} = ? AND ${Session.columnDeviceId} = ?',
         whereArgs: [address.getName(), address.getDeviceId()],
       );
       if (result.isNotEmpty) {
@@ -86,7 +86,7 @@ class DiskSessionStore extends SessionStore {
   Future<void> storeSession(
       SignalProtocolAddress address, SessionRecord record) async {
     final sessionMap = Session.fromSessionRecord(
-      name: address.getName(),
+      userId: address.getName(),
       deviceId: address.getDeviceId(),
       record: record,
     ).toJson();
@@ -95,7 +95,7 @@ class DiskSessionStore extends SessionStore {
     final count = await db.update(
       table,
       sessionMap,
-      where: '${Session.columnName} = ? AND ${Session.columnDeviceId} = ?',
+      where: '${Session.columnUserId} = ? AND ${Session.columnDeviceId} = ?',
       whereArgs: [address.getName(), address.getDeviceId()],
     );
     // if no existing record, insert new record

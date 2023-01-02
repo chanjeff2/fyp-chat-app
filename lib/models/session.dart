@@ -8,21 +8,21 @@ part 'session.g.dart';
 @JsonSerializable()
 class Session {
   static const String createTableCommandFields =
-      "$columnDeviceId INTEGER, $columnName TEXT, $columnSession TEXT, PRIMARY KEY ($columnDeviceId, $columnName)";
+      "$columnDeviceId INTEGER, $columnUserId TEXT, $columnSession TEXT, PRIMARY KEY ($columnDeviceId, $columnUserId), UNIQUE ($columnDeviceId, $columnUserId)";
 
   static const columnDeviceId = "deviceId";
   @JsonKey(required: true, name: columnDeviceId)
   final int deviceId;
 
-  static const columnName = "name";
-  @JsonKey(required: true, name: columnName)
-  final String name;
+  static const columnUserId = "userId";
+  @JsonKey(required: true, name: columnUserId)
+  final String userId;
 
   static const columnSession = "session";
   @JsonKey(required: true, name: columnSession)
   final String session;
 
-  Session(this.deviceId, this.name, this.session);
+  Session(this.deviceId, this.userId, this.session);
 
   Map<String, dynamic> toJson() => _$SessionToJson(this);
 
@@ -31,7 +31,7 @@ class Session {
 
   Session.fromSessionRecord({
     required this.deviceId,
-    required this.name,
+    required this.userId,
     required SessionRecord record,
   }) : session = base64.encode(record.serialize());
 

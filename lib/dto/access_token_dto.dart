@@ -8,11 +8,17 @@ class AccessTokenDto {
   String accessToken;
 
   @JsonKey(required: true)
-  String refreshToken;
+  String accessTokenExpiresAt;
+
+  String? refreshToken;
+
+  String? refreshTokenExpiresAt;
 
   AccessTokenDto({
     required this.accessToken,
-    required this.refreshToken,
+    required this.accessTokenExpiresAt,
+    this.refreshToken,
+    this.refreshTokenExpiresAt,
   });
 
   factory AccessTokenDto.fromJson(Map<String, dynamic> json) =>

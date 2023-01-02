@@ -1,11 +1,15 @@
+import 'package:fyp_chat_app/models/plain_message.dart';
 import 'package:fyp_chat_app/models/pre_key_pair.dart';
 import 'package:fyp_chat_app/models/session.dart';
 import 'package:fyp_chat_app/models/signed_pre_key_pair.dart';
 import 'package:fyp_chat_app/models/their_identity_key.dart';
+import 'package:fyp_chat_app/models/user.dart';
+import 'package:fyp_chat_app/storage/contact_store.dart';
 import 'package:fyp_chat_app/storage/disk_identity_key_store.dart';
 import 'package:fyp_chat_app/storage/disk_pre_key_store.dart';
 import 'package:fyp_chat_app/storage/disk_session_store.dart';
 import 'package:fyp_chat_app/storage/disk_signed_pre_key_store.dart';
+import 'package:fyp_chat_app/storage/message_store.dart';
 import 'package:fyp_chat_app/storage/secure_storage.dart';
 import 'package:sqflite_sqlcipher/sqflite.dart';
 import 'package:path/path.dart';
@@ -36,7 +40,7 @@ class DiskStorage {
     return await openDatabase(
       join(await getDatabasesPath(), databasePath),
       password: password,
-      version: 6,
+      version: 11,
       onCreate: (db, version) {
         db.execute(
           "CREATE TABLE ${DiskIdentityKeyStore.table}(${TheirIdentityKey.createTableCommandFields});",
@@ -49,6 +53,12 @@ class DiskStorage {
         );
         db.execute(
           "CREATE TABLE ${DiskSessionStore.table}(${Session.createTableCommandFields});",
+        );
+        db.execute(
+          "CREATE TABLE ${ContactStore.table}(${User.createTableCommandFields});",
+        );
+        db.execute(
+          "CREATE TABLE ${MessageStore.table}(${PlainMessage.createTableCommandFields});",
         );
       },
     );

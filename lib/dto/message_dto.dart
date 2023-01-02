@@ -7,24 +7,20 @@ class MessageDto {
   @JsonKey(required: true)
   final String senderUserId;
 
-  @JsonKey(
-    required: true,
-    fromJson: int.parse,
-    toJson: intToString,
-  )
-  final int senderDeviceId;
-
-  static String intToString(int number) {
-    return number.toString();
-  }
+  @JsonKey(required: true)
+  final String senderDeviceId;
 
   @JsonKey(required: true)
   final String content;
+
+  @JsonKey(required: true)
+  final String sentAt; // iso string
 
   MessageDto(
     this.senderUserId,
     this.senderDeviceId,
     this.content,
+    this.sentAt,
   );
 
   Map<String, dynamic> toJson() => _$MessageDtoToJson(this);
