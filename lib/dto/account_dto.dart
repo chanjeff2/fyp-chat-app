@@ -17,6 +17,8 @@ class AccountDto {
     this.displayName,
   });
 
+  Map<String, dynamic> toJson() => _$AccountDtoToJson(this);
+
   factory AccountDto.fromJson(Map<String, dynamic> json) =>
       _$AccountDtoFromJson(json);
 }

@@ -1,4 +1,5 @@
 import 'package:fyp_chat_app/dto/account_dto.dart';
+import 'package:fyp_chat_app/storage/account_store.dart';
 
 import 'api.dart';
 
@@ -15,6 +16,8 @@ class AccountApi extends Api {
 
   Future<AccountDto> getMe() async {
     final json = await get("/me", useAuth: true);
-    return AccountDto.fromJson(json);
+    final ac = AccountDto.fromJson(json);
+    AccountStore().storeAccount(ac);
+    return ac;
   }
 }
