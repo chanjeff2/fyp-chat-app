@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:fyp_chat_app/components/default_option.dart';
 import 'package:fyp_chat_app/components/contact_option.dart';
 import 'package:fyp_chat_app/models/user.dart';
+import 'package:fyp_chat_app/network/users_api.dart';
 
 class SelectContact extends StatefulWidget {
   const SelectContact({Key? key}) : super(key: key);
@@ -67,15 +68,18 @@ class _SelectContactState extends State<SelectContact> {
                     {
                       return InkWell(
                         onTap: () async {
-                          //The input name will now store in addContactInput
+                          //Pop up screen for add content
                           final name = await addContactDialog();
                           if (name == null || name.isEmpty) return;
                           setState(() {
                             addContactInput = name;
-                            //TODO send the contact username to server
-                            
-
                           });
+                          //add the user to local storage contact
+                          User addUser = User.fromDto(await UsersApi()
+                              .getUserByUsername(addContactInput));
+                          _contacts.add(Contact(
+                              username: addUser.username, id: addUser.userId));
+                          print(_contacts.length);
                         },
                         child: const DefaultOption(
                           icon: Icons.person_add,
@@ -127,11 +131,12 @@ class _SelectContactState extends State<SelectContact> {
 
 // modal class for Contact, can remove later
 class Contact {
-  String nickname, status, id;
-  Image img;
-  Contact(
-      {required this.nickname,
-      required this.status,
-      required this.id,
-      required this.img});
+  String username, /*status,*/ id;
+  //Image img;
+  Contact({
+    required this.username,
+    //required this.status,
+    required this.id,
+    //required this.img
+  });
 }
