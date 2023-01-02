@@ -61,6 +61,7 @@ class DiskIdentityKeyStore extends IdentityKeyStore {
   @override
   Future<bool> isTrustedIdentity(SignalProtocolAddress address,
       IdentityKey? identityKey, Direction direction) async {
+    return true; // allow all in-coming and out-going message
     // shortcut if identityKey is null
     if (identityKey == null) {
       return false;
