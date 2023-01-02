@@ -11,23 +11,29 @@ class ContactStore {
 
   static const table = 'contact';
 
-  Future<User> getContactById(String userId) async {
+  Future<User?> getContactById(String userId) async {
     final db = await DiskStorage().db;
     final result = await db.query(
       table,
       where: '${User.columnUserId} = ?',
       whereArgs: [userId],
     );
+    if (result.isEmpty) {
+      return null;
+    }
     return User.fromJson(result[0]);
   }
 
-  Future<User> getContactByUsername(String username) async {
+  Future<User?> getContactByUsername(String username) async {
     final db = await DiskStorage().db;
     final result = await db.query(
       table,
       where: '${User.columnUsername} = ?',
       whereArgs: [username],
     );
+    if (result.isEmpty) {
+      return null;
+    }
     return User.fromJson(result[0]);
   }
 
