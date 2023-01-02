@@ -72,8 +72,6 @@ class SignalClient {
   }
 
   Future<void> sendMessage(String recipientUserId, String content) async {
-    // TODO: implement this
-    // use SendMessageDao.toDto(), EventsApi(), etc
     final senderDeviceId = await DeviceInfoHelper().getDeviceId();
     if (senderDeviceId == null) {
       throw Exception('Sender Device Id is null');
@@ -83,62 +81,69 @@ class SignalClient {
     final keyBundle = KeyBundle.fromDto(keyList);
     DateTime sentTime = DateTime.now();
 
-    keyBundle.deviceKeyBundles.forEach((key) async {
-      final remoteAddress = SignalProtocolAddress(
-        recipientUserId,
-        key.deviceId,
-      );
-      // check session is existed or not
-      final containsSession =
-          await DiskSessionStore().containsSession(remoteAddress);
-      if (!containsSession) {
-        // init session
-        final sessionBuilder = SessionBuilder(
+    await Future.wait(keyBundle.deviceKeyBundles.map(
+      (deviceKeyBundle) async {
+        final remoteAddress = SignalProtocolAddress(
+          recipientUserId,
+          deviceKeyBundle.deviceId,
+        );
+        // check session is existed or not
+        final containsSession =
+            await DiskSessionStore().containsSession(remoteAddress);
+        if (!containsSession) {
+          // init session
+          final sessionBuilder = SessionBuilder(
+            DiskSessionStore(),
+            DiskPreKeyStore(),
+            DiskSignedPreKeyStore(),
+            DiskIdentityKeyStore(),
+            remoteAddress,
+          );
+          final oneTimeKey = deviceKeyBundle.oneTimeKey;
+          final signedPreKey = deviceKeyBundle.signedPreKey;
+          final retrievedPreKey = PreKeyBundle(
+            deviceKeyBundle.registrationId,
+            deviceKeyBundle.deviceId,
+            oneTimeKey?.id,
+            oneTimeKey?.key,
+            signedPreKey.id,
+            signedPreKey.key,
+            signedPreKey.signature,
+            keyBundle.identityKey,
+          );
+          await sessionBuilder.processPreKeyBundle(retrievedPreKey);
+        }
+        // encrypt message
+        final remoteSessionCipher = SessionCipher(
           DiskSessionStore(),
           DiskPreKeyStore(),
           DiskSignedPreKeyStore(),
           DiskIdentityKeyStore(),
           remoteAddress,
         );
-        final oneTimeKey = key.oneTimeKey;
-        final signedPreKey = key.signedPreKey;
-        final retrievedPreKey = PreKeyBundle(
-          await DiskIdentityKeyStore().getLocalRegistrationId(),
+        final cipherText = await remoteSessionCipher
+            .encrypt(Uint8List.fromList(utf8.encode(content)));
+
+        // send message use EventsApi()
+        final message = SendMessageDao(
           senderDeviceId,
-          oneTimeKey?.id,
-          oneTimeKey?.key,
-          signedPreKey.id,
-          signedPreKey.key,
-          signedPreKey.signature,
-          keyBundle.identityKey,
-        );
-        await sessionBuilder.processPreKeyBundle(retrievedPreKey);
-      }
-      // encrypt message
-      final remoteSessionCipher = SessionCipher(
-        DiskSessionStore(),
-        DiskPreKeyStore(),
-        DiskSignedPreKeyStore(),
-        DiskIdentityKeyStore(),
-        remoteAddress,
-      );
-      final ciphertext = await remoteSessionCipher
-          .encrypt(Uint8List.fromList(utf8.encode(content)));
+          recipientUserId,
+          deviceKeyBundle.deviceId,
+          cipherText as PreKeySignalMessage,
+          sentTime,
+        ).toDto();
+        //mark first message sent time only
 
-      // send message use EventsApi()
-      final message = SendMessageDao(senderDeviceId, recipientUserId,
-              key.deviceId, ciphertext as PreKeySignalMessage, sentTime)
-          .toDto();
-      //mark first message sent time only
-
-      EventsApi().sendMessage(message);
-    });
+        await EventsApi().sendMessage(message);
+      },
+    ));
 
     // save message to disk
-    final myAccount = await AccountApi().getMe();
+    final myAccount =
+        await AccountStore().getAccount() ?? await AccountApi().getMe();
     final plainMessage = PlainMessage(
       senderUserId: myAccount.userId,
-      senderUsername: myAccount.username,
+      recipientUserId: recipientUserId,
       content: content,
       sentAt: sentTime,
     );
