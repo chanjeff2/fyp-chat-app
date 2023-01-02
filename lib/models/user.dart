@@ -7,7 +7,7 @@ part 'user.g.dart';
 @JsonSerializable()
 class User {
   static const String createTableCommandFields =
-      "$columnUserId TEXT PRIMARY KEY, $columnUsername TEXT UNIQUE";
+      "$columnUserId TEXT PRIMARY KEY, $columnUsername TEXT UNIQUE, $columnDisplayName TEXT";
 
   static const columnUserId = "userId";
   @JsonKey(required: true, name: columnUserId)
@@ -17,7 +17,15 @@ class User {
   @JsonKey(required: true, name: columnUsername)
   final String username;
 
-  User(this.userId, this.username);
+  static const columnDisplayName = "displayName";
+  @JsonKey(name: columnDisplayName)
+  final String? displayName;
+
+  User({
+    required this.userId,
+    required this.username,
+    this.displayName,
+  });
 
   Map<String, dynamic> toJson() => _$UserToJson(this);
 
@@ -25,5 +33,6 @@ class User {
 
   User.fromDto(UserDto dto)
       : userId = dto.userId,
-        username = dto.username;
+        username = dto.username,
+        displayName = dto.displayName;
 }

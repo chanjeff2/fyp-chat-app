@@ -12,12 +12,14 @@ User _$UserFromJson(Map<String, dynamic> json) {
     requiredKeys: const ['userId', 'username'],
   );
   return User(
-    json['userId'] as String,
-    json['username'] as String,
+    userId: json['userId'] as String,
+    username: json['username'] as String,
+    displayName: json['displayName'] as String?,
   );
 }
 
 Map<String, dynamic> _$UserToJson(User instance) => <String, dynamic>{
       'userId': instance.userId,
       'username': instance.username,
+      'displayName': instance.displayName,
     };
