@@ -17,4 +17,9 @@ class AccountApi extends Api {
     final json = await get("/me", useAuth: true);
     return AccountDto.fromJson(json);
   }
+
+  Future<AccountDto> updateProfile() async {
+    final json = await patch("/update-profile", useAuth: true);
+    return AccountDto.fromJson(json);
+  }
 }
