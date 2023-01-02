@@ -44,6 +44,7 @@ dependencies:
   sqflite_sqlcipher: ^2.1.1+1
   firebase_core: ^2.4.1
   firebase_messaging: ^14.2.1
+  emoji_picker_flutter: ^1.5.1
 
 dev_dependencies:
   flutter_test:
