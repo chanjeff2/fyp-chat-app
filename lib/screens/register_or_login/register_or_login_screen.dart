@@ -37,77 +37,25 @@ class _RegisterOrLoginScreenState extends State<RegisterOrLoginScreen> {
   Widget build(BuildContext context) => _isLoading
       ? const LoadingScreen()
       : Scaffold(
-      appBar: AppBar(
-        title: Text(_isRegister ? "Register" : "Login"),
-      ),
-      body: Form(
-        key: _formKey,
-        child: Padding(
-          padding: const EdgeInsets.all(30.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              TextFormField(
-                controller: _usernameController,
-                decoration: const InputDecoration(
-                  labelText: "Username",
-                  contentPadding: EdgeInsets.symmetric(
-                    vertical: 15.0,
-                    horizontal: 15.0,
-                  ),
-                  border: OutlineInputBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(10.0)),
-                      borderSide: BorderSide()),
-                ),
-                validator: (username) {
-                  if (username?.isEmpty ?? true) {
-                    return "username cannot be empty";
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _passwordController,
-                obscureText: !_isPasswordVisible,
-                decoration: InputDecoration(
-                    labelText: "Password",
-                    contentPadding: const EdgeInsets.symmetric(
-                      vertical: 15.0,
-                      horizontal: 15.0,
-                    ),
-                    border: const OutlineInputBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(10.0)),
-                      borderSide: BorderSide(),
-                    ),
-                    suffixIcon: IconButton(
-                      onPressed: () {
-                        setState(() {
-                          _isPasswordVisible = !_isPasswordVisible;
-                        });
-                      },
-                      icon: _isPasswordVisible
-                          ? const Icon(Icons.visibility)
-                          : const Icon(Icons.visibility_off),
-                    )),
-                validator: (password) {
-                  if (password?.isEmpty ?? true) {
-                    return "password cannot be empty";
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              if (_isRegister)
-                TextFormField(
-                  controller: _confirmPasswordController,
-                  obscureText: !_isConfirmPasswordVisible,
-                  enabled: _isRegister,
-                  decoration: InputDecoration(
-                      labelText: "Confirm Password",
-                      contentPadding: const EdgeInsets.symmetric(
-                          vertical: 15.0, horizontal: 15.0),
-                      border: const OutlineInputBorder(
+          appBar: AppBar(
+            title: Text(_isRegister ? "Register" : "Login"),
+          ),
+          body: Form(
+            key: _formKey,
+            child: Padding(
+              padding: const EdgeInsets.all(30.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  TextFormField(
+                    controller: _usernameController,
+                    decoration: const InputDecoration(
+                      labelText: "Username",
+                      contentPadding: EdgeInsets.symmetric(
+                        vertical: 15.0,
+                        horizontal: 15.0,
+                      ),
+                      border: OutlineInputBorder(
                           borderRadius: BorderRadius.all(Radius.circular(10.0)),
                           borderSide: BorderSide()),
                     ),
@@ -118,7 +66,7 @@ class _RegisterOrLoginScreenState extends State<RegisterOrLoginScreen> {
                       return null;
                     },
                   ),
-                  SizedBox(height: 15),
+                  const SizedBox(height: 16),
                   TextFormField(
                     controller: _passwordController,
                     obscureText: !_isPasswordVisible,
@@ -128,9 +76,8 @@ class _RegisterOrLoginScreenState extends State<RegisterOrLoginScreen> {
                           vertical: 15.0,
                           horizontal: 15.0,
                         ),
-                        border: OutlineInputBorder(
-                          borderRadius: const BorderRadius.all(
-                              const Radius.circular(10.0)),
+                        border: const OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(10.0)),
                           borderSide: BorderSide(),
                         ),
                         suffixIcon: IconButton(
@@ -150,7 +97,7 @@ class _RegisterOrLoginScreenState extends State<RegisterOrLoginScreen> {
                       return null;
                     },
                   ),
-                  SizedBox(height: 15),
+                  const SizedBox(height: 16),
                   if (_isRegister)
                     TextFormField(
                       controller: _confirmPasswordController,
@@ -160,9 +107,9 @@ class _RegisterOrLoginScreenState extends State<RegisterOrLoginScreen> {
                           labelText: "Confirm Password",
                           contentPadding: const EdgeInsets.symmetric(
                               vertical: 15.0, horizontal: 15.0),
-                          border: OutlineInputBorder(
-                              borderRadius: const BorderRadius.all(
-                                  const Radius.circular(10.0)),
+                          border: const OutlineInputBorder(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(10.0)),
                               borderSide: BorderSide()),
                           suffixIcon: IconButton(
                             onPressed: () {
@@ -175,12 +122,9 @@ class _RegisterOrLoginScreenState extends State<RegisterOrLoginScreen> {
                                 ? const Icon(Icons.visibility)
                                 : const Icon(Icons.visibility_off),
                           )),
-                      validator: (confirmPassword) {
-                        if (confirmPassword?.isEmpty ?? true) {
-                          return "please enter your password again";
-                        }
-                        if (confirmPassword != password) {
-                          return "please make sure your input is the same as the password";
+                      validator: (username) {
+                        if (username?.isEmpty ?? true) {
+                          return "username cannot be empty";
                         }
                         return null;
                       },
