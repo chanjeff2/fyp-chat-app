@@ -2,7 +2,7 @@ import 'package:json_annotation/json_annotation.dart';
 
 part 'user_dto.g.dart';
 
-@JsonSerializable(explicitToJson: true)
+@JsonSerializable()
 class UserDto {
   @JsonKey(required: true)
   String userId;
@@ -10,10 +10,13 @@ class UserDto {
   @JsonKey(required: true)
   String username;
 
-  UserDto(
-    this.userId,
-    this.username,
-  );
+  String? displayName;
+
+  UserDto({
+    required this.userId,
+    required this.username,
+    this.displayName,
+  });
 
   Map<String, dynamic> toJson() => _$UserDtoToJson(this);
 
