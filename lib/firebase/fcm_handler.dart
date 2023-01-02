@@ -30,12 +30,12 @@ class FCMHandler {
     final message = message_model.Message.fromDto(messageDto);
     final plainMessage = await SignalClient().processMessage(message);
     if (plainMessage == null) {
-      return; // abort if cannot process messaage
+      return; // abort if cannot process message
     }
 
     FlutterLocalNotificationsPlugin().show(
         plainMessage.message.id!,
-        plainMessage.sender.username,
+        plainMessage.sender.name,
         plainMessage.message.content,
         const NotificationDetails(
           android: AndroidNotificationDetails(
