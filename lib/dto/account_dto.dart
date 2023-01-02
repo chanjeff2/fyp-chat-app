@@ -11,6 +11,8 @@ class AccountDto {
   String username;
   String? displayName;
 
+  String get name => displayName ?? username;
+
   AccountDto({
     required this.userId,
     required this.username,
