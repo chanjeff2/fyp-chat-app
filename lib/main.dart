@@ -1,6 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:fyp_chat_app/firebase/fcm_handler.dart';
 import 'package:fyp_chat_app/models/user_state.dart';
 import 'package:fyp_chat_app/screens/home/home_screen.dart';
@@ -46,6 +47,23 @@ class _MyAppState extends State<MyApp> {
     // handle message received on foreground
     FirebaseMessaging.onMessage.listen(FCMHandler.onForegroundMessage);
     setUpFCMInteractedMessage();
+  }
+
+  Future<void> setUpFCMNotificationChannel() async {
+    const AndroidNotificationChannel channel = AndroidNotificationChannel(
+      FCMHandler.channelId, // id
+      FCMHandler.channelName, // title
+      description: FCMHandler.channelDescription, // description
+      importance: Importance.max,
+    );
+
+    final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+        FlutterLocalNotificationsPlugin();
+
+    await flutterLocalNotificationsPlugin
+        .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin>()
+        ?.createNotificationChannel(channel);
   }
 
   Future<void> setUpFCMInteractedMessage() async {
