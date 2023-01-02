@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:fyp_chat_app/components/default_option.dart';
 import 'package:fyp_chat_app/components/contact_option.dart';
 import 'package:fyp_chat_app/models/user.dart';
+import 'package:fyp_chat_app/network/api.dart';
 import 'package:fyp_chat_app/network/users_api.dart';
 
 class SelectContact extends StatefulWidget {
@@ -15,7 +16,10 @@ class SelectContact extends StatefulWidget {
 }
 
 class _SelectContactState extends State<SelectContact> {
-  List<Contact> _contacts = [];
+  List<Contact> _contacts = [
+    Contact(username: 'test', id: 'test'),
+    Contact(username: 'test2', id: 'test2')
+  ];
 
   String addContactInput = "";
 
@@ -41,7 +45,7 @@ class _SelectContactState extends State<SelectContact> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: Text("Select Contact"),
+          title: const Text("Select Contact"),
         ),
         body: Padding(
           padding: const EdgeInsets.only(top: 8),
@@ -75,11 +79,17 @@ class _SelectContactState extends State<SelectContact> {
                             addContactInput = name;
                           });
                           //add the user to local storage contact
-                          User addUser = User.fromDto(await UsersApi()
-                              .getUserByUsername(addContactInput));
-                          _contacts.add(Contact(
-                              username: addUser.username, id: addUser.userId));
-                          print(_contacts.length);
+                          try {
+                            User addUser = User.fromDto(await UsersApi()
+                                .getUserByUsername(addContactInput));
+                            _contacts.add(Contact(
+                                username: addUser.username,
+                                id: addUser.userId));
+                            //print(_contacts.length);
+                          } on ApiException catch (e) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text("error: ${e.message}")));
+                          }
                         },
                         child: const DefaultOption(
                           icon: Icons.person_add,
@@ -100,7 +110,7 @@ class _SelectContactState extends State<SelectContact> {
                     }
                   default:
                     {
-                      return const ContactOption();
+                      return ContactOption();
                     }
                 }
               }),
