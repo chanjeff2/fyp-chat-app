@@ -6,10 +6,12 @@ import 'package:fyp_chat_app/models/message.dart';
 import 'package:fyp_chat_app/models/plain_message.dart';
 import 'package:fyp_chat_app/models/pre_key.dart';
 import 'package:fyp_chat_app/models/signed_pre_key.dart';
+import 'package:fyp_chat_app/models/user.dart';
 import 'package:fyp_chat_app/network/devices_api.dart';
 import 'package:fyp_chat_app/network/keys_api.dart';
 import 'package:fyp_chat_app/network/users_api.dart';
 import 'package:fyp_chat_app/signal/device_helper.dart';
+import 'package:fyp_chat_app/storage/contact_store.dart';
 import 'package:fyp_chat_app/storage/disk_identity_key_store.dart';
 import 'package:fyp_chat_app/storage/disk_pre_key_store.dart';
 import 'package:fyp_chat_app/storage/disk_session_store.dart';
@@ -68,12 +70,23 @@ class SignalClient {
   }
 
   Future<PlainMessage> processMessage(Message message) async {
-    // TODO: existing contacts should be cached
-    final user = await UsersApi().getUserById(message.senderUserId);
+    final User user;
+    // try to find user in disk
+    final userInDisk =
+        await ContactStore().getContactById(message.senderUserId);
+    if (userInDisk != null) {
+      user = userInDisk;
+    } else {
+      // get user from server
+      final userDto = await UsersApi().getUserById(message.senderUserId);
+      user = User.fromDto(userDto);
+    }
+    // set up address
     final remoteAddress = SignalProtocolAddress(
       user.username,
       message.senderDeviceId,
     );
+    // check if session exist
     final containsSession =
         await DiskSessionStore().containsSession(remoteAddress);
     if (!containsSession) {
@@ -102,7 +115,7 @@ class SignalClient {
       );
       await sessionBuilder.processPreKeyBundle(retrievedPreKey);
     }
-
+    // decrypt message
     final remoteSessionCipher = SessionCipher(
       DiskSessionStore(),
       DiskPreKeyStore(),
@@ -121,6 +134,7 @@ class SignalClient {
       sentAt: message.sentAt,
     );
 
+    // save message to disk
     final messageId = await MessageStore().storeMessage(plainMessage);
     plainMessage.id = messageId;
     return plainMessage;
