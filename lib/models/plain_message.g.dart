@@ -11,7 +11,7 @@ PlainMessage _$PlainMessageFromJson(Map<String, dynamic> json) {
     json,
     requiredKeys: const [
       'senderUserId',
-      'senderUsername',
+      'recipientUserId',
       'content',
       'sentAt',
       'isRead'
@@ -20,7 +20,7 @@ PlainMessage _$PlainMessageFromJson(Map<String, dynamic> json) {
   return PlainMessage(
     id: json['id'] as int?,
     senderUserId: json['senderUserId'] as String,
-    senderUsername: json['senderUsername'] as String,
+    recipientUserId: json['recipientUserId'] as String,
     content: json['content'] as String,
     sentAt: DateTime.parse(json['sentAt'] as String),
     isRead: json['isRead'] == null ? false : intToBool(json['isRead'] as int),
@@ -38,7 +38,7 @@ Map<String, dynamic> _$PlainMessageToJson(PlainMessage instance) {
 
   writeNotNull('id', instance.id);
   val['senderUserId'] = instance.senderUserId;
-  val['senderUsername'] = instance.senderUsername;
+  val['recipientUserId'] = instance.recipientUserId;
   val['content'] = instance.content;
   val['sentAt'] = toIso8601String(instance.sentAt);
   val['isRead'] = boolToInt(instance.isRead);

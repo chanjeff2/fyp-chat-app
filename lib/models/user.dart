@@ -21,6 +21,8 @@ class User {
   @JsonKey(name: columnDisplayName)
   final String? displayName;
 
+  String get name => displayName ?? username;
+
   User({
     required this.userId,
     required this.username,

@@ -5,7 +5,7 @@ part 'plain_message.g.dart';
 @JsonSerializable()
 class PlainMessage {
   static const String createTableCommandFields =
-      "$columnId INTEGER PRIMARY KEY AUTOINCREMENT, $columnSenderUserId TEXT, $columnSenderUsername TEXT, $columnContent TEXT, $columnIsRead INTEGER";
+      "$columnId INTEGER PRIMARY KEY AUTOINCREMENT, $columnSenderUserId TEXT, $columnRecipientUserId TEXT, $columnContent TEXT, $columnIsRead INTEGER";
 
   static const columnId = "id";
   @JsonKey(name: columnId, includeIfNull: false)
@@ -15,9 +15,9 @@ class PlainMessage {
   @JsonKey(required: true, name: columnSenderUserId)
   final String senderUserId;
 
-  static const columnSenderUsername = "senderUsername";
-  @JsonKey(required: true, name: columnSenderUsername)
-  final String senderUsername;
+  static const columnRecipientUserId = "recipientUserId";
+  @JsonKey(required: true, name: columnRecipientUserId)
+  final String recipientUserId;
 
   static const columnContent = "content";
   @JsonKey(required: true, name: columnContent)
@@ -44,7 +44,7 @@ class PlainMessage {
   PlainMessage({
     this.id,
     required this.senderUserId,
-    required this.senderUsername,
+    required this.recipientUserId,
     required this.content,
     required this.sentAt,
     this.isRead = false,

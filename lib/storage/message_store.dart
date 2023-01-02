@@ -11,23 +11,13 @@ class MessageStore {
 
   static const table = 'message';
 
-  Future<List<PlainMessage>> getMessageBySenderUserId(String userId) async {
+  Future<List<PlainMessage>> getMessageByUserId(String userId) async {
     final db = await DiskStorage().db;
     final result = await db.query(
       table,
-      where: '${PlainMessage.columnSenderUserId} = ?',
-      whereArgs: [userId],
-      orderBy: '${PlainMessage.columnSentAt} DESC',
-    );
-    return result.map((e) => PlainMessage.fromJson(e)).toList();
-  }
-
-  Future<List<PlainMessage>> getMessageBySenderUsername(String username) async {
-    final db = await DiskStorage().db;
-    final result = await db.query(
-      table,
-      where: '${PlainMessage.columnSenderUsername} = ?',
-      whereArgs: [username],
+      where:
+          '${PlainMessage.columnSenderUserId} = ? OR ${PlainMessage.columnRecipientUserId} = ?',
+      whereArgs: [userId, userId],
       orderBy: '${PlainMessage.columnSentAt} DESC',
     );
     return result.map((e) => PlainMessage.fromJson(e)).toList();
