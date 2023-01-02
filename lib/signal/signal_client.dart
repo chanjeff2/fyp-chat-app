@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:fyp_chat_app/dto/update_keys_dto.dart';
 import 'package:fyp_chat_app/models/key_bundle.dart';
 import 'package:fyp_chat_app/models/message.dart';
+import 'package:fyp_chat_app/models/plain_message.dart';
 import 'package:fyp_chat_app/models/pre_key.dart';
 import 'package:fyp_chat_app/models/signed_pre_key.dart';
 import 'package:fyp_chat_app/network/devices_api.dart';
@@ -13,6 +14,7 @@ import 'package:fyp_chat_app/storage/disk_identity_key_store.dart';
 import 'package:fyp_chat_app/storage/disk_pre_key_store.dart';
 import 'package:fyp_chat_app/storage/disk_session_store.dart';
 import 'package:fyp_chat_app/storage/disk_signed_pre_key_store.dart';
+import 'package:fyp_chat_app/storage/message_store.dart';
 import 'package:libsignal_protocol_dart/libsignal_protocol_dart.dart';
 
 class SignalClient {
@@ -65,7 +67,7 @@ class SignalClient {
     // use SendMessageDao.toDto(), EventsApi(), etc
   }
 
-  Future<String> receiveMessage(Message message) async {
+  Future<PlainMessage> processMessage(Message message) async {
     // TODO: existing contacts should be cached
     final user = await UsersApi().getUserById(message.senderUserId);
     final remoteAddress = SignalProtocolAddress(
@@ -112,6 +114,14 @@ class SignalClient {
     final plaintext =
         utf8.decode(await remoteSessionCipher.decrypt(message.content));
 
-    return plaintext;
+    final plainMessage = PlainMessage(
+      senderUserId: message.senderUserId,
+      senderUsername: user.username,
+      content: plaintext,
+    );
+
+    final messageId = await MessageStore().storeMessage(plainMessage);
+    plainMessage.id = messageId;
+    return plainMessage;
   }
 }

@@ -29,15 +29,12 @@ class FCMHandler {
   static Future<void> _handleMessage(RemoteMessage remoteMessage) async {
     final messageDto = MessageDto.fromJson(remoteMessage.data);
     final message = message_model.Message.fromDto(messageDto);
-
-    // TODO: existing contacts should be cached
-    final user = await UsersApi().getUserById(message.senderUserId);
-    final content = await SignalClient().receiveMessage(message);
+    final plainMessage = await SignalClient().processMessage(message);
 
     FlutterLocalNotificationsPlugin().show(
-        message.hashCode,
-        user.username,
-        content,
+        plainMessage.id!,
+        plainMessage.senderUsername,
+        plainMessage.content,
         const NotificationDetails(
           android: AndroidNotificationDetails(
             channelId,
