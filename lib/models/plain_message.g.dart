@@ -9,13 +9,14 @@ part of 'plain_message.dart';
 PlainMessage _$PlainMessageFromJson(Map<String, dynamic> json) {
   $checkKeys(
     json,
-    requiredKeys: const ['senderUserId', 'senderUsername', 'content'],
+    requiredKeys: const ['senderUserId', 'senderUsername', 'content', 'sentAt'],
   );
   return PlainMessage(
     id: json['id'] as int?,
     senderUserId: json['senderUserId'] as String,
     senderUsername: json['senderUsername'] as String,
     content: json['content'] as String,
+    sentAt: DateTime.parse(json['sentAt'] as String),
   );
 }
 
@@ -32,5 +33,6 @@ Map<String, dynamic> _$PlainMessageToJson(PlainMessage instance) {
   val['senderUserId'] = instance.senderUserId;
   val['senderUsername'] = instance.senderUsername;
   val['content'] = instance.content;
+  val['sentAt'] = toIso8601String(instance.sentAt);
   return val;
 }

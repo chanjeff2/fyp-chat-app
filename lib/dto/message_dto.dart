@@ -13,10 +13,14 @@ class MessageDto {
   @JsonKey(required: true)
   final String content;
 
+  @JsonKey(required: true)
+  final String sentAt; // iso string
+
   MessageDto(
     this.senderUserId,
     this.senderDeviceId,
     this.content,
+    this.sentAt,
   );
 
   Map<String, dynamic> toJson() => _$MessageDtoToJson(this);

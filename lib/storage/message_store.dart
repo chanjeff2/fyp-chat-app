@@ -17,6 +17,7 @@ class MessageStore {
       table,
       where: '${PlainMessage.columnSenderUserId} = ?',
       whereArgs: [userId],
+      orderBy: '${PlainMessage.columnSentAt} DESC',
     );
     return result.map((e) => PlainMessage.fromJson(e)).toList();
   }
@@ -27,6 +28,7 @@ class MessageStore {
       table,
       where: '${PlainMessage.columnSenderUsername} = ?',
       whereArgs: [username],
+      orderBy: '${PlainMessage.columnSentAt} DESC',
     );
     return result.map((e) => PlainMessage.fromJson(e)).toList();
   }

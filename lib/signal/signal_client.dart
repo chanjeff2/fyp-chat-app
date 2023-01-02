@@ -118,6 +118,7 @@ class SignalClient {
       senderUserId: message.senderUserId,
       senderUsername: user.username,
       content: plaintext,
+      sentAt: message.sentAt,
     );
 
     final messageId = await MessageStore().storeMessage(plainMessage);

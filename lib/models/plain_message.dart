@@ -23,15 +23,29 @@ class PlainMessage {
   @JsonKey(required: true, name: columnContent)
   final String content;
 
+  static const columnSentAt = "sentAt";
+  @JsonKey(
+    required: true,
+    name: columnSentAt,
+    fromJson: DateTime.parse,
+    toJson: toIso8601String,
+  )
+  final DateTime sentAt;
+
   PlainMessage({
     this.id,
     required this.senderUserId,
     required this.senderUsername,
     required this.content,
+    required this.sentAt,
   });
 
   Map<String, dynamic> toJson() => _$PlainMessageToJson(this);
 
   factory PlainMessage.fromJson(Map<String, dynamic> json) =>
       _$PlainMessageFromJson(json);
+}
+
+String toIso8601String(DateTime dateTime) {
+  return dateTime.toIso8601String();
 }

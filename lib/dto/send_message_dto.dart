@@ -16,11 +16,15 @@ class SendMessageDto {
   @JsonKey(required: true)
   final String content;
 
+  @JsonKey(required: true)
+  final String sentAt; // iso string
+
   SendMessageDto(
     this.senderDeviceId,
     this.recipientUserId,
     this.recipientDeviceId,
     this.content,
+    this.sentAt,
   );
 
   Map<String, dynamic> toJson() => _$SendMessageDtoToJson(this);
