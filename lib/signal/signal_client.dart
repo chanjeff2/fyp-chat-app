@@ -11,6 +11,7 @@ import 'package:fyp_chat_app/models/signed_pre_key.dart';
 import 'package:fyp_chat_app/models/user.dart';
 import 'package:fyp_chat_app/network/devices_api.dart';
 import 'package:fyp_chat_app/network/events_api.dart';
+import 'package:fyp_chat_app/network/account_api.dart';
 import 'package:fyp_chat_app/network/keys_api.dart';
 import 'package:fyp_chat_app/network/users_api.dart';
 import 'package:fyp_chat_app/signal/device_helper.dart';
@@ -21,9 +22,7 @@ import 'package:fyp_chat_app/storage/disk_session_store.dart';
 import 'package:fyp_chat_app/storage/disk_signed_pre_key_store.dart';
 import 'package:fyp_chat_app/storage/message_store.dart';
 import 'package:libsignal_protocol_dart/libsignal_protocol_dart.dart';
-import 'package:fyp_chat_app/dto/send_message_dto.dart';
 import 'package:fyp_chat_app/models/send_message_dao.dart';
-import 'package:fyp_chat_app/dto/device_dto.dart';
 
 class SignalClient {
   SignalClient._();
@@ -105,7 +104,7 @@ class SignalClient {
         final signedPreKey = keyBundle.deviceKeyBundles[0].signedPreKey;
         final retrievedPreKey = PreKeyBundle(
           await DiskIdentityKeyStore().getLocalRegistrationId(),
-          (senderDeviceId)!,
+          senderDeviceId,
           oneTimeKey?.id,
           oneTimeKey?.key,
           signedPreKey.id,
@@ -132,8 +131,12 @@ class SignalClient {
         sentTime = DateTime.now();
         _isSent = true;
       }
-      final message = SendMessageDao(senderDeviceId, recipientUserId,
-              device.deviceId, ciphertext, DateTime.now())
+      final message = SendMessageDao(
+              senderDeviceId,
+              recipientUserId,
+              device.deviceId,
+              ciphertext as PreKeySignalMessage,
+              DateTime.now())
           .toDto();
       //mark first message sent time only
 
@@ -141,9 +144,10 @@ class SignalClient {
     }
 
     // save message to disk
+    final myAccount = await AccountApi().getMe();
     final plainMessage = PlainMessage(
-      senderUserId: /*TODO: add sender user id */,
-      senderUsername: /*TODO: add sender user name */,
+      senderUserId: myAccount.userId,
+      senderUsername: myAccount.username,
       content: content,
       sentAt: sentTime,
     );
