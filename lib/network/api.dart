@@ -45,14 +45,20 @@ abstract class Api {
       // not expired
       return accessToken;
     }
-    final AccessTokenDto newAccessToken;
+    AccessTokenDto? newAccessToken;
     if (accessToken != null &&
         accessToken.isAccessTokenExpired() &&
-        !accessToken.isRefreshTokenExpired() &&
-        accessToken.refreshToken != null) {
+        accessToken.refreshToken != null &&
+        !accessToken.isRefreshTokenExpired()) {
       // access token expired, refresh token not expired
-      newAccessToken = await AuthApi().refreshToken(accessToken.refreshToken!);
-    } else {
+      try {
+        newAccessToken =
+            await AuthApi().refreshToken(accessToken.refreshToken!);
+      } catch (e) {
+        // refresh token failed
+      }
+    }
+    if (newAccessToken == null) {
       // both expired or token not exist
       final loginDto = await CredentialStore().getCredential();
       if (loginDto == null) {
@@ -100,8 +106,11 @@ abstract class Api {
       AccessToken accessToken = await _getAccessToken();
       headers['Authorization'] = 'Bearer ${accessToken.accessToken}';
     }
-    final response =
-        await http.post(url, headers: headers, body: json.encode(body));
+    final response = await http.post(
+      url,
+      headers: headers,
+      body: body != null ? json.encode(body) : null,
+    );
     return _processResponse(response);
   }
 
@@ -119,8 +128,11 @@ abstract class Api {
       AccessToken accessToken = await _getAccessToken();
       headers['Authorization'] = 'Bearer ${accessToken.accessToken}';
     }
-    final response =
-        await http.patch(url, headers: headers, body: json.encode(body));
+    final response = await http.patch(
+      url,
+      headers: headers,
+      body: body != null ? json.encode(body) : null,
+    );
     return _processResponse(response);
   }
 }
