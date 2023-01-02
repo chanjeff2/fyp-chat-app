@@ -81,7 +81,7 @@ class SignalClient {
     final keyBundle = KeyBundle.fromDto(keyList);
     DateTime sentTime = DateTime.now();
 
-    for (final key in keyBundle.deviceKeyBundles) {
+    keyBundle.deviceKeyBundles.forEach((key) async {
       final remoteAddress = SignalProtocolAddress(
         recipientUserId,
         key.deviceId,
@@ -130,7 +130,7 @@ class SignalClient {
       //mark first message sent time only
 
       EventsApi().sendMessage(message);
-    }
+    });
 
     // save message to disk
     final myAccount = await AccountApi().getMe();
