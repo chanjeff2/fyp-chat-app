@@ -76,14 +76,15 @@ class SignalClient {
     if (senderDeviceId == null) {
       throw Exception('Sender Device Id is null');
     }
-    final deviceList = await DevicesApi().getAllDevices();
-    deviceList.retainWhere((deviceDto) => deviceDto.id == recipientUserId);
-    bool _isSent = false;
+
+    final keyList = await KeysApi().getAllKeyBundle(recipientUserId);
+    final keyBundle = KeyBundle.fromDto(keyList);
     DateTime sentTime = DateTime.now();
-    for (final device in deviceList) {
+
+    for (final key in keyBundle.deviceKeyBundles) {
       final remoteAddress = SignalProtocolAddress(
         recipientUserId,
-        device.deviceId,
+        key.deviceId,
       );
       // check session is existed or not
       final containsSession =
@@ -97,11 +98,8 @@ class SignalClient {
           DiskIdentityKeyStore(),
           remoteAddress,
         );
-        final keyBundleDto =
-            await KeysApi().getKeyBundle(recipientUserId, device.deviceId);
-        final keyBundle = KeyBundle.fromDto(keyBundleDto);
-        final oneTimeKey = keyBundle.deviceKeyBundles[0].oneTimeKey;
-        final signedPreKey = keyBundle.deviceKeyBundles[0].signedPreKey;
+        final oneTimeKey = key.oneTimeKey;
+        final signedPreKey = key.signedPreKey;
         final retrievedPreKey = PreKeyBundle(
           await DiskIdentityKeyStore().getLocalRegistrationId(),
           senderDeviceId,
@@ -126,17 +124,8 @@ class SignalClient {
           .encrypt(Uint8List.fromList(utf8.encode(content)));
 
       // send message use EventsApi()
-      // TODO: ciphertext is CiphertextMessage type after encrypt, need PreKeySignalMessage
-      if (_isSent == false) {
-        sentTime = DateTime.now();
-        _isSent = true;
-      }
-      final message = SendMessageDao(
-              senderDeviceId,
-              recipientUserId,
-              device.deviceId,
-              ciphertext as PreKeySignalMessage,
-              DateTime.now())
+      final message = SendMessageDao(senderDeviceId, recipientUserId,
+              key.deviceId, ciphertext as PreKeySignalMessage, sentTime)
           .toDto();
       //mark first message sent time only
 
