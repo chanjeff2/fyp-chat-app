@@ -27,7 +27,7 @@ class AuthApi extends Api {
 
   Future<AccessTokenDto> refreshToken(String refreshToken) async {
     final json = await post(
-      "/login",
+      "/refresh-tokens",
       headers: {'Authorization': 'Bearer $refreshToken'},
     );
     return AccessTokenDto.fromJson(json);
