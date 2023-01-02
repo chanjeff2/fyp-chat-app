@@ -8,12 +8,14 @@ class SendMessageDao {
   final String recipientUserId;
   final int recipientDeviceId;
   final PreKeySignalMessage content;
+  final DateTime sentAt;
 
   SendMessageDao(
     this.senderDeviceId,
     this.recipientUserId,
     this.recipientDeviceId,
     this.content,
+    this.sentAt,
   );
 
   SendMessageDto toDto() {
@@ -22,6 +24,7 @@ class SendMessageDao {
       recipientUserId,
       recipientDeviceId,
       base64.encode(content.serialize()),
+      sentAt.toIso8601String(),
     );
   }
 }
