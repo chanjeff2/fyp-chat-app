@@ -11,7 +11,7 @@ class PreKey {
 
   PreKey.fromDto(PreKeyDto dto)
       : id = dto.id,
-        key = DjbECPublicKey(base64.decode(dto.key));
+        key = Curve.decodePoint(base64.decode(dto.key), 0);
 
   PreKey.fromPreKeyRecord(PreKeyRecord record)
       : id = record.id,
