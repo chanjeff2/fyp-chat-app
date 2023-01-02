@@ -40,7 +40,7 @@ class DiskStorage {
     return await openDatabase(
       join(await getDatabasesPath(), databasePath),
       password: password,
-      version: 10,
+      version: 11,
       onCreate: (db, version) {
         db.execute(
           "CREATE TABLE ${DiskIdentityKeyStore.table}(${TheirIdentityKey.createTableCommandFields});",
