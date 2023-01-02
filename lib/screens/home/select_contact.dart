@@ -4,6 +4,7 @@ import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter/material.dart';
 import 'package:fyp_chat_app/components/default_option.dart';
 import 'package:fyp_chat_app/components/contact_option.dart';
+import 'package:fyp_chat_app/models/user.dart';
 
 class SelectContact extends StatefulWidget {
   const SelectContact({Key? key}) : super(key: key);
@@ -15,73 +16,122 @@ class SelectContact extends StatefulWidget {
 class _SelectContactState extends State<SelectContact> {
   List<Contact> _contacts = [];
 
+  String addContactInput = "";
+
+  late TextEditingController addContactController;
+
   @override
   void initState() {
     // Add default items to list
-    
+
     super.initState();
+
+    addContactController = TextEditingController();
+  }
+
+  //dispose the add contact controller
+  @override
+  void dispose() {
+    addContactController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text("Select Contact"),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.only(top: 8),
-        child: ListView.builder(
-        itemCount: _contacts.length + 3,
-        itemBuilder: (context, index) {
-          switch (index) {
-            case 0: {
-              return InkWell(
-                onTap: () {
-                  /*
+        appBar: AppBar(
+          title: Text("Select Contact"),
+        ),
+        body: Padding(
+          padding: const EdgeInsets.only(top: 8),
+          child: ListView.builder(
+              itemCount: _contacts.length + 3,
+              itemBuilder: (context, index) {
+                switch (index) {
+                  case 0:
+                    {
+                      return InkWell(
+                        onTap: () {
+                          /*
                   Navigator.push(context,
                       MaterialPageRoute(builder: (builder) => CreateGroup()));
                   */
-                },
-                child: const DefaultOption(
-                  icon: Icons.group_add,
-                  name: "Add group",
-                ),
-              );
-            }
-            case 1: {
-              return InkWell(
-                onTap: () {
-                  /*
-                  Navigator.push(context,
-                      MaterialPageRoute(builder: (builder) => AddContacts()));
-                  */
-                },
-                child: const DefaultOption(
-                  icon: Icons.person_add,
-                  name: "Add contact",
-                ),
-              );
-            }
-            case 2: {
-              return const Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-                          child: Text("Contacts on USTalk",
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
+                        },
+                        child: const DefaultOption(
+                          icon: Icons.group_add,
+                          name: "Add group",
+                        ),
                       );
-            }
-            default: { return const ContactOption(); }
-          }
-        }),
-      ) 
-      
-    );
+                    }
+                  case 1:
+                    {
+                      return InkWell(
+                        onTap: () async {
+                          //The input name will now store in addContactInput
+                          final name = await addContactDialog();
+                          if (name == null || name.isEmpty) return;
+                          setState(() {
+                            addContactInput = name;
+                            //TODO send the contact username to server
+                            
+
+                          });
+                        },
+                        child: const DefaultOption(
+                          icon: Icons.person_add,
+                          name: "Add contact",
+                        ),
+                      );
+                    }
+                  case 2:
+                    {
+                      return const Padding(
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+                        child: Text(
+                          "Contacts on USTalk",
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      );
+                    }
+                  default:
+                    {
+                      return const ContactOption();
+                    }
+                }
+              }),
+        ));
   }
+
+  Future<String?> addContactDialog() => showDialog<String>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Add Contact'),
+          content: TextField(
+            autofocus: true,
+            decoration:
+                const InputDecoration(hintText: "Please enter the username"),
+            controller: addContactController,
+          ),
+          actions: [
+            TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop(addContactController.text);
+                  addContactController.clear();
+                },
+                child: const Text('Submit'))
+          ],
+        ),
+      );
 }
 
 // modal class for Contact, can remove later
 class Contact {
-   String nickname, status, id;
-   Image img;
-   Contact({required this.nickname, required this.status, required this.id, required this.img});
+  String nickname, status, id;
+  Image img;
+  Contact(
+      {required this.nickname,
+      required this.status,
+      required this.id,
+      required this.img});
 }
