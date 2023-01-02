@@ -71,7 +71,8 @@ class SignalClient {
     await KeysApi().updateKeys(dto);
   }
 
-  Future<void> sendMessage(String recipientUserId, String content) async {
+  Future<PlainMessage> sendMessage(
+      String recipientUserId, String content) async {
     final senderDeviceId = await DeviceInfoHelper().getDeviceId();
     if (senderDeviceId == null) {
       throw Exception('Sender Device Id is null');
@@ -150,6 +151,8 @@ class SignalClient {
 
     final messageId = await MessageStore().storeMessage(plainMessage);
     plainMessage.id = messageId;
+
+    return plainMessage;
   }
 
   Future<ReceivedPlainMessage?> processMessage(Message message) async {
@@ -173,35 +176,6 @@ class SignalClient {
       message.senderUserId,
       message.senderDeviceId,
     );
-    // check if session exist
-    final containsSession =
-        await DiskSessionStore().containsSession(remoteAddress);
-    if (!containsSession) {
-      // init session
-      final sessionBuilder = SessionBuilder(
-        DiskSessionStore(),
-        DiskPreKeyStore(),
-        DiskSignedPreKeyStore(),
-        DiskIdentityKeyStore(),
-        remoteAddress,
-      );
-      final keyBundleDto = await KeysApi()
-          .getKeyBundle(message.senderUserId, message.senderDeviceId);
-      final keyBundle = KeyBundle.fromDto(keyBundleDto);
-      final oneTimeKey = keyBundle.deviceKeyBundles[0].oneTimeKey;
-      final signedPreKey = keyBundle.deviceKeyBundles[0].signedPreKey;
-      final retrievedPreKey = PreKeyBundle(
-        await DiskIdentityKeyStore().getLocalRegistrationId(),
-        (await DeviceInfoHelper().getDeviceId())!,
-        oneTimeKey?.id,
-        oneTimeKey?.key,
-        signedPreKey.id,
-        signedPreKey.key,
-        signedPreKey.signature,
-        keyBundle.identityKey,
-      );
-      await sessionBuilder.processPreKeyBundle(retrievedPreKey);
-    }
     // decrypt message
     final remoteSessionCipher = SessionCipher(
       DiskSessionStore(),
