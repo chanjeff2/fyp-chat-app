@@ -48,8 +48,8 @@ abstract class Api {
     final AccessTokenDto newAccessToken;
     if (accessToken != null &&
         accessToken.isAccessTokenExpired() &&
-        !accessToken.isRefreshTokenExpired() &&
-        accessToken.refreshToken != null) {
+        accessToken.refreshToken != null &&
+        !accessToken.isRefreshTokenExpired()) {
       // access token expired, refresh token not expired
       newAccessToken = await AuthApi().refreshToken(accessToken.refreshToken!);
     } else {
@@ -100,8 +100,11 @@ abstract class Api {
       AccessToken accessToken = await _getAccessToken();
       headers['Authorization'] = 'Bearer ${accessToken.accessToken}';
     }
-    final response =
-        await http.post(url, headers: headers, body: json.encode(body));
+    final response = await http.post(
+      url,
+      headers: headers,
+      body: body != null ? json.encode(body) : null,
+    );
     return _processResponse(response);
   }
 
@@ -119,8 +122,11 @@ abstract class Api {
       AccessToken accessToken = await _getAccessToken();
       headers['Authorization'] = 'Bearer ${accessToken.accessToken}';
     }
-    final response =
-        await http.patch(url, headers: headers, body: json.encode(body));
+    final response = await http.patch(
+      url,
+      headers: headers,
+      body: body != null ? json.encode(body) : null,
+    );
     return _processResponse(response);
   }
 }
