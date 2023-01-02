@@ -36,7 +36,7 @@ class DiskIdentityKeyStore extends IdentityKeyStore {
     final result = await db.query(
       table,
       where:
-          '${TheirIdentityKey.columnName} = ? AND ${TheirIdentityKey.columnDeviceId} = ?',
+          '${TheirIdentityKey.columnUserId} = ? AND ${TheirIdentityKey.columnDeviceId} = ?',
       whereArgs: [address.getName(), address.getDeviceId()],
     );
     if (result.isEmpty) return null;
@@ -69,7 +69,7 @@ class DiskIdentityKeyStore extends IdentityKeyStore {
     final result = await db.query(
       table,
       where:
-          '${TheirIdentityKey.columnName} = ? AND ${TheirIdentityKey.columnDeviceId} = ?',
+          '${TheirIdentityKey.columnUserId} = ? AND ${TheirIdentityKey.columnDeviceId} = ?',
       whereArgs: [address.getName(), address.getDeviceId()],
     );
     if (result.isEmpty) {
@@ -94,7 +94,7 @@ class DiskIdentityKeyStore extends IdentityKeyStore {
     final result = await db.query(
       table,
       where:
-          '${TheirIdentityKey.columnName} = ? AND ${TheirIdentityKey.columnDeviceId} = ?',
+          '${TheirIdentityKey.columnUserId} = ? AND ${TheirIdentityKey.columnDeviceId} = ?',
       whereArgs: [address.getName(), address.getDeviceId()],
     );
     if (result.isEmpty) {
@@ -114,7 +114,7 @@ class DiskIdentityKeyStore extends IdentityKeyStore {
     } else {
       final identityKeyMap = TheirIdentityKey.fromIdentityKey(
         deviceId: address.getDeviceId(),
-        name: address.getName(),
+        userId: address.getName(),
         key: identityKey,
       ).toJson();
       // try update
@@ -122,7 +122,7 @@ class DiskIdentityKeyStore extends IdentityKeyStore {
         table,
         identityKeyMap,
         where:
-            '${TheirIdentityKey.columnName} = ? AND ${TheirIdentityKey.columnDeviceId} = ?',
+            '${TheirIdentityKey.columnUserId} = ? AND ${TheirIdentityKey.columnDeviceId} = ?',
         whereArgs: [address.getName(), address.getDeviceId()],
       );
       // if no existing record, insert new record

@@ -71,7 +71,7 @@ class SignalClient {
     // TODO: existing contacts should be cached
     final user = await UsersApi().getUserById(message.senderUserId);
     final remoteAddress = SignalProtocolAddress(
-      user.username,
+      message.senderUserId,
       message.senderDeviceId,
     );
     final containsSession =
