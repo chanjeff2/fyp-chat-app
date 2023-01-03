@@ -60,4 +60,22 @@ class ContactStore {
     // if no existing record, insert new record
     if (count == 0) await db.insert(table, userMap);
   }
+
+  Future<List<User>?> getAllContact() async {
+    final db = await DiskStorage().db;
+    final result = await db.query(
+      table,
+      where: '${User.columnUsername} = ?',
+    );
+    if (result.isEmpty) {
+      return null;
+    }
+    List<User> userList = [];
+
+    for (var i = 0; i < result.length; i++) {
+      userList.add(User.fromJson(result[i]));
+    }
+
+    return userList;
+  }
 }

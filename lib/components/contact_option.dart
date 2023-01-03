@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fyp_chat_app/screens/chatroom/chatroom.dart';
+import 'package:fyp_chat_app/screens/home/select_contact.dart';
 
 // Contact in selecting user, which shows status
 class ContactOption extends StatelessWidget {
@@ -7,13 +8,37 @@ class ContactOption extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container();
+    return InkWell(
+       onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                    builder: (context) => const ChatRoomScreen()
+                   )),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8.0),
+        child: Row(children: [
+          const SizedBox(width: 16.0),
+          CircleAvatar(
+            child: const Icon(Icons.person, size: 28, color: Colors.white),
+            radius: 28,
+            backgroundColor: Colors.blueGrey,
+          ),
+          const SizedBox(width: 12.0),
+          Text(
+            'Test user', // '${user.displayName ?? user.username}'
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ]),
+      ),
+    );
   }
 }
 
 // Contact in home page, which shows latest message and timestamp
 class HomeContact extends StatelessWidget {
-  const HomeContact({Key? key, required this.notifications}) : super(key: key); // Require session?
+  const HomeContact({Key? key, required this.notifications})
+      : super(key: key); // Require session?
   final int notifications;
 
   String parseNotifications(int notifications) {
@@ -27,9 +52,8 @@ class HomeContact extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: () => Navigator.of(context).push(MaterialPageRoute(
-                    builder: (context) => const ChatRoomScreen()
-                   )),
+      onTap: () => Navigator.of(context).push(
+          MaterialPageRoute(builder: (context) => const ChatRoomScreen())),
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 8.0),
         child: Row(
@@ -70,7 +94,8 @@ class HomeContact extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    color: (notifications > 0) ? Colors.redAccent : Colors.black,
+                    color:
+                        (notifications > 0) ? Colors.redAccent : Colors.black,
                   ),
                 ),
                 Container(
@@ -79,17 +104,21 @@ class HomeContact extends StatelessWidget {
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: (notifications > 0) ? Colors.redAccent : null, // Theme.of(context).primaryColor,
+                    color: (notifications > 0)
+                        ? Colors.redAccent
+                        : null, // Theme.of(context).primaryColor,
                   ),
-                  child: (notifications > 0) ? Text(
-                    parseNotifications(notifications),
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      color: Colors.white,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ) : null,
+                  child: (notifications > 0)
+                      ? Text(
+                          parseNotifications(notifications),
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            color: Colors.white,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        )
+                      : null,
                 ),
               ],
             ),
