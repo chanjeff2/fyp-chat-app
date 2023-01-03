@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:libsignal_protocol_dart/libsignal_protocol_dart.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -26,7 +29,7 @@ class DeviceInfoHelper {
     }
 
     final registrationId = generateRegistrationId(false);
-    final deviceName = "later use library to get";
+    final deviceName = await getDeviceName();
 
     // store registrationId and DeviceName
     final prefs = await SharedPreferences.getInstance();
@@ -38,6 +41,19 @@ class DeviceInfoHelper {
       name: deviceName,
       firebaseMessagingToken: fcmToken,
     );
+  }
+
+  Future<String> getDeviceName() async {
+    final deviceInfo = DeviceInfoPlugin();
+    if (Platform.isAndroid) {
+      final info = await deviceInfo.androidInfo;
+      return info.model;
+    } else if (Platform.isIOS) {
+      final info = await deviceInfo.iosInfo;
+      return info.model ?? "iOS device";
+    } else {
+      throw Exception("Error: not supported platform");
+    }
   }
 
   Future<void> setDeviceId(int deviceId) async {
