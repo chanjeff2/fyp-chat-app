@@ -1,7 +1,4 @@
-import 'dart:math'; // For testing purposes, delete later
-
 import 'package:flutter/material.dart';
-import 'package:fyp_chat_app/components/contact_option.dart';
 import 'package:fyp_chat_app/models/user_state.dart';
 import 'package:fyp_chat_app/screens/home/select_contact.dart';
 import 'package:fyp_chat_app/screens/settings/settings_screen.dart';
@@ -18,7 +15,6 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {  
   var appBarHeight = AppBar().preferredSize.height;
-  var _rng = new Random();
   final List<Widget> _contacts = [];
 
   @override
@@ -28,13 +24,6 @@ class _HomeScreenState extends State<HomeScreen> {
         appBar: AppBar(
           title: const Text("USTalk"),
           actions: [
-            IconButton(onPressed: () {
-                setState(() {
-                  _contacts.insert(0, HomeContact(notifications: _rng.nextInt(15)));
-                });
-              },
-              icon: const Icon(Icons.add),
-            ),
             IconButton(
               onPressed: () {
                 print("Search - To be implemented");
