@@ -138,8 +138,8 @@ class _HomeScreenState extends State<HomeScreen> {
         Navigator.of(context).push(_route(const SettingsScreen()));
         break;
       case 1:
-        await CredentialStore().removeCredential();
         await DevicesApi().removeDevice();
+        await CredentialStore().removeCredential();
         await DiskStorage().deleteDatabase();
         await SecureStorage().deleteAll();
         await (await SharedPreferences.getInstance()).clear();
