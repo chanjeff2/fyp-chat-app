@@ -83,4 +83,10 @@ class DiskStorage {
     );
     return base64UrlEncode(values);
   }
+
+  Future<void> deleteDatabase() async {
+    await databaseFactory
+        .deleteDatabase(join(await getDatabasesPath(), databasePath));
+    _database = null;
+  }
 }
