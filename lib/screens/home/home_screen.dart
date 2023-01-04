@@ -139,11 +139,11 @@ class _HomeScreenState extends State<HomeScreen> {
         break;
       case 1:
         await DevicesApi().removeDevice();
+        await AuthApi().logout();
         await CredentialStore().removeCredential();
         await DiskStorage().deleteDatabase();
         await SecureStorage().deleteAll();
         await (await SharedPreferences.getInstance()).clear();
-        await AuthApi().logout();
         userState.clearState();
         break;
     }
