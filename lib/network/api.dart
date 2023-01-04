@@ -137,4 +137,26 @@ abstract class Api {
     );
     return _processResponse(response);
   }
+
+  @protected
+  Future<dynamic> delete(
+    String path, {
+    Map<String, String>? headers,
+    Map<String, dynamic>? body,
+    bool useAuth = false,
+  }) async {
+    final url = Uri.parse("$baseUrl$pathPrefix$path");
+    headers ??= {};
+    headers['Content-Type'] = 'application/json; charset=UTF-8';
+    if (useAuth) {
+      AccessToken accessToken = await _getAccessToken();
+      headers['Authorization'] = 'Bearer ${accessToken.accessToken}';
+    }
+    final response = await http.delete(
+      url,
+      headers: headers,
+      body: body != null ? json.encode(body) : null,
+    );
+    return _processResponse(response);
+  }
 }
