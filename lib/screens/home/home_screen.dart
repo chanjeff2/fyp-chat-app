@@ -1,15 +1,15 @@
-import 'dart:math'; // For testing purposes, delete later
-
 import 'package:flutter/material.dart';
-import 'package:fyp_chat_app/components/contact_option.dart';
 import 'package:fyp_chat_app/models/user_state.dart';
 import 'package:fyp_chat_app/network/devices_api.dart';
 import 'package:fyp_chat_app/screens/home/select_contact.dart';
 import 'package:fyp_chat_app/screens/settings/settings_screen.dart';
 import 'package:fyp_chat_app/storage/credential_store.dart';
+import 'package:fyp_chat_app/models/user.dart';
+import 'package:fyp_chat_app/storage/contact_store.dart';
+import 'package:provider/provider.dart';
+import 'package:fyp_chat_app/components/contact_option.dart';
 import 'package:fyp_chat_app/storage/disk_storage.dart';
 import 'package:fyp_chat_app/storage/secure_storage.dart';
-import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -21,8 +21,24 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   var appBarHeight = AppBar().preferredSize.height;
-  var _rng = new Random();
-  final List<Widget> _contacts = [];
+  List<User> _contacts = [];
+
+  @override
+  initState() {
+    super.initState();
+    initializeContacts();
+  }
+
+  // Call here because initState does not allow async
+  void initializeContacts() async {
+    final List<User>? contacts = await ContactStore().getAllContact();
+    print(contacts);
+    if (contacts != null) {
+      setState(() {
+        _contacts = contacts;
+      });
+    } 
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -31,15 +47,6 @@ class _HomeScreenState extends State<HomeScreen> {
         appBar: AppBar(
           title: const Text("USTalk"),
           actions: [
-            IconButton(
-              onPressed: () {
-                setState(() {
-                  _contacts.insert(
-                      0, HomeContact(notifications: _rng.nextInt(15)));
-                });
-              },
-              icon: const Icon(Icons.add),
-            ),
             IconButton(
               onPressed: () {
                 print("Search - To be implemented");
@@ -55,8 +62,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 _onMenuItemSelected(value as int, userState);
               },
               itemBuilder: (context) => [
-                _buildPopupMenuItem('  Settings', Icons.settings, 0),
-                _buildPopupMenuItem('  Logout', Icons.logout, 1),
+                _buildPopupMenuItem('Settings', Icons.settings, 0),
+                _buildPopupMenuItem('Logout', Icons.logout, 1),
               ],
             ),
           ],
@@ -72,10 +79,13 @@ class _HomeScreenState extends State<HomeScreen> {
                     'Hi ${userState.me!.displayName ?? userState.me!.username}. You have no contacts')
               ] else ...[
                 Expanded(
-                    child: ListView.builder(
-                  itemCount: _contacts.length,
-                  itemBuilder: (context, index) => _contacts[index],
-                )),
+                  child: ListView.builder(
+                    itemCount: _contacts.length,
+                    itemBuilder: (context, index) {
+                      return HomeContact(contactInfo: _contacts[index], notifications: 69);
+                    },
+                  )
+                ),
               ],
             ],
           ),
@@ -116,10 +126,8 @@ class _HomeScreenState extends State<HomeScreen> {
       value: positon,
       child: Row(
         children: [
-          Icon(
-            iconData,
-            color: Colors.black,
-          ),
+          Icon(iconData, color: Colors.black,),
+          const SizedBox(width: 8),
           Text(title),
         ],
       ),
