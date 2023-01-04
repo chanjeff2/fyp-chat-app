@@ -23,6 +23,8 @@ class _SelectContactState extends State<SelectContact> {
     Contact(username: 'test2', id: 'test2')
   ];
 
+  final List<User> _localStorageContact = [];
+
   String addContactInput = "";
 
   late TextEditingController addContactController;
@@ -34,6 +36,9 @@ class _SelectContactState extends State<SelectContact> {
     super.initState();
 
     addContactController = TextEditingController();
+    //NOT debugged as database table storage may changed
+    ContactStore().getAllContact().then((value) => _localStorageContact);
+
   }
 
   //dispose the add contact controller
@@ -52,7 +57,7 @@ class _SelectContactState extends State<SelectContact> {
         body: Padding(
           padding: const EdgeInsets.only(top: 8),
           child: ListView.builder(
-              itemCount: _contacts.length + 3,
+              itemCount: _localStorageContact.length + 3,
               itemBuilder: (context, index) {
                 switch (index) {
                   case 0:
@@ -91,6 +96,8 @@ class _SelectContactState extends State<SelectContact> {
                                   id: addUser.userId));
                               //local storage on disk
                               ContactStore().storeContact(addUser);
+                              //NOT debugged as database table storage may changed
+                              ContactStore().getAllContact().then((value) => _localStorageContact);
                             });
 
                             //print(_contacts.length);

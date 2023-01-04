@@ -65,7 +65,6 @@ class ContactStore {
     final db = await DiskStorage().db;
     final result = await db.query(
       table,
-      where: '${User.columnUsername} = ?',
     );
     if (result.isEmpty) {
       return null;
