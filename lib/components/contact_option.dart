@@ -41,9 +41,11 @@ class HomeContact extends StatelessWidget {
     Key? key,
     required this.user,
     required this.unread,
+    this.onClick,
   }) : super(key: key); // Require session?
   final int unread;
   final User user;
+  final VoidCallback? onClick;
 
   String updateDateTime(DateTime latestActivityTime) {
     DateTime now = DateTime.now();
@@ -64,8 +66,7 @@ class HomeContact extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: () => Navigator.of(context).push(MaterialPageRoute(
-          builder: (context) => ChatRoomScreen(targetUser: user))),
+      onTap: onClick,
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 8.0),
         child: ListTile(

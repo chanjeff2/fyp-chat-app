@@ -1,6 +1,3 @@
-import 'package:flutter/src/foundation/key.dart';
-import 'package:flutter/src/widgets/container.dart';
-import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter/material.dart';
 import 'package:fyp_chat_app/components/default_option.dart';
 import 'package:fyp_chat_app/components/contact_option.dart';
@@ -11,7 +8,11 @@ import 'package:fyp_chat_app/network/users_api.dart';
 import '../../storage/contact_store.dart';
 
 class SelectContact extends StatefulWidget {
-  const SelectContact({Key? key}) : super(key: key);
+  const SelectContact({
+    Key? key,
+    this.onNewContact,
+  }) : super(key: key);
+  final void Function(User)? onNewContact;
 
   @override
   State<SelectContact> createState() => _SelectContactState();
@@ -56,70 +57,61 @@ class _SelectContactState extends State<SelectContact> {
               itemBuilder: (context, index) {
                 switch (index) {
                   case 0:
-                    {
-                      return InkWell(
-                        onTap: () {
-                          /*
+                    return InkWell(
+                      onTap: () {
+                        /*
                   Navigator.push(context,
                       MaterialPageRoute(builder: (builder) => CreateGroup()));
                   */
-                        },
-                        child: const DefaultOption(
-                          icon: Icons.group_add,
-                          name: "Add group",
-                        ),
-                      );
-                    }
-                  case 1:
-                    {
-                      return InkWell(
-                        onTap: () async {
-                          //Pop up screen for add content
-                          final name = await addContactDialog();
-                          if (name == null || name.isEmpty) return;
-                          setState(() {
-                            addContactInput = name;
-                          });
-                          //add the user to local storage contact
-                          try {
-                            User addUser = User.fromDto(await UsersApi()
-                                .getUserByUsername(addContactInput));
-                            setState(() {
-                              //temp storage as prototype
-                              _contacts.add(Contact(
-                                  username: addUser.username,
-                                  id: addUser.userId));
-                            });
-                            //local storage on disk
-                            ContactStore().storeContact(addUser);
+                      },
+                      child: const DefaultOption(
+                        icon: Icons.group_add,
+                        name: "Add group",
+                      ),
+                    );
 
-                            //print(_contacts.length);
-                          } on ApiException catch (e) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text("error: ${e.message}")));
-                          }
-                        },
-                        child: const DefaultOption(
-                          icon: Icons.person_add,
-                          name: "Add contact",
-                        ),
-                      );
-                    }
+                  case 1:
+                    return InkWell(
+                      onTap: () async {
+                        //Pop up screen for add content
+                        final name = await addContactDialog();
+                        if (name == null || name.isEmpty) return;
+                        setState(() {
+                          addContactInput = name;
+                        });
+                        //add the user to local storage contact
+                        try {
+                          User addUser = User.fromDto(await UsersApi()
+                              .getUserByUsername(addContactInput));
+                          //local storage on disk
+                          ContactStore().storeContact(addUser);
+                          // callback and return to home
+                          Navigator.of(context).pop();
+                          widget.onNewContact?.call(addUser);
+                          //print(_contacts.length);
+                        } on ApiException catch (e) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text("error: ${e.message}")));
+                        }
+                      },
+                      child: const DefaultOption(
+                        icon: Icons.person_add,
+                        name: "Add contact",
+                      ),
+                    );
+
                   case 2:
-                    {
-                      return const Padding(
-                        padding:
-                            EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-                        child: Text(
-                          "Contacts on USTalk",
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                      );
-                    }
+                    return const Padding(
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+                      child: Text(
+                        "Contacts on USTalk",
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    );
+
                   default:
-                    {
-                      return ContactOption();
-                    }
+                    return ContactOption();
                 }
               }),
         ));

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -6,15 +7,13 @@ import 'package:fyp_chat_app/models/user.dart';
 import 'package:fyp_chat_app/models/user_state.dart';
 import 'package:fyp_chat_app/network/auth_api.dart';
 import 'package:fyp_chat_app/network/devices_api.dart';
+import 'package:fyp_chat_app/screens/chatroom/chatroom.dart';
 import 'package:fyp_chat_app/screens/home/select_contact.dart';
 import 'package:fyp_chat_app/screens/register_or_login/loading_screen.dart';
 import 'package:fyp_chat_app/screens/settings/settings_screen.dart';
 import 'package:fyp_chat_app/storage/contact_store.dart';
 import 'package:fyp_chat_app/storage/credential_store.dart';
-import 'package:fyp_chat_app/models/user.dart';
-import 'package:fyp_chat_app/storage/contact_store.dart';
 import 'package:provider/provider.dart';
-import 'package:fyp_chat_app/components/contact_option.dart';
 import 'package:fyp_chat_app/storage/disk_storage.dart';
 import 'package:fyp_chat_app/storage/secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -28,16 +27,15 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   var appBarHeight = AppBar().preferredSize.height;
-  late Future<List<User>> _contacts;
-
-  Future<List<User>> _getContacts() async {
-    return await ContactStore().getAllContact();
-  }
+  late final StreamController<List<User>> _contactStreamController;
 
   @override
   void initState() {
     super.initState();
-    _contacts = _getContacts();
+    _contactStreamController = StreamController(onListen: () async {
+      final contacts = await ContactStore().getAllContact();
+      _contactStreamController.add(contacts);
+    });
   }
 
   @override
@@ -68,26 +66,39 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ],
         ),
-        body: FutureBuilder<List<User>>(
-          future: _contacts,
+        body: StreamBuilder<List<User>>(
+          stream: _contactStreamController.stream,
           builder: (_, snapshot) {
             if (!snapshot.hasData) {
               return const Center(
                 child: LoadingScreen(),
               );
             }
-            final contact = snapshot.data!;
+            final contacts = snapshot.data!;
             final _rng = Random();
             return ListView.builder(
-              itemBuilder: (_, i) =>
-                  HomeContact(user: contact[i], unread: _rng.nextInt(15)),
-              itemCount: contact.length,
+              itemBuilder: (_, i) => HomeContact(
+                user: contacts[i],
+                unread: _rng.nextInt(15),
+                onClick: () {
+                  Navigator.of(context).push(MaterialPageRoute(
+                      builder: (context) =>
+                          ChatRoomScreen(targetUser: contacts[i])));
+                },
+              ),
+              itemCount: contacts.length,
             );
           },
         ),
         floatingActionButton: FloatingActionButton(
           onPressed: () {
-            Navigator.of(context).push(_route(const SelectContact()));
+            Navigator.of(context).push(_route(SelectContact(
+              onNewContact: (contact) {
+                _contactStreamController.add([contact]);
+                Navigator.of(context).push(MaterialPageRoute(
+                    builder: (_) => ChatRoomScreen(targetUser: contact)));
+              },
+            )));
           },
           tooltip: 'Increment',
           child: const Icon(Icons.add),
