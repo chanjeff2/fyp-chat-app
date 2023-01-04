@@ -136,32 +136,20 @@ class ContactInfo extends StatelessWidget {
               const SizedBox(height: 8),
               const Divider(thickness: 2, indent: 8, endIndent: 8),
               // Status / Group description
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                child: GestureDetector(
-                  onTap: () { /* isGroup ? EditGroupDescription : null */ },
-                  child: Row(
-                    children: [
-                      const SizedBox(width: 16),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            isGroup ? "Group description" : "Status",
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                          const Text(
-                            "Hi! I'm using USTalk.",
-                            style: TextStyle(
-                              fontSize: 16,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
+              GestureDetector(
+                child: ListTile(
+                  title: Text(
+                    isGroup ? "Group description" : "Status",
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  subtitle: const Text(
+                    "Hi! I'm using USTalk.",
+                    style: TextStyle(
+                      fontSize: 16,
+                    ),
                   ),
                 ),
               ),
@@ -169,32 +157,23 @@ class ContactInfo extends StatelessWidget {
               // Disappearing Messages
               InkWell(
                 onTap: () { /* isGroup ? EditGroupDescription : null */ },
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  child: Row(
-                    children: [
-                      const SizedBox(width: 16),
-                      const Icon(Icons.speed_rounded),
-                      const SizedBox(width: 16),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            "Disappearing Messages",
-                            style: TextStyle(
-                              fontSize: 16,
-                            ),
-                          ),
-                          Text(
-                            "Off", // disappearing ? "On" : "Off"
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.grey.shade600,
-                            ),
-                          ),
-                        ],
-                      )
-                    ],
+                child: ListTile(
+                  leading: const SizedBox(
+                    height: double.infinity,
+                    child: Icon(Icons.speed_rounded, color: Colors.black),
+                  ),
+                  title: const Text(
+                    "Disappearing Messages",
+                    style: TextStyle(
+                      fontSize: 16,
+                    ),
+                  ),
+                  subtitle: Text(
+                    "Off", // disappearing ? "On" : "Off"
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey.shade600,
+                    ),
                   ),
                 ),
               ),
@@ -202,34 +181,25 @@ class ContactInfo extends StatelessWidget {
               if (!isGroup) ...[
                 InkWell(
                   onTap: () { /* isGroup ? EditGroupDescription : null */ },
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    child: Row(
-                      children: [
-                        const SizedBox(width: 16),
-                        const Icon(Icons.verified_user_outlined),
-                        const SizedBox(width: 16),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              "View Safety number",
-                              style: TextStyle(
-                                fontSize: 16,
-                              ),
-                            ),
-                            Text(
-                              "All messages are end-to-end encrypted.Tap to verify.",
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: Colors.grey.shade600,
-                              ),
-                            ),
-                          ],
-                        )
-                      ],
+                  child: ListTile(
+                    leading: const SizedBox(
+                      height: double.infinity,
+                      child: Icon(Icons.verified_user_outlined, color: Colors.black),
                     ),
-                  ),
+                    title: const Text(
+                      "View Safety number",
+                      style: TextStyle(
+                        fontSize: 16,
+                      ),
+                    ),
+                    subtitle: Text(
+                      "All messages are end-to-end encrypted.Tap to verify.",
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+                  )
                 ),
               ],
               const Divider(thickness: 2, indent: 8, endIndent: 8),
@@ -374,46 +344,31 @@ class ContactInfo extends StatelessWidget {
               if (isGroup) ...[
                 InkWell(
                   onTap: () { /* confirm => process leave group */ } ,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    child: Row(
-                      children: const [
-                        SizedBox(width: 16),
-                        Icon(Icons.exit_to_app, size: 24, color: Colors.red),
-                        SizedBox(width: 16),
-                        Text(
-                          "Leave Group",
-                          style: TextStyle(
-                            color: Colors.red,
-                            fontSize: 18
-                          )
-                        )
-                      ],
+                  child: const ListTile(
+                    leading: Icon(Icons.exit_to_app, size: 24, color: Colors.red),
+                    title: Text(
+                      "Leave Group",
+                      style: TextStyle(
+                        color: Colors.red,
+                        fontSize: 18
+                      ),
                     ),
                   ),
                 ),
               ],
               InkWell(
                 onTap: () { /* block user */ } ,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  child: Row(
-                    children: [
-                      const SizedBox(width: 16),
-                      const Icon(Icons.block, size: 24, color: Colors.red),
-                      const SizedBox(width: 16),
-                      Text(
-                        "Block${isGroup ? ' Group' : ''}",
-                        style: const TextStyle(
-                          color: Colors.red,
-                          fontSize: 18
-                        )
-                      )
-                    ],
+                child: ListTile(
+                  leading: const Icon(Icons.block, size: 24, color: Colors.red),
+                  title: Text(
+                    "Block${isGroup ? ' Group' : ''}",
+                    style: const TextStyle(
+                      color: Colors.red,
+                      fontSize: 18
+                    ),
                   ),
                 ),
               ),
-
               const SizedBox(height: 20),
             ],
           ),

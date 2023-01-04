@@ -74,17 +74,10 @@ class SettingsScreen extends StatelessWidget {
   InkWell _renderOption(String title, IconData iconData, BuildContext context) {
     return InkWell(
       onTap: () => _onSettingsSelected(title, context),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        child: Row(
-          children: [
-            const SizedBox(width: 16),
-            Icon(iconData, color: Colors.black),
-            const SizedBox(width: 16),
-            Text(title, style: const TextStyle(fontWeight: FontWeight.w500)),
-          ],
-        ),
-      ),
+      child: ListTile(
+        leading: Icon(iconData, color: Colors.black),
+        title: Text(title, style: const TextStyle(fontWeight: FontWeight.w500)),
+      )
     );
   }
 
