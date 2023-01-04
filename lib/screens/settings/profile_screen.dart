@@ -62,64 +62,40 @@ class ProfileScreen extends StatelessWidget {
             // Display name
             InkWell(
               onTap: () {},
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                child: Row(
-                  children: [
-                    const SizedBox(width: 16),
-                    const Icon(Icons.person, color: Colors.black, size: 30,),
-                    const SizedBox(width: 16),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text("Display Name", 
-                          style: TextStyle(fontWeight: FontWeight.w500, fontSize: 16),
-                        ),
-                        
-                        Text(
-                          userState.me!.displayName ?? userState.me!.username,
-                          style: const TextStyle(fontSize: 18),
-                        ),
-                      ],
-                    ),
-                    const Spacer(),
-                    Icon(Icons.edit, color: Theme.of(context).primaryColor),
-                    const SizedBox(width: 16),
-                  ],
+              child: ListTile(
+                leading: const SizedBox(
+                  height: double.infinity,
+                  child: Icon(Icons.person, color: Colors.black, size: 30),
                 ),
-              ),
+                title: const Text("Display Name", 
+                  style: TextStyle(fontWeight: FontWeight.w500, fontSize: 16),
+                ),
+                subtitle: Text(
+                  userState.me!.displayName ?? userState.me!.username,
+                  style: const TextStyle(fontSize: 18),
+                ),
+                trailing: Icon(Icons.edit, color: Theme.of(context).primaryColor),
+              )
             ),
             const Divider(thickness: 2, indent: 62),
             // Status
             InkWell(
               onTap: () {},
-              child: Padding(
-                padding: EdgeInsets.symmetric(vertical: 16),
-                child: Row(
-                  children: [
-                    const SizedBox(width: 16),
-                    const Icon(Icons.info_outline, color: Colors.black, size: 30,),
-                    const SizedBox(width: 16),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text("Status", 
-                          style: TextStyle(fontWeight: FontWeight.w500, fontSize: 16),
-                        ),
-                        
-                        Text(
-                          // ${userState.me!.displayName ?? userState.me!.username}
-                          "Hi! I'm using USTalk.",
-                          style: TextStyle(fontSize: 18),
-                        ),
-                      ],
-                    ),
-                    const Spacer(),
-                    Icon(Icons.edit, color: Theme.of(context).primaryColor),
-                    const SizedBox(width: 16),
-                  ],
+              child: ListTile(
+                leading: const SizedBox(
+                  height: double.infinity,
+                  child: Icon(Icons.info_outline, color: Colors.black, size: 30),
                 ),
-              ),
+                title: const Text("Status", 
+                  style: TextStyle(fontWeight: FontWeight.w500, fontSize: 16),
+                ),
+                subtitle: const Text(
+                  // ${userState.me!.status}
+                  "Hi! I'm using USTalk.",
+                  style: TextStyle(fontSize: 18),
+                ),
+                trailing: Icon(Icons.edit, color: Theme.of(context).primaryColor),
+              )
             ),
           ],
         ),
