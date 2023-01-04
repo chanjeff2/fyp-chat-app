@@ -14,14 +14,14 @@ class ContactOption extends StatelessWidget {
       //              )),
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 8.0),
-        child: Row(children: [
-          const SizedBox(width: 16.0),
+        child: Row(children: const [
+          SizedBox(width: 16.0),
           CircleAvatar(
-            child: const Icon(Icons.person, size: 28, color: Colors.white),
+            child: Icon(Icons.person, size: 28, color: Colors.white),
             radius: 28,
             backgroundColor: Colors.blueGrey,
           ),
-          const SizedBox(width: 12.0),
+          SizedBox(width: 12.0),
           Text(
             'Test user', // '${user.displayName ?? user.username}'
             style: TextStyle(
@@ -44,6 +44,22 @@ class HomeContact extends StatelessWidget {
   }) : super(key: key); // Require session?
   final int unread;
   final User user;
+
+  String updateDateTime(DateTime latestActivityTime) {
+    DateTime now = DateTime.now();
+    DateTime dayBegin = DateTime(now.year, now.month, now.day);
+    final diff = dayBegin.difference(latestActivityTime).inDays;
+    if (diff < 1) {
+      return "${latestActivityTime.hour.toString().padLeft(2, '0')}:${latestActivityTime.minute.toString().padLeft(2, '0')}";
+    }
+    if (diff == 1) {
+      return "Yesterday";
+    }
+    if (diff > 1) {
+      return "${latestActivityTime.day.toString()}/${latestActivityTime.month.toString()}/${latestActivityTime.year.toString()}";
+    }
+    return "HOW?";
+  }
 
   @override
   Widget build(BuildContext context) {

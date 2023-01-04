@@ -11,9 +11,12 @@ import 'package:fyp_chat_app/screens/register_or_login/loading_screen.dart';
 import 'package:fyp_chat_app/screens/settings/settings_screen.dart';
 import 'package:fyp_chat_app/storage/contact_store.dart';
 import 'package:fyp_chat_app/storage/credential_store.dart';
+import 'package:fyp_chat_app/models/user.dart';
+import 'package:fyp_chat_app/storage/contact_store.dart';
+import 'package:provider/provider.dart';
+import 'package:fyp_chat_app/components/contact_option.dart';
 import 'package:fyp_chat_app/storage/disk_storage.dart';
 import 'package:fyp_chat_app/storage/secure_storage.dart';
-import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -59,8 +62,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 _onMenuItemSelected(value as int, userState);
               },
               itemBuilder: (context) => [
-                _buildPopupMenuItem('  Settings', Icons.settings, 0),
-                _buildPopupMenuItem('  Logout', Icons.logout, 1),
+                _buildPopupMenuItem('Settings', Icons.settings, 0),
+                _buildPopupMenuItem('Logout', Icons.logout, 1),
               ],
             ),
           ],
@@ -122,6 +125,7 @@ class _HomeScreenState extends State<HomeScreen> {
             iconData,
             color: Colors.black,
           ),
+          const SizedBox(width: 8),
           Text(title),
         ],
       ),
