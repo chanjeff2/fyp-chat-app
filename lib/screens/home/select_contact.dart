@@ -87,7 +87,6 @@ class _SelectContactState extends State<SelectContact> {
                                   setState(() {
                                     addContactInput = name;
                                   });
-                                  print(_localStorageContact);
                                   //add the user to local storage contact
                                   try {
                                     User addUser = User.fromDto(await UsersApi()
@@ -95,9 +94,7 @@ class _SelectContactState extends State<SelectContact> {
                                     setState(() {
                                       //local storage on disk
                                       ContactStore().storeContact(addUser);
-                                      //NOT debugged as database table storage may changed
                                     });
-                                    print(_localStorageContact);
                                   } on ApiException catch (e) {
                                     ScaffoldMessenger.of(context).showSnackBar(
                                         SnackBar(
