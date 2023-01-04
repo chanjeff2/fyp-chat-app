@@ -1,9 +1,8 @@
-import 'dart:convert';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fyp_chat_app/dto/device_key_bundle_dto.dart';
 import 'package:fyp_chat_app/dto/key_bundle_dto.dart';
+import 'package:fyp_chat_app/extensions/signal_lib_extension.dart';
 import 'package:fyp_chat_app/models/key_bundle.dart';
 import 'package:fyp_chat_app/models/pre_key.dart';
 import 'package:fyp_chat_app/models/signed_pre_key.dart';
@@ -25,7 +24,7 @@ void main() {
       ),
     ];
     final keyBundleDto = KeyBundleDto(
-      identityKey: base64.encode(identityKeyPair.getPublicKey().serialize()),
+      identityKey: identityKeyPair.getPublicKey().encodeToString(),
       deviceKeyBundles: deviceKeyBundlesDto,
     );
     final keyBundle = KeyBundle.fromDto(keyBundleDto);

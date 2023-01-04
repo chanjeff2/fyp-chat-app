@@ -1,6 +1,5 @@
-import 'dart:convert';
-
 import 'package:collection/collection.dart';
+import 'package:fyp_chat_app/extensions/signal_lib_extension.dart';
 import 'package:fyp_chat_app/models/their_identity_key.dart';
 import 'package:fyp_chat_app/signal/device_helper.dart';
 import 'package:fyp_chat_app/storage/disk_storage.dart';
@@ -26,7 +25,7 @@ class DiskIdentityKeyStore extends IdentityKeyStore {
   Future<void> storeIdentityKeyPair(IdentityKeyPair identityKeyPair) async {
     await SecureStorage().write(
       key: identityKeyPairKey,
-      value: base64.encode(identityKeyPair.serialize()),
+      value: identityKeyPair.encodeToString(),
     );
   }
 
@@ -46,8 +45,7 @@ class DiskIdentityKeyStore extends IdentityKeyStore {
   @override
   Future<IdentityKeyPair> getIdentityKeyPair() async {
     final result = await SecureStorage().read(key: identityKeyPairKey);
-    final serialized = base64.decode(result!);
-    return IdentityKeyPair.fromSerialized(serialized);
+    return IdentityKeyPairExtension.decodeFromString(result!);
   }
 
   @override
@@ -63,25 +61,25 @@ class DiskIdentityKeyStore extends IdentityKeyStore {
       IdentityKey? identityKey, Direction direction) async {
     return true; // allow all in-coming and out-going message
     // shortcut if identityKey is null
-    if (identityKey == null) {
-      return false;
-    }
-    final db = await DiskStorage().db;
-    final result = await db.query(
-      table,
-      where:
-          '${TheirIdentityKey.columnUserId} = ? AND ${TheirIdentityKey.columnDeviceId} = ?',
-      whereArgs: [address.getName(), address.getDeviceId()],
-    );
-    if (result.isEmpty) {
-      return false;
-    }
-    final identityKeyOnDisk =
-        TheirIdentityKey.fromJson(result[0]).toIdentityKey();
-    return const ListEquality().equals(
-      identityKeyOnDisk.serialize(),
-      identityKey.serialize(),
-    );
+    // if (identityKey == null) {
+    //   return false;
+    // }
+    // final db = await DiskStorage().db;
+    // final result = await db.query(
+    //   table,
+    //   where:
+    //       '${TheirIdentityKey.columnUserId} = ? AND ${TheirIdentityKey.columnDeviceId} = ?',
+    //   whereArgs: [address.getName(), address.getDeviceId()],
+    // );
+    // if (result.isEmpty) {
+    //   return false;
+    // }
+    // final identityKeyOnDisk =
+    //     TheirIdentityKey.fromJson(result[0]).toIdentityKey();
+    // return const ListEquality().equals(
+    //   identityKeyOnDisk.serialize(),
+    //   identityKey.serialize(),
+    // );
   }
 
   @override

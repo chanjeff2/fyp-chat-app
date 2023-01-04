@@ -1,6 +1,5 @@
-import 'dart:convert';
-
 import 'package:fyp_chat_app/dto/send_message_dto.dart';
+import 'package:fyp_chat_app/extensions/signal_lib_extension.dart';
 import 'package:libsignal_protocol_dart/libsignal_protocol_dart.dart';
 
 class SendMessageDao {
@@ -23,7 +22,7 @@ class SendMessageDao {
       senderDeviceId,
       recipientUserId,
       recipientDeviceId,
-      base64.encode(content.serialize()),
+      content.encodeToString(),
       sentAt.toIso8601String(),
     );
   }

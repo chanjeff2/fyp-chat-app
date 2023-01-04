@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'dart:typed_data';
-import 'package:flutter/material.dart';
 
 import 'package:fyp_chat_app/dto/update_keys_dto.dart';
+import 'package:fyp_chat_app/extensions/signal_lib_extension.dart';
 import 'package:fyp_chat_app/models/key_bundle.dart';
 import 'package:fyp_chat_app/models/message.dart';
 import 'package:fyp_chat_app/models/plain_message.dart';
@@ -63,7 +63,7 @@ class SignalClient {
     // upload keys to Server
     final dto = UpdateKeysDto(
       (await DeviceInfoHelper().getDeviceId())!,
-      identityKey: base64.encode(identityKeyPair.getPublicKey().serialize()),
+      identityKey: identityKeyPair.getPublicKey().encodeToString(),
       oneTimeKeys:
           oneTimeKeys.map((e) => PreKey.fromPreKeyRecord(e).toDto()).toList(),
       signedPreKey: SignedPreKey.fromSignedPreKeyRecord(signedPreKey).toDto(),

@@ -1,5 +1,4 @@
-import 'dart:convert';
-
+import 'package:fyp_chat_app/extensions/signal_lib_extension.dart';
 import 'package:libsignal_protocol_dart/libsignal_protocol_dart.dart';
 
 import '../dto/message_dto.dart';
@@ -20,6 +19,6 @@ class Message {
   Message.fromDto(MessageDto dto)
       : senderUserId = dto.senderUserId,
         senderDeviceId = int.parse(dto.senderDeviceId),
-        content = PreKeySignalMessage(base64.decode(dto.content)),
+        content = PreKeySignalMessageExtension.decodeFromString(dto.content),
         sentAt = DateTime.parse(dto.sentAt);
 }

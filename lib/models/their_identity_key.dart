@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:fyp_chat_app/extensions/signal_lib_extension.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:libsignal_protocol_dart/libsignal_protocol_dart.dart';
 
@@ -33,9 +34,9 @@ class TheirIdentityKey {
     required this.deviceId,
     required this.userId,
     required IdentityKey key,
-  }) : key = base64.encode(key.serialize());
+  }) : key = key.encodeToString();
 
   IdentityKey toIdentityKey() {
-    return IdentityKey.fromBytes(base64.decode(key), 0);
+    return IdentityKeyExtension.decodeFromString(key);
   }
 }
