@@ -1,17 +1,16 @@
 import 'dart:io' show Platform;
-
 import 'package:flutter/material.dart';
+import 'package:fyp_chat_app/models/user.dart';
 import 'package:fyp_chat_app/models/user_state.dart';
 import 'package:fyp_chat_app/screens/chatroom/contact_info.dart';
-import 'package:fyp_chat_app/storage/message_store.dart';
 import 'package:provider/provider.dart';
 import 'package:fyp_chat_app/signal/signal_client.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 
 class ChatRoomScreen extends StatefulWidget {
-  const ChatRoomScreen({Key? key, required this.recipientId}) : super(key: key);
+  const ChatRoomScreen({Key? key, required this.recipient}) : super(key: key);
 
-  final String recipientId;
+  final User recipient;
   @override
   State<ChatRoomScreen> createState() => _ChatRoomScreenState();
 }
@@ -23,7 +22,6 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
   bool _emojiBoardShown = false;
   //temporary message storage in array
   final List<Widget> _messages = [];
-
   String get message => _messageController.text;
 
   /*
@@ -47,36 +45,11 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
   */
   void _submitMsg(String message) async {
     // send message by using signal client
-    SignalClient().sendMessage(widget.recipientId, message);
+    SignalClient().sendMessage(widget.recipient.userId, message);
     _messageController.clear();
     _textMessage = false;
-    final messageList =
-        await MessageStore().getMessageByUserId(widget.recipientId);
-    print(messageList);
   }
 
-  /*
-  void _processMsg() {
-    // get message from message store
-    _messages. await MessageStore().getMessageByUserId(widget.recipientId);
-    
-    // decorate the message with message bubble
-    
-    // Get the current time
-    DateTime now = DateTime.now();
-    String parsedTime =
-        "${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}";
-    //add the text into message array for temporary storage
-    setState(() {
-      _messages.insert(
-          0,
-          Container(
-              child: MessageBubble(
-                  text: message, time: parsedTime, isCurrentUser: true),
-              alignment: Alignment.centerRight));
-    });
-  }
-  */
   @override
   Widget build(BuildContext context) {
     return Consumer<UserState>(
@@ -118,9 +91,9 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                   MaterialPageRoute(builder: (context) => const ContactInfo())),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
-                  Text("Test user"), //TODO: add target name to title
-                  Text(
+                children: [
+                  Text(widget.recipient.username),
+                  const Text(
                     "Online",
                     style:
                         TextStyle(fontWeight: FontWeight.normal, fontSize: 14),
@@ -350,21 +323,16 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
   _onMenuItemSelected(int value, UserState userState) {
     switch (value) {
       case 0:
-        {
-          break;
-        }
+        break;
+
       case 1:
-        {
-          break;
-        }
+        break;
+
       case 2:
-        {
-          break;
-        }
+        break;
+
       case 3:
-        {
-          break;
-        }
+        break;
     }
   }
 }
