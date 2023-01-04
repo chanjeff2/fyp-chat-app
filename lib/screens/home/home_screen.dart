@@ -1,11 +1,15 @@
-import 'dart:math'; // For testing purposes, delete later
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:fyp_chat_app/components/contact_option.dart';
+import 'package:fyp_chat_app/models/user.dart';
 import 'package:fyp_chat_app/models/user_state.dart';
+import 'package:fyp_chat_app/network/auth_api.dart';
 import 'package:fyp_chat_app/network/devices_api.dart';
 import 'package:fyp_chat_app/screens/home/select_contact.dart';
+import 'package:fyp_chat_app/screens/register_or_login/loading_screen.dart';
 import 'package:fyp_chat_app/screens/settings/settings_screen.dart';
+import 'package:fyp_chat_app/storage/contact_store.dart';
 import 'package:fyp_chat_app/storage/credential_store.dart';
 import 'package:fyp_chat_app/storage/disk_storage.dart';
 import 'package:fyp_chat_app/storage/secure_storage.dart';
@@ -21,8 +25,17 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   var appBarHeight = AppBar().preferredSize.height;
-  var _rng = new Random();
-  final List<Widget> _contacts = [];
+  late Future<List<User>> _contacts;
+
+  Future<List<User>> _getContacts() async {
+    return await ContactStore().getAllContact();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _contacts = _getContacts();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -31,15 +44,6 @@ class _HomeScreenState extends State<HomeScreen> {
         appBar: AppBar(
           title: const Text("USTalk"),
           actions: [
-            IconButton(
-              onPressed: () {
-                setState(() {
-                  _contacts.insert(
-                      0, HomeContact(notifications: _rng.nextInt(15)));
-                });
-              },
-              icon: const Icon(Icons.add),
-            ),
             IconButton(
               onPressed: () {
                 print("Search - To be implemented");
@@ -61,24 +65,22 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ],
         ),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: _contacts.isEmpty
-                ? MainAxisAlignment.center
-                : MainAxisAlignment.start,
-            children: <Widget>[
-              if (_contacts.isEmpty) ...[
-                Text(
-                    'Hi ${userState.me!.displayName ?? userState.me!.username}. You have no contacts')
-              ] else ...[
-                Expanded(
-                    child: ListView.builder(
-                  itemCount: _contacts.length,
-                  itemBuilder: (context, index) => _contacts[index],
-                )),
-              ],
-            ],
-          ),
+        body: FutureBuilder<List<User>>(
+          future: _contacts,
+          builder: (_, snapshot) {
+            if (!snapshot.hasData) {
+              return const Center(
+                child: LoadingScreen(),
+              );
+            }
+            final contact = snapshot.data!;
+            final _rng = Random();
+            return ListView.builder(
+              itemBuilder: (_, i) =>
+                  HomeContact(user: contact[i], unread: _rng.nextInt(15)),
+              itemCount: contact.length,
+            );
+          },
         ),
         floatingActionButton: FloatingActionButton(
           onPressed: () {
@@ -137,6 +139,7 @@ class _HomeScreenState extends State<HomeScreen> {
         await DiskStorage().deleteDatabase();
         await SecureStorage().deleteAll();
         await (await SharedPreferences.getInstance()).clear();
+        await AuthApi().logout();
         userState.clearState();
         break;
     }
