@@ -21,43 +21,38 @@ class SettingsScreen extends StatelessWidget {
         body: Column(
         children: <Widget>[
           InkWell(
-            onTap: () => Navigator.of(context).push(MaterialPageRoute(
-                          builder: (context) => const ProfileScreen()
-                         )),
+            onTap: () {
+              Navigator.of(context).push(MaterialPageRoute(
+                builder: (context) => const ProfileScreen()
+              ));
+            },
             child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              child: Row(
-                children: <Widget>[
-                  const SizedBox(width: 16),
-                  const CircleAvatar(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: ListTile(
+                leading: const SizedBox(
+                  height: double.infinity,
+                  child: CircleAvatar(
                     // child: profilePicture ? null : Icon(Icons.person, size: 48),
                     child: Icon(Icons.person, size: 48, color: Colors.white),
                     radius: 32,
                     backgroundColor: Colors.blueGrey,
                   ),
-                  const SizedBox(width: 12),
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Text>[
-                      Text(
-                        userState.me!.displayName ?? userState.me!.username,
-                        style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const Text(
-                        "Hi! I'm using USTalk.", // Status
-                        style: TextStyle(
-                          fontSize: 14,
-                        ),
-                      )
-                    ],
+                ),
+                title: Text(
+                  userState.me!.displayName ?? userState.me!.username,
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
                   ),
-                ],
+                ),
+                subtitle: const Text(
+                  "Hi! I'm using USTalk.", // Status
+                  style: TextStyle(
+                    fontSize: 14,
+                  ),
+                ),
               ),
-            )
+            ),
           ),
           const Divider(thickness: 2, indent: 8, endIndent: 8),
           _renderOption(account, Icons.account_box, context),
