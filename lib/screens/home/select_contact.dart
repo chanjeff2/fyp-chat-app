@@ -89,9 +89,9 @@ class _SelectContactState extends State<SelectContact> {
                               _contacts.add(Contact(
                                   username: addUser.username,
                                   id: addUser.userId));
-                              //local storage on disk
-                              ContactStore().storeContact(addUser);
                             });
+                            //local storage on disk
+                            ContactStore().storeContact(addUser);
 
                             //print(_contacts.length);
                           } on ApiException catch (e) {

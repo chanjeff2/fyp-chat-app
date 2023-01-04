@@ -63,19 +63,10 @@ class ContactStore {
 
   Future<List<User>?> getAllContact() async {
     final db = await DiskStorage().db;
-    final result = await db.query(
-      table,
-      where: '${User.columnUsername} = ?',
-    );
+    final result = await db.query(table);
     if (result.isEmpty) {
       return null;
     }
-    List<User> userList = [];
-
-    for (var i = 0; i < result.length; i++) {
-      userList.add(User.fromJson(result[i]));
-    }
-
-    return userList;
+    return result.map((el) => User.fromJson(el)).toList();
   }
 }
