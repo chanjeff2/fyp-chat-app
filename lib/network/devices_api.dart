@@ -1,3 +1,5 @@
+import 'package:fyp_chat_app/signal/device_helper.dart';
+
 import '../dto/create_device_dto.dart';
 import '../dto/device_dto.dart';
 import 'api.dart';
@@ -26,5 +28,14 @@ class DevicesApi extends Api {
   Future<List<DeviceDto>> getAllDevices() async {
     final List<dynamic> json = await get("", useAuth: true);
     return json.map((device) => DeviceDto.fromJson(device)).toList();
+  }
+
+  Future<DeviceDto?> removeDevice({int? deviceId}) async {
+    deviceId ??= await DeviceInfoHelper().getDeviceId();
+    if (deviceId == null) {
+      return null;
+    }
+    final json = await delete("/$deviceId", useAuth: true);
+    return DeviceDto.fromJson(json);
   }
 }

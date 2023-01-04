@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fyp_chat_app/models/user_state.dart';
+import 'package:fyp_chat_app/network/devices_api.dart';
 import 'package:fyp_chat_app/screens/home/select_contact.dart';
 import 'package:fyp_chat_app/screens/settings/settings_screen.dart';
 import 'package:fyp_chat_app/storage/credential_store.dart';
@@ -7,7 +8,9 @@ import 'package:fyp_chat_app/models/user.dart';
 import 'package:fyp_chat_app/storage/contact_store.dart';
 import 'package:provider/provider.dart';
 import 'package:fyp_chat_app/components/contact_option.dart';
-
+import 'package:fyp_chat_app/storage/disk_storage.dart';
+import 'package:fyp_chat_app/storage/secure_storage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -16,7 +19,7 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {  
+class _HomeScreenState extends State<HomeScreen> {
   var appBarHeight = AppBar().preferredSize.height;
   List<User> _contacts = [];
 
@@ -67,11 +70,14 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         body: Center(
           child: Column(
-            mainAxisAlignment: _contacts.isEmpty ? MainAxisAlignment.center : MainAxisAlignment.start,
+            mainAxisAlignment: _contacts.isEmpty
+                ? MainAxisAlignment.center
+                : MainAxisAlignment.start,
             children: <Widget>[
-              if (_contacts.isEmpty)
-              ...[Text('Hi ${userState.me!.displayName ?? userState.me!.username}. You have no contacts')]
-              else ...[
+              if (_contacts.isEmpty) ...[
+                Text(
+                    'Hi ${userState.me!.displayName ?? userState.me!.username}. You have no contacts')
+              ] else ...[
                 Expanded(
                   child: ListView.builder(
                     itemCount: _contacts.length,
@@ -85,7 +91,9 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
         floatingActionButton: FloatingActionButton(
-          onPressed: () => Navigator.of(context).push(_route(const SelectContact())),
+          onPressed: () {
+            Navigator.of(context).push(_route(const SelectContact()));
+          },
           tooltip: 'Increment',
           child: const Icon(Icons.add),
         ), // This trailing comma makes auto-formatting nicer for build methods.
@@ -94,20 +102,21 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Route _route(Widget screen) => PageRouteBuilder(
-    pageBuilder: (context, animation, secondaryAnimation) => screen,
-    transitionsBuilder: (context, animation, secondaryAnimation, child) {
-      const begin = Offset(0.0, 1.0);
-      const end = Offset.zero;
-      const curve = Curves.ease;
+        pageBuilder: (context, animation, secondaryAnimation) => screen,
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          const begin = Offset(0.0, 1.0);
+          const end = Offset.zero;
+          const curve = Curves.ease;
 
-      var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+          var tween =
+              Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
 
-      return SlideTransition(
-        position: animation.drive(tween),
-        child: child,
+          return SlideTransition(
+            position: animation.drive(tween),
+            child: child,
+          );
+        },
       );
-    },
-  );
 
   /* Codes of handling more menu items here */
   // Create a popup menu item that is in the form of Icon + text
@@ -115,7 +124,7 @@ class _HomeScreenState extends State<HomeScreen> {
       String title, IconData iconData, int positon) {
     return PopupMenuItem(
       value: positon,
-      child:  Row(
+      child: Row(
         children: [
           Icon(iconData, color: Colors.black,),
           const SizedBox(width: 8),
@@ -125,17 +134,19 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  _onMenuItemSelected(int value, UserState userState) {
+  _onMenuItemSelected(int value, UserState userState) async {
     switch (value) {
-      case 0: {
+      case 0:
         Navigator.of(context).push(_route(const SettingsScreen()));
         break;
-      }
-      case 1: {
-        CredentialStore().removeCredential();
+      case 1:
+        await CredentialStore().removeCredential();
+        await DevicesApi().removeDevice();
+        await DiskStorage().deleteDatabase();
+        await SecureStorage().deleteAll();
+        await (await SharedPreferences.getInstance()).clear();
         userState.clearState();
         break;
-      }
     }
   }
 }
