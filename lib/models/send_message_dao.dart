@@ -6,24 +6,27 @@ class SendMessageDao {
   final int senderDeviceId;
   final String recipientUserId;
   final int recipientDeviceId;
-  final PreKeySignalMessage content;
+  final int cipherTextType;
+  final CiphertextMessage content;
   final DateTime sentAt;
 
-  SendMessageDao(
-    this.senderDeviceId,
-    this.recipientUserId,
-    this.recipientDeviceId,
-    this.content,
-    this.sentAt,
-  );
+  SendMessageDao({
+    required this.senderDeviceId,
+    required this.recipientUserId,
+    required this.recipientDeviceId,
+    required this.cipherTextType,
+    required this.content,
+    required this.sentAt,
+  });
 
   SendMessageDto toDto() {
     return SendMessageDto(
-      senderDeviceId,
-      recipientUserId,
-      recipientDeviceId,
-      content.encodeToString(),
-      sentAt.toIso8601String(),
+      senderDeviceId: senderDeviceId,
+      recipientUserId: recipientUserId,
+      recipientDeviceId: recipientDeviceId,
+      cipherTextType: cipherTextType,
+      content: content.encodeToString(),
+      sentAt: sentAt.toIso8601String(),
     );
   }
 }

@@ -72,18 +72,18 @@ void main() {
     // serialize
     final sentAt = DateTime.now();
     final serialized = SendMessageDao(
-      deviceId,
-      'recipientUserId',
-      remoteDeviceId,
-      ciphertext as PreKeySignalMessage,
-      sentAt,
+      senderDeviceId: deviceId,
+      recipientUserId: 'recipientUserId',
+      recipientDeviceId: remoteDeviceId,
+      cipherTextType: ciphertext.getType(),
+      content: ciphertext as PreKeySignalMessage,
+      sentAt: sentAt,
     ).toDto();
     final messageDto = receiveMessage(serialized);
     final message = Message.fromDto(messageDto);
 
     // check if message content equal
-    expect(
-        listEquals(message.content.serialize(), ciphertext.serialize()), true);
+    expect(listEquals(message.content, ciphertext.serialize()), true);
 
     // receiver side
     const localAddress = SignalProtocolAddress('sender', deviceId);
@@ -97,9 +97,10 @@ void main() {
 
 MessageDto receiveMessage(SendMessageDto dto) {
   return MessageDto(
-    'senderUserId',
-    dto.senderDeviceId.toString(),
-    dto.content,
-    dto.sentAt,
+    senderUserId: 'senderUserId',
+    senderDeviceId: dto.senderDeviceId.toString(),
+    cipherTextType: dto.cipherTextType.toString(),
+    content: dto.content,
+    sentAt: dto.sentAt,
   );
 }

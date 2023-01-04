@@ -11,17 +11,21 @@ class MessageDto {
   final String senderDeviceId;
 
   @JsonKey(required: true)
+  final String cipherTextType;
+
+  @JsonKey(required: true)
   final String content;
 
   @JsonKey(required: true)
   final String sentAt; // iso string
 
-  MessageDto(
-    this.senderUserId,
-    this.senderDeviceId,
-    this.content,
-    this.sentAt,
-  );
+  MessageDto({
+    required this.senderUserId,
+    required this.senderDeviceId,
+    required this.cipherTextType,
+    required this.content,
+    required this.sentAt,
+  });
 
   Map<String, dynamic> toJson() => _$MessageDtoToJson(this);
 
