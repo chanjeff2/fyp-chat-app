@@ -1,6 +1,5 @@
-import 'dart:convert';
-
 import 'package:fyp_chat_app/dto/pre_key_dto.dart';
+import 'package:fyp_chat_app/extensions/signal_lib_extension.dart';
 import 'package:libsignal_protocol_dart/libsignal_protocol_dart.dart';
 
 class PreKey {
@@ -11,7 +10,7 @@ class PreKey {
 
   PreKey.fromDto(PreKeyDto dto)
       : id = dto.id,
-        key = Curve.decodePoint(base64.decode(dto.key), 0);
+        key = ECPublicKeyExtension.decodeFromString(dto.key);
 
   PreKey.fromPreKeyRecord(PreKeyRecord record)
       : id = record.id,
@@ -24,7 +23,7 @@ class PreKey {
   PreKeyDto toDto() {
     return PreKeyDto(
       id,
-      base64.encode(key.serialize()),
+      key.encodeToString(),
     );
   }
 }

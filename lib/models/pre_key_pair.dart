@@ -1,5 +1,4 @@
-import 'dart:convert';
-
+import 'package:fyp_chat_app/extensions/signal_lib_extension.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:libsignal_protocol_dart/libsignal_protocol_dart.dart';
 
@@ -27,9 +26,9 @@ class PreKeyPair {
 
   PreKeyPair.fromPreKeyRecord(PreKeyRecord record)
       : id = record.id,
-        keyPair = base64.encode(record.serialize());
+        keyPair = record.encodeToString();
 
   PreKeyRecord toPreKeyRecord() {
-    return PreKeyRecord.fromBuffer(base64.decode(keyPair));
+    return PreKeyRecordExtension.decodeFromString(keyPair);
   }
 }

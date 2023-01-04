@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 
 import 'package:flutter/cupertino.dart';
 import 'package:fyp_chat_app/dto/access_token_dto.dart';
@@ -10,7 +11,7 @@ import 'package:http/http.dart' as http;
 class ApiException implements Exception {
   int statusCode;
   String message;
-  String error;
+  String? error;
 
   ApiException(this.statusCode, this.message, this.error);
 }
@@ -31,6 +32,7 @@ abstract class Api {
   dynamic _processResponse(http.Response response) {
     if (response.statusCode < 200 || response.statusCode >= 300) {
       final body = json.decode(response.body);
+      log('ApiException: [${response.statusCode}] ${body["message"]}');
       throw ApiException(response.statusCode, body["message"], body["error"]);
     }
     if (response.body.isEmpty) {

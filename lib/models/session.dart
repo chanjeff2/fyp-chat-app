@@ -1,5 +1,4 @@
-import 'dart:convert';
-
+import 'package:fyp_chat_app/extensions/signal_lib_extension.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:libsignal_protocol_dart/libsignal_protocol_dart.dart';
 
@@ -33,9 +32,9 @@ class Session {
     required this.deviceId,
     required this.userId,
     required SessionRecord record,
-  }) : session = base64.encode(record.serialize());
+  }) : session = record.encodeToString();
 
   SessionRecord toSessionRecord() {
-    return SessionRecord.fromSerialized(base64.decode(session));
+    return SessionRecordExtension.decodeFromString(session);
   }
 }

@@ -1,7 +1,6 @@
-import 'dart:convert';
-
 import 'package:flutter/foundation.dart';
 import 'package:fyp_chat_app/dto/signed_pre_key_dto.dart';
+import 'package:fyp_chat_app/extensions/signal_lib_extension.dart';
 import 'package:fyp_chat_app/models/pre_key.dart';
 import 'package:libsignal_protocol_dart/libsignal_protocol_dart.dart';
 
@@ -10,7 +9,7 @@ class SignedPreKey extends PreKey {
   SignedPreKey(int id, ECPublicKey key, this.signature) : super(id, key);
 
   SignedPreKey.fromDto(SignedPreKeyDto dto)
-      : signature = base64.decode(dto.signature),
+      : signature = SignatureExtension.decodeFromString(dto.signature),
         super.fromDto(dto);
 
   SignedPreKey.fromSignedPreKeyRecord(SignedPreKeyRecord record)
@@ -21,8 +20,8 @@ class SignedPreKey extends PreKey {
   SignedPreKeyDto toDto() {
     return SignedPreKeyDto(
       id,
-      base64.encode(key.serialize()),
-      base64.encode(signature),
+      key.encodeToString(),
+      signature.encodeToString(),
     );
   }
 }
