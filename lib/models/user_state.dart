@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
 import 'package:fyp_chat_app/dto/account_dto.dart';
-import 'package:fyp_chat_app/models/plain_message.dart';
+import 'package:fyp_chat_app/models/received_plain_message.dart';
 import 'package:fyp_chat_app/models/user.dart';
 import 'package:fyp_chat_app/network/account_api.dart';
 import 'package:fyp_chat_app/network/api.dart';
@@ -19,13 +19,14 @@ class UserState extends ChangeNotifier {
 
   User? chattingWith;
 
-  final StreamController<PlainMessage> _messageStreamController =
+  final StreamController<ReceivedPlainMessage> _messageStreamController =
       StreamController();
 
-  late final Stream<PlainMessage> _messageStream;
+  late final Stream<ReceivedPlainMessage> _messageStream;
 
-  Stream<PlainMessage> get messageStream => _messageStream;
-  StreamSink<PlainMessage> get messageSink => _messageStreamController.sink;
+  Stream<ReceivedPlainMessage> get messageStream => _messageStream;
+  StreamSink<ReceivedPlainMessage> get messageSink =>
+      _messageStreamController.sink;
 
   UserState() {
     _messageStream = _messageStreamController.stream.asBroadcastStream();

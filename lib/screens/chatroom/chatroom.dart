@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:fyp_chat_app/models/plain_message.dart';
+import 'package:fyp_chat_app/models/received_plain_message.dart';
 import 'package:fyp_chat_app/models/user.dart';
 import 'package:fyp_chat_app/models/user_state.dart';
 import 'package:fyp_chat_app/screens/chatroom/contact_info.dart';
@@ -36,7 +37,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
   int _page = 0; // pagination
   bool _isLastPage = false;
   static const _pageSize = 100;
-  late StreamSubscription<PlainMessage> _messageSubscription;
+  late StreamSubscription<ReceivedPlainMessage> _messageSubscription;
 
   @override
   void initState() {
@@ -48,9 +49,9 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
     // register new message listener
     _messageSubscription = Provider.of<UserState>(context, listen: false)
         .messageStream
-        .listen((message) {
+        .listen((receivedMessage) {
       setState(() {
-        _messages.insert(0, message);
+        _messages.insert(0, receivedMessage.message);
       });
     });
   }
