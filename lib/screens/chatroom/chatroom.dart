@@ -175,6 +175,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                 }
                 final messages = snapshot.data!;
                 return ListView.builder(
+                  reverse: true,
                   itemBuilder: (_, i) {
                     final message = messages[i];
                     return MessageBubble(

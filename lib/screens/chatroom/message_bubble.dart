@@ -28,7 +28,17 @@ class MessageBubble extends StatelessWidget {
           // chat bubble decoration
           decoration: BoxDecoration(
             color: isCurrentUser ? Colors.blue : Colors.grey[300],
-            borderRadius: BorderRadius.circular(24),
+            borderRadius: isCurrentUser
+                            ? const BorderRadius.only(
+                                      topLeft: Radius.circular(24),
+                                      bottomLeft: Radius.circular(24),
+                                      bottomRight: Radius.circular(24)
+                                    )
+                            : const BorderRadius.only(
+                                      topRight: Radius.circular(24),
+                                      bottomLeft: Radius.circular(24),
+                                      bottomRight: Radius.circular(24)
+                                    ),
           ),
           child: Padding(
             padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
@@ -36,10 +46,12 @@ class MessageBubble extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                Text(
-                  text,
-                  style: Theme.of(context).textTheme.bodyText1!.copyWith(
-                      color: isCurrentUser ? Colors.white : Colors.black87),
+                Flexible(
+                  child: Text(
+                    text,
+                    style: Theme.of(context).textTheme.bodyText1!.copyWith(
+                        color: isCurrentUser ? Colors.white : Colors.black87),
+                  ),
                 ),
                 const SizedBox(width: 6),
                 Text(

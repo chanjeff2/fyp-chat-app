@@ -20,8 +20,7 @@ class SelectContact extends StatefulWidget {
 
 class _SelectContactState extends State<SelectContact> {
   final List<Contact> _contacts = [
-    Contact(username: 'test', id: 'test'),
-    Contact(username: 'test2', id: 'test2')
+
   ];
 
   String addContactInput = "";
@@ -105,7 +104,7 @@ class _SelectContactState extends State<SelectContact> {
                       padding:
                           EdgeInsets.symmetric(horizontal: 15, vertical: 10),
                       child: Text(
-                        "Contacts on USTalk",
+                        "Groups in USTalk",
                         style: TextStyle(fontWeight: FontWeight.bold),
                       ),
                     );
