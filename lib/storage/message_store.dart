@@ -11,7 +11,11 @@ class MessageStore {
 
   static const table = 'message';
 
-  Future<List<PlainMessage>> getMessageByUserId(String userId) async {
+  Future<List<PlainMessage>> getMessageByUserId(
+    String userId, {
+    int start = 0,
+    int count = 100,
+  }) async {
     final db = await DiskStorage().db;
     final result = await db.query(
       table,
@@ -19,6 +23,8 @@ class MessageStore {
           '${PlainMessage.columnSenderUserId} = ? OR ${PlainMessage.columnRecipientUserId} = ?',
       whereArgs: [userId, userId],
       orderBy: '${PlainMessage.columnSentAt} DESC',
+      offset: start,
+      limit: count,
     );
     return result.map((e) => PlainMessage.fromJson(e)).toList();
   }

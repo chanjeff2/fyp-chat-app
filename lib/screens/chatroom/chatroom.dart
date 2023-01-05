@@ -30,7 +30,10 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
   bool _textMessage = false;
   bool _emojiBoardShown = false;
   late final Future<bool> _messageHistoryFuture;
-  late final List<PlainMessage> _messages;
+  final List<PlainMessage> _messages = [];
+  int _page = 0; // pagination
+  bool _isLastPage = false;
+  static const _pageSize = 100;
 
   @override
   void initState() {
@@ -39,8 +42,18 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
   }
 
   Future<bool> _loadMessageHistory() async {
-    _messages =
-        await MessageStore().getMessageByUserId(widget.targetUser.userId);
+    final messages = await MessageStore().getMessageByUserId(
+      widget.targetUser.userId,
+      start: _page * _pageSize,
+      count: _pageSize,
+    );
+    _page += 1;
+    if (messages.length < _pageSize) {
+      _isLastPage = true;
+    }
+    setState(() {
+      _messages.addAll(messages);
+    });
     return true;
   }
 
@@ -183,6 +196,8 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                 user: types.User(
                   id: Provider.of<UserState>(context, listen: false).me!.userId,
                 ),
+                onEndReached: _loadMessageHistory,
+                isLastPage: _isLastPage,
               );
             },
           )
