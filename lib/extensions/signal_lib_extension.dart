@@ -33,10 +33,9 @@ extension SignedPreKeyRecordExtension on SignedPreKeyRecord {
       SignedPreKeyRecord.fromSerialized(base64.decode(encoded));
 }
 
-extension PreKeySignalMessageExtension on PreKeySignalMessage {
+extension CiphertextMessageExtension on CiphertextMessage {
   String encodeToString() => base64.encode(serialize());
-  static PreKeySignalMessage decodeFromString(String encoded) =>
-      PreKeySignalMessage(base64.decode(encoded));
+  static Uint8List decodeFromString(String encoded) => base64.decode(encoded);
 }
 
 extension SessionRecordExtension on SessionRecord {

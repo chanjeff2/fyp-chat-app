@@ -1,15 +1,27 @@
+import 'dart:async';
 import 'dart:io' show Platform;
 
 import 'package:flutter/material.dart';
+import 'package:fyp_chat_app/models/plain_message.dart';
+import 'package:fyp_chat_app/models/user.dart';
 import 'package:fyp_chat_app/models/user_state.dart';
 import 'package:fyp_chat_app/screens/chatroom/contact_info.dart';
+import 'package:fyp_chat_app/screens/register_or_login/loading_screen.dart';
+import 'package:fyp_chat_app/signal/signal_client.dart';
+import 'package:fyp_chat_app/storage/message_store.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:fyp_chat_app/screens/chatroom/message_bubble.dart';
 
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 
 class ChatRoomScreen extends StatefulWidget {
-  const ChatRoomScreen({Key? key}) : super(key: key);
+  const ChatRoomScreen({
+    Key? key,
+    required this.targetUser,
+  }) : super(key: key);
+
+  final User targetUser;
 
   @override
   State<ChatRoomScreen> createState() => _ChatRoomScreenState();
@@ -20,23 +32,28 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
   final ScrollController _scrollController = ScrollController();
   bool _textMessage = false;
   bool _emojiBoardShown = false;
-  //temporary message storage in array
-  final List<Widget> _messages = [];
+  late final StreamController<List<PlainMessage>> _messageStreamController;
+  late final Stream<List<PlainMessage>> _messageStream;
+
+  @override
+  void initState() {
+    super.initState();
+    _messageStreamController = StreamController(
+      onListen: () async {
+        final messages =
+            await MessageStore().getMessageByUserId(widget.targetUser.userId);
+        _messageStreamController.add(messages);
+      },
+    );
+    _messageStream = _messageStreamController.stream;
+  }
 
   String get message => _messageController.text;
 
-  void _submitMsg(String message) {
-    // Get the current time
-    DateTime now = DateTime.now();
-    String parsedTime = "${now.hour.toString().padLeft(2,'0')}:${now.minute.toString().padLeft(2,'0')}";
-    //add the text into message array for temporary storage
-    setState(() {
-      _messages.insert(
-          0,
-          Container(
-              child: MessageBubble(text: message, time: parsedTime, isCurrentUser: true),
-              alignment: Alignment.centerRight));
-    });
+  void _sendMessage(String message) async {
+    final sentMessage =
+        await SignalClient().sendMessage(widget.targetUser.userId, message);
+    _messageStreamController.add([sentMessage]);
     _messageController.clear();
     _textMessage = false;
   }
@@ -65,7 +82,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                 // SizedBox(width: 4),
                 Expanded(
                   child: CircleAvatar(
-                  // child: profilePicture ? null : Icon(Icons.person, size: 48),
+                    // child: profilePicture ? null : Icon(Icons.person, size: 48),
                     child: Icon(Icons.person, size: 20, color: Colors.white),
                     radius: 32,
                     backgroundColor: Colors.blueGrey,
@@ -78,18 +95,16 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
           title: SizedBox(
             width: MediaQuery.of(context).size.width,
             child: InkWell(
-              onTap: () => Navigator.of(context).push(MaterialPageRoute(
-                            builder: (context) => const ContactInfo()
-                          )),
+              onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (context) => const ContactInfo())),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
-                  Text("Test user"), //TODO: add target name to title
-                  Text("Online",
-                    style: TextStyle(
-                      fontWeight: FontWeight.normal,
-                      fontSize: 14
-                    ),
+                children: [
+                  Text(widget.targetUser.name),
+                  const Text(
+                    "Online",
+                    style:
+                        TextStyle(fontWeight: FontWeight.normal, fontSize: 14),
                   ),
                 ],
               ),
@@ -113,28 +128,35 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                       height: 48.0, //default height
                       width: double.infinity,
                       child: Row(
-                              children: const <Widget>[
-                                Text("More"),
-                                Spacer(),
-                                Icon(Icons.keyboard_arrow_right, color: Colors.grey,),
-                              ],
-                            ),
+                        children: const <Widget>[
+                          Text("More"),
+                          Spacer(),
+                          Icon(
+                            Icons.keyboard_arrow_right,
+                            color: Colors.grey,
+                          ),
+                        ],
+                      ),
                     ),
                     itemBuilder: (innerContext) {
                       return [
                         PopupMenuItem(
                           value: 101,
                           child: const Text("Block User"),
-                          onTap: () { Navigator.of(innerContext).pop(); },
+                          onTap: () {
+                            Navigator.of(innerContext).pop();
+                          },
                         ),
                         PopupMenuItem(
                           value: 102,
                           child: const Text("Report User"),
-                          onTap: () { Navigator.of(innerContext).pop(); },
+                          onTap: () {
+                            Navigator.of(innerContext).pop();
+                          },
                         ),
                       ];
                     },
-                    ),
+                  ),
                 ),
               ],
             )
@@ -143,11 +165,28 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
         body: Column(children: <Widget>[
           //show chat messages on screen
           Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.all(8.0),
-              itemBuilder: (context, index) => _messages[index],
-              itemCount: _messages.length,
-              reverse: true,
+            child: StreamBuilder<List<PlainMessage>>(
+              stream: _messageStream,
+              builder: (_, snapshot) {
+                if (!snapshot.hasData) {
+                  return const Center(
+                    child: LoadingScreen(),
+                  );
+                }
+                final messages = snapshot.data!;
+                return ListView.builder(
+                  itemBuilder: (_, i) {
+                    final message = messages[i];
+                    return MessageBubble(
+                      text: message.content,
+                      time: DateFormat.Hm().format(message.sentAt),
+                      isCurrentUser:
+                          message.recipientUserId == widget.targetUser.userId,
+                    );
+                  },
+                  itemCount: messages.length,
+                );
+              },
             ),
           ),
           //show text field bar and related button
@@ -160,7 +199,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                   alignment: Alignment.centerLeft,
                   decoration: BoxDecoration(
                     border: Border.all(color: Colors.grey.shade600),
-                    borderRadius: BorderRadius.circular(16.0)
+                    borderRadius: BorderRadius.circular(16.0),
                   ),
                   child: Scrollbar(
                     controller: _scrollController,
@@ -179,27 +218,39 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                         hintStyle: TextStyle(color: Colors.grey.shade600),
                         border: InputBorder.none,
                         prefixIcon: IconButton(
-                            icon: _emojiBoardShown
-                                ? Icon(Icons.keyboard, color: Colors.grey.shade600)
-                                : Icon(Icons.emoji_emotions_outlined, color: Colors.grey.shade600),
-                            onPressed: () {
-                              FocusManager.instance.primaryFocus?.unfocus();
-                              setState(() {
-                                _emojiBoardShown = !_emojiBoardShown;
-                              });
-                            },
-                          ),
+                          icon: _emojiBoardShown
+                              ? Icon(
+                                  Icons.keyboard,
+                                  color: Colors.grey.shade600,
+                                )
+                              : Icon(
+                                  Icons.emoji_emotions_outlined,
+                                  color: Colors.grey.shade600,
+                                ),
+                          onPressed: () {
+                            FocusManager.instance.primaryFocus?.unfocus();
+                            setState(() {
+                              _emojiBoardShown = !_emojiBoardShown;
+                            });
+                          },
+                        ),
                         suffixIcon: (_textMessage)
                             ? null
                             : Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   IconButton(
-                                    icon: Icon(Icons.attach_file, color: Colors.grey.shade600),
+                                    icon: Icon(
+                                      Icons.attach_file,
+                                      color: Colors.grey.shade600,
+                                    ),
                                     onPressed: () {},
                                   ),
                                   IconButton(
-                                    icon: Icon(Icons.camera_alt, color: Colors.grey.shade600),
+                                    icon: Icon(
+                                      Icons.camera_alt,
+                                      color: Colors.grey.shade600,
+                                    ),
                                     onPressed: () {
                                       // Navigator.push(
                                       //     context,
@@ -235,8 +286,10 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                   icon: _textMessage
                       ? const Icon(Icons.send, color: Colors.white)
                       : const Icon(Icons.mic, color: Colors.white),
-                  onPressed: () => {
-                    if (message.trim().isNotEmpty) {_submitMsg(message)}
+                  onPressed: () {
+                    if (message.trim().isNotEmpty) {
+                      _sendMessage(message);
+                    }
                   },
                 ),
               ),
@@ -245,49 +298,49 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
           Offstage(
             offstage: !_emojiBoardShown,
             child: SizedBox(
-              height: 250,
-              child: EmojiPicker(
-                textEditingController: _messageController,
-                onEmojiSelected: (category, emoji) {
-                  setState(() {
-                    _textMessage = message.trim().isNotEmpty;
-                  });
-                },
-                onBackspacePressed: () {
-                  setState(() {
-                    _textMessage = message.trim().isNotEmpty;
-                  });
-                },
-                config: Config(
-                  columns: 8,
-                  emojiSizeMax: 32 * (Platform.isIOS ? 1.30 : 1.0),
-                  verticalSpacing: 0,
-                  horizontalSpacing: 0,
-                  gridPadding: EdgeInsets.zero,
-                  initCategory: Category.RECENT,
-                  bgColor: const Color(0xFFF2F2F2),
-                  indicatorColor: Theme.of(context).primaryColor,
-                  iconColor: Colors.grey,
-                  iconColorSelected: Theme.of(context).primaryColor,
-                  backspaceColor: Theme.of(context).primaryColor,
-                  skinToneDialogBgColor: Colors.white,
-                  skinToneIndicatorColor: Colors.grey,
-                  enableSkinTones: true,
-                  showRecentsTab: true,
-                  recentsLimit: 28,
-                  replaceEmojiOnLimitExceed: false,
-                  noRecents: const Text(
-                    'No Recents',
-                    style: TextStyle(fontSize: 20, color: Colors.black26),
-                    textAlign: TextAlign.center,
+                height: 250,
+                child: EmojiPicker(
+                  textEditingController: _messageController,
+                  onEmojiSelected: (category, emoji) {
+                    setState(() {
+                      _textMessage = message.trim().isNotEmpty;
+                    });
+                  },
+                  onBackspacePressed: () {
+                    setState(() {
+                      _textMessage = message.trim().isNotEmpty;
+                    });
+                  },
+                  config: Config(
+                    columns: 8,
+                    emojiSizeMax: 32 * (Platform.isIOS ? 1.30 : 1.0),
+                    verticalSpacing: 0,
+                    horizontalSpacing: 0,
+                    gridPadding: EdgeInsets.zero,
+                    initCategory: Category.RECENT,
+                    bgColor: const Color(0xFFF2F2F2),
+                    indicatorColor: Theme.of(context).primaryColor,
+                    iconColor: Colors.grey,
+                    iconColorSelected: Theme.of(context).primaryColor,
+                    backspaceColor: Theme.of(context).primaryColor,
+                    skinToneDialogBgColor: Colors.white,
+                    skinToneIndicatorColor: Colors.grey,
+                    enableSkinTones: true,
+                    showRecentsTab: true,
+                    recentsLimit: 28,
+                    replaceEmojiOnLimitExceed: false,
+                    noRecents: const Text(
+                      'No Recents',
+                      style: TextStyle(fontSize: 20, color: Colors.black26),
+                      textAlign: TextAlign.center,
+                    ),
+                    loadingIndicator: const SizedBox.shrink(),
+                    tabIndicatorAnimDuration: kTabScrollDuration,
+                    categoryIcons: const CategoryIcons(),
+                    buttonMode: ButtonMode.MATERIAL,
+                    checkPlatformCompatibility: true,
                   ),
-                  loadingIndicator: const SizedBox.shrink(),
-                  tabIndicatorAnimDuration: kTabScrollDuration,
-                  categoryIcons: const CategoryIcons(),
-                  buttonMode: ButtonMode.MATERIAL,
-                  checkPlatformCompatibility: true,
-                ),
-              )),
+                )),
           ),
         ]),
       ),
@@ -303,18 +356,17 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
 
   _onMenuItemSelected(int value, UserState userState) {
     switch (value) {
-      case 0: {
+      case 0:
         break;
-      }
-      case 1: {
+
+      case 1:
         break;
-      }
-      case 2: {
+
+      case 2:
         break;
-      }
-      case 3: {
+
+      case 3:
         break;
-      }
     }
   }
 }

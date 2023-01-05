@@ -1,13 +1,19 @@
+import 'dart:async';
+import 'dart:math';
+
 import 'package:flutter/material.dart';
-import 'package:fyp_chat_app/models/user_state.dart';
-import 'package:fyp_chat_app/network/devices_api.dart';
-import 'package:fyp_chat_app/screens/home/select_contact.dart';
-import 'package:fyp_chat_app/screens/settings/settings_screen.dart';
-import 'package:fyp_chat_app/storage/credential_store.dart';
-import 'package:fyp_chat_app/models/user.dart';
-import 'package:fyp_chat_app/storage/contact_store.dart';
-import 'package:provider/provider.dart';
 import 'package:fyp_chat_app/components/contact_option.dart';
+import 'package:fyp_chat_app/models/user.dart';
+import 'package:fyp_chat_app/models/user_state.dart';
+import 'package:fyp_chat_app/network/auth_api.dart';
+import 'package:fyp_chat_app/network/devices_api.dart';
+import 'package:fyp_chat_app/screens/chatroom/chatroom.dart';
+import 'package:fyp_chat_app/screens/home/select_contact.dart';
+import 'package:fyp_chat_app/screens/register_or_login/loading_screen.dart';
+import 'package:fyp_chat_app/screens/settings/settings_screen.dart';
+import 'package:fyp_chat_app/storage/contact_store.dart';
+import 'package:fyp_chat_app/storage/credential_store.dart';
+import 'package:provider/provider.dart';
 import 'package:fyp_chat_app/storage/disk_storage.dart';
 import 'package:fyp_chat_app/storage/secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -21,23 +27,15 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   var appBarHeight = AppBar().preferredSize.height;
-  List<User> _contacts = [];
+  late final StreamController<List<User>> _contactStreamController;
 
   @override
-  initState() {
+  void initState() {
     super.initState();
-    initializeContacts();
-  }
-
-  // Call here because initState does not allow async
-  void initializeContacts() async {
-    final List<User>? contacts = await ContactStore().getAllContact();
-    print(contacts);
-    if (contacts != null) {
-      setState(() {
-        _contacts = contacts;
-      });
-    } 
+    _contactStreamController = StreamController(onListen: () async {
+      final contacts = await ContactStore().getAllContact();
+      _contactStreamController.add(contacts);
+    });
   }
 
   @override
@@ -68,31 +66,39 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ],
         ),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: _contacts.isEmpty
-                ? MainAxisAlignment.center
-                : MainAxisAlignment.start,
-            children: <Widget>[
-              if (_contacts.isEmpty) ...[
-                Text(
-                    'Hi ${userState.me!.displayName ?? userState.me!.username}. You have no contacts')
-              ] else ...[
-                Expanded(
-                  child: ListView.builder(
-                    itemCount: _contacts.length,
-                    itemBuilder: (context, index) {
-                      return HomeContact(contactInfo: _contacts[index], notifications: 69);
-                    },
-                  )
-                ),
-              ],
-            ],
-          ),
+        body: StreamBuilder<List<User>>(
+          stream: _contactStreamController.stream,
+          builder: (_, snapshot) {
+            if (!snapshot.hasData) {
+              return const Center(
+                child: LoadingScreen(),
+              );
+            }
+            final contacts = snapshot.data!;
+            final _rng = Random();
+            return ListView.builder(
+              itemBuilder: (_, i) => HomeContact(
+                user: contacts[i],
+                unread: _rng.nextInt(15),
+                onClick: () {
+                  Navigator.of(context).push(MaterialPageRoute(
+                      builder: (context) =>
+                          ChatRoomScreen(targetUser: contacts[i])));
+                },
+              ),
+              itemCount: contacts.length,
+            );
+          },
         ),
         floatingActionButton: FloatingActionButton(
           onPressed: () {
-            Navigator.of(context).push(_route(const SelectContact()));
+            Navigator.of(context).push(_route(SelectContact(
+              onNewContact: (contact) {
+                _contactStreamController.add([contact]);
+                Navigator.of(context).push(MaterialPageRoute(
+                    builder: (_) => ChatRoomScreen(targetUser: contact)));
+              },
+            )));
           },
           tooltip: 'Increment',
           child: const Icon(Icons.add),
@@ -126,7 +132,10 @@ class _HomeScreenState extends State<HomeScreen> {
       value: positon,
       child: Row(
         children: [
-          Icon(iconData, color: Colors.black,),
+          Icon(
+            iconData,
+            color: Colors.black,
+          ),
           const SizedBox(width: 8),
           Text(title),
         ],
@@ -140,8 +149,9 @@ class _HomeScreenState extends State<HomeScreen> {
         Navigator.of(context).push(_route(const SettingsScreen()));
         break;
       case 1:
-        await CredentialStore().removeCredential();
         await DevicesApi().removeDevice();
+        await AuthApi().logout();
+        await CredentialStore().removeCredential();
         await DiskStorage().deleteDatabase();
         await SecureStorage().deleteAll();
         await (await SharedPreferences.getInstance()).clear();

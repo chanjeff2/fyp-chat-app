@@ -1,24 +1,27 @@
+import 'package:flutter/foundation.dart';
 import 'package:fyp_chat_app/extensions/signal_lib_extension.dart';
-import 'package:libsignal_protocol_dart/libsignal_protocol_dart.dart';
 
 import '../dto/message_dto.dart';
 
 class Message {
   final String senderUserId;
   final int senderDeviceId;
-  final PreKeySignalMessage content;
+  final int cipherTextType;
+  final Uint8List content;
   final DateTime sentAt;
 
-  Message(
-    this.senderUserId,
-    this.senderDeviceId,
-    this.content,
-    this.sentAt,
-  );
+  Message({
+    required this.senderUserId,
+    required this.senderDeviceId,
+    required this.cipherTextType,
+    required this.content,
+    required this.sentAt,
+  });
 
   Message.fromDto(MessageDto dto)
       : senderUserId = dto.senderUserId,
         senderDeviceId = int.parse(dto.senderDeviceId),
-        content = PreKeySignalMessageExtension.decodeFromString(dto.content),
+        cipherTextType = int.parse(dto.cipherTextType),
+        content = CiphertextMessageExtension.decodeFromString(dto.content),
         sentAt = DateTime.parse(dto.sentAt);
 }

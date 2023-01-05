@@ -25,6 +25,10 @@ class AuthApi extends Api {
     return AccessTokenDto.fromJson(json);
   }
 
+  Future<void> logout() async {
+    await post("/logout", useAuth: true);
+  }
+
   Future<AccessTokenDto> refreshToken(String refreshToken) async {
     final json = await post(
       "/refresh-tokens",

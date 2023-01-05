@@ -41,8 +41,10 @@ class FCMHandler {
           android: AndroidNotificationDetails(
             channelId,
             channelName,
+            icon: 'app_icon',
             channelDescription: channelDescription,
             importance: Importance.max,
+            priority: Priority.max,
           ),
         ));
   }

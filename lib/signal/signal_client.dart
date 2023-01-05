@@ -127,11 +127,12 @@ class SignalClient {
 
         // send message use EventsApi()
         final message = SendMessageDao(
-          senderDeviceId,
-          recipientUserId,
-          deviceKeyBundle.deviceId,
-          cipherText as PreKeySignalMessage,
-          sentTime,
+          senderDeviceId: senderDeviceId,
+          recipientUserId: recipientUserId,
+          recipientDeviceId: deviceKeyBundle.deviceId,
+          cipherTextType: cipherText.getType(),
+          content: cipherText,
+          sentAt: sentTime,
         ).toDto();
         //mark first message sent time only
 
@@ -185,8 +186,20 @@ class SignalClient {
       remoteAddress,
     );
 
-    final plaintext =
-        utf8.decode(await remoteSessionCipher.decrypt(message.content));
+    late final Uint8List decrypted;
+    switch (message.cipherTextType) {
+      case CiphertextMessage.prekeyType:
+        final ciphertext = PreKeySignalMessage(message.content);
+        decrypted = await remoteSessionCipher.decrypt(ciphertext);
+        break;
+      case CiphertextMessage.whisperType:
+        final ciphertext = SignalMessage.fromSerialized(message.content);
+        decrypted = await remoteSessionCipher.decryptFromSignal(ciphertext);
+        break;
+      default:
+        return null;
+    }
+    final plaintext = utf8.decode(decrypted);
 
     final plainMessage = PlainMessage(
       senderUserId: sender.userId,

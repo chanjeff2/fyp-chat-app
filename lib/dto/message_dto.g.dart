@@ -9,13 +9,20 @@ part of 'message_dto.dart';
 MessageDto _$MessageDtoFromJson(Map<String, dynamic> json) {
   $checkKeys(
     json,
-    requiredKeys: const ['senderUserId', 'senderDeviceId', 'content', 'sentAt'],
+    requiredKeys: const [
+      'senderUserId',
+      'senderDeviceId',
+      'cipherTextType',
+      'content',
+      'sentAt'
+    ],
   );
   return MessageDto(
-    json['senderUserId'] as String,
-    json['senderDeviceId'] as String,
-    json['content'] as String,
-    json['sentAt'] as String,
+    senderUserId: json['senderUserId'] as String,
+    senderDeviceId: json['senderDeviceId'] as String,
+    cipherTextType: json['cipherTextType'] as String,
+    content: json['content'] as String,
+    sentAt: json['sentAt'] as String,
   );
 }
 
@@ -23,6 +30,7 @@ Map<String, dynamic> _$MessageDtoToJson(MessageDto instance) =>
     <String, dynamic>{
       'senderUserId': instance.senderUserId,
       'senderDeviceId': instance.senderDeviceId,
+      'cipherTextType': instance.cipherTextType,
       'content': instance.content,
       'sentAt': instance.sentAt,
     };

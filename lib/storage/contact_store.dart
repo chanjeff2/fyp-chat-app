@@ -61,12 +61,10 @@ class ContactStore {
     if (count == 0) await db.insert(table, userMap);
   }
 
-  Future<List<User>?> getAllContact() async {
+  Future<List<User>> getAllContact() async {
     final db = await DiskStorage().db;
     final result = await db.query(table);
-    if (result.isEmpty) {
-      return null;
-    }
-    return result.map((el) => User.fromJson(el)).toList();
+
+    return result.map((e) => User.fromJson(e)).toList();
   }
 }
