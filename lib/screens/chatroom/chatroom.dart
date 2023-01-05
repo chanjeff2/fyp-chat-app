@@ -34,11 +34,32 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
   int _page = 0; // pagination
   bool _isLastPage = false;
   static const _pageSize = 100;
+  late StreamSubscription<PlainMessage> _messageSubscription;
 
   @override
   void initState() {
     super.initState();
     _messageHistoryFuture = _loadMessageHistory();
+    // set chatting with
+    Provider.of<UserState>(context, listen: false).chattingWith =
+        widget.targetUser;
+    // register new message listener
+    _messageSubscription = Provider.of<UserState>(context, listen: false)
+        .messageStreamController
+        .stream
+        .listen((message) {
+      setState(() {
+        _messages.insert(0, message);
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    // remove chatting with
+    Provider.of<UserState>(context, listen: false).chattingWith = null;
+    _messageSubscription.cancel();
   }
 
   Future<bool> _loadMessageHistory() async {
