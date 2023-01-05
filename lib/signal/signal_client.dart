@@ -5,6 +5,7 @@ import 'package:fyp_chat_app/dto/update_keys_dto.dart';
 import 'package:fyp_chat_app/extensions/signal_lib_extension.dart';
 import 'package:fyp_chat_app/models/key_bundle.dart';
 import 'package:fyp_chat_app/models/message.dart';
+import 'package:fyp_chat_app/models/message_to_server.dart';
 import 'package:fyp_chat_app/models/plain_message.dart';
 import 'package:fyp_chat_app/models/pre_key.dart';
 import 'package:fyp_chat_app/models/received_plain_message.dart';
@@ -71,6 +72,68 @@ class SignalClient {
     await KeysApi().updateKeys(dto);
   }
 
+  Future<void> _establishSession(
+      String recipientUserId, KeyBundle keyBundle) async {
+    await Future.wait(keyBundle.deviceKeyBundles.map((deviceKeyBundle) async {
+      final remoteAddress = SignalProtocolAddress(
+        recipientUserId,
+        deviceKeyBundle.deviceId,
+      );
+      // init session
+      final sessionBuilder = SessionBuilder(
+        DiskSessionStore(),
+        DiskPreKeyStore(),
+        DiskSignedPreKeyStore(),
+        DiskIdentityKeyStore(),
+        remoteAddress,
+      );
+      final oneTimeKey = deviceKeyBundle.oneTimeKey;
+      final signedPreKey = deviceKeyBundle.signedPreKey;
+      final retrievedPreKey = PreKeyBundle(
+        deviceKeyBundle.registrationId,
+        deviceKeyBundle.deviceId,
+        oneTimeKey?.id,
+        oneTimeKey?.key,
+        signedPreKey.id,
+        signedPreKey.key,
+        signedPreKey.signature,
+        keyBundle.identityKey,
+      );
+      // store session
+      await sessionBuilder.processPreKeyBundle(retrievedPreKey);
+    }));
+  }
+
+  Future<MessageToServer> generateMessageToServer(
+    String recipientUserId,
+    int deviceId,
+    String content,
+  ) async {
+    final remoteAddress = SignalProtocolAddress(
+      recipientUserId,
+      deviceId,
+    );
+    // load session to get reg id
+    final session = await DiskSessionStore().loadSession(remoteAddress);
+    // encrypt message
+    final remoteSessionCipher = SessionCipher(
+      DiskSessionStore(),
+      DiskPreKeyStore(),
+      DiskSignedPreKeyStore(),
+      DiskIdentityKeyStore(),
+      remoteAddress,
+    );
+    final cipherText = await remoteSessionCipher
+        .encrypt(Uint8List.fromList(utf8.encode(content)));
+
+    return MessageToServer(
+      cipherTextType: cipherText.getType(),
+      recipientDeviceId: deviceId,
+      recipientRegistrationId: session.sessionState.remoteRegistrationId,
+      content: cipherText,
+    );
+  }
+
   Future<PlainMessage> sendMessage(
       String recipientUserId, String content) async {
     final senderDeviceId = await DeviceInfoHelper().getDeviceId();
@@ -93,76 +156,64 @@ class SignalClient {
       final keyList = await KeysApi().getAllKeyBundle(recipientUserId);
       final keyBundle = KeyBundle.fromDto(keyList);
 
-      await Future.wait(keyBundle.deviceKeyBundles.map((deviceKeyBundle) async {
-        final remoteAddress = SignalProtocolAddress(
-          recipientUserId,
-          deviceKeyBundle.deviceId,
-        );
-        // init session
-        final sessionBuilder = SessionBuilder(
-          DiskSessionStore(),
-          DiskPreKeyStore(),
-          DiskSignedPreKeyStore(),
-          DiskIdentityKeyStore(),
-          remoteAddress,
-        );
-        final oneTimeKey = deviceKeyBundle.oneTimeKey;
-        final signedPreKey = deviceKeyBundle.signedPreKey;
-        final retrievedPreKey = PreKeyBundle(
-          deviceKeyBundle.registrationId,
-          deviceKeyBundle.deviceId,
-          oneTimeKey?.id,
-          oneTimeKey?.key,
-          signedPreKey.id,
-          signedPreKey.key,
-          signedPreKey.signature,
-          keyBundle.identityKey,
-        );
-        // store session
-        await sessionBuilder.processPreKeyBundle(retrievedPreKey);
-      }));
+      await _establishSession(recipientUserId, keyBundle);
     }
 
     final deviceIds =
         await DiskSessionStore().getSubDeviceSessions(recipientUserId);
 
-    await Future.wait([1, ...deviceIds].map(
-      (deviceId) async {
-        final remoteAddress = SignalProtocolAddress(
-          recipientUserId,
-          deviceId,
-        );
-        // encrypt message
-        final remoteSessionCipher = SessionCipher(
-          DiskSessionStore(),
-          DiskPreKeyStore(),
-          DiskSignedPreKeyStore(),
-          DiskIdentityKeyStore(),
-          remoteAddress,
-        );
-        final cipherText = await remoteSessionCipher
-            .encrypt(Uint8List.fromList(utf8.encode(content)));
+    final messages = await Future.wait(
+      [1, ...deviceIds].map((deviceId) async =>
+          generateMessageToServer(recipientUserId, deviceId, content)),
+    );
 
-        // send message use EventsApi()
-        final message = SendMessageDao(
-          senderDeviceId: senderDeviceId,
-          recipientUserId: recipientUserId,
-          recipientDeviceId: deviceId,
-          cipherTextType: cipherText.getType(),
-          content: cipherText,
-          sentAt: sentTime,
-        ).toDto();
-        //mark first message sent time only
+    // send message use EventsApi()
+    final message = SendMessageDao(
+      senderDeviceId: senderDeviceId,
+      recipientUserId: recipientUserId,
+      messages: messages,
+      sentAt: sentTime,
+    ).toDto();
 
-        await EventsApi().sendMessage(message);
-      },
-    ));
+    final response = await EventsApi().sendMessage(message);
+
+    // delete removed device (no need wait)
+    Future.wait(
+      response.removedDeviceIds.map(
+        (id) async => await DiskSessionStore().deleteSession(
+          SignalProtocolAddress(
+            recipientUserId,
+            id,
+          ),
+        ),
+      ),
+    );
+
+    // revoke session for updated and new devices
+    final messagesRetry = await Future.wait(
+      [...response.misMatchDeviceIds, ...response.missingDeviceIds]
+          .map((deviceId) async {
+        final keys = await KeysApi().getKeyBundle(recipientUserId, deviceId);
+        final keyBundle = KeyBundle.fromDto(keys);
+        await _establishSession(recipientUserId, keyBundle);
+
+        return generateMessageToServer(recipientUserId, deviceId, content);
+      }),
+    );
+
+    final messageRetry = SendMessageDao(
+      senderDeviceId: senderDeviceId,
+      recipientUserId: recipientUserId,
+      messages: messagesRetry,
+      sentAt: sentTime,
+    ).toDto();
+
+    await EventsApi().sendMessage(message);
 
     // save message to disk
-    final myAccount =
-        await AccountStore().getAccount() ?? await AccountApi().getMe();
+    final me = await AccountStore().getAccount() ?? await AccountApi().getMe();
     final plainMessage = PlainMessage(
-      senderUserId: myAccount.userId,
+      senderUserId: me.userId,
       recipientUserId: recipientUserId,
       content: content,
       sentAt: sentTime,

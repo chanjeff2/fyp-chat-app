@@ -12,18 +12,16 @@ SendMessageDto _$SendMessageDtoFromJson(Map<String, dynamic> json) {
     requiredKeys: const [
       'senderDeviceId',
       'recipientUserId',
-      'recipientDeviceId',
-      'cipherTextType',
-      'content',
+      'messages',
       'sentAt'
     ],
   );
   return SendMessageDto(
     senderDeviceId: json['senderDeviceId'] as int,
     recipientUserId: json['recipientUserId'] as String,
-    recipientDeviceId: json['recipientDeviceId'] as int,
-    cipherTextType: json['cipherTextType'] as int,
-    content: json['content'] as String,
+    messages: (json['messages'] as List<dynamic>)
+        .map((e) => MessageToServerDto.fromJson(e as Map<String, dynamic>))
+        .toList(),
     sentAt: json['sentAt'] as String,
   );
 }
@@ -32,8 +30,6 @@ Map<String, dynamic> _$SendMessageDtoToJson(SendMessageDto instance) =>
     <String, dynamic>{
       'senderDeviceId': instance.senderDeviceId,
       'recipientUserId': instance.recipientUserId,
-      'recipientDeviceId': instance.recipientDeviceId,
-      'cipherTextType': instance.cipherTextType,
-      'content': instance.content,
+      'messages': instance.messages,
       'sentAt': instance.sentAt,
     };

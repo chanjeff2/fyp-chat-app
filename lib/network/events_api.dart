@@ -1,3 +1,5 @@
+import 'package:fyp_chat_app/dto/send_message_response_dto.dart';
+
 import '../dto/send_message_dto.dart';
 import 'api.dart';
 
@@ -12,7 +14,8 @@ class EventsApi extends Api {
   @override
   String pathPrefix = "/events";
 
-  Future<void> sendMessage(SendMessageDto dto) async {
-    await post("/message", body: dto.toJson(), useAuth: true);
+  Future<SendMessageResponseDto> sendMessage(SendMessageDto dto) async {
+    final json = await post("/message", body: dto.toJson(), useAuth: true);
+    return SendMessageResponseDto.fromJson(json);
   }
 }
