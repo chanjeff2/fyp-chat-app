@@ -47,8 +47,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
         widget.targetUser;
     // register new message listener
     _messageSubscription = Provider.of<UserState>(context, listen: false)
-        .messageStreamController
-        .stream
+        .messageStream
         .listen((message) {
       setState(() {
         _messages.insert(0, message);

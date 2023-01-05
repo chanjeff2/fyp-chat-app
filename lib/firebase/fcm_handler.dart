@@ -19,7 +19,7 @@ class FCMHandler {
     final plainMessage = await _handleMessage(message);
     if (plainMessage != null) {
       // notify for new message
-      state.messageStreamController.add(plainMessage.message);
+      state.messageSink.add(plainMessage.message);
       if (state.chattingWith?.userId == plainMessage.sender.userId) {
         return; // skip if the sender is the one currently chatting with
       }

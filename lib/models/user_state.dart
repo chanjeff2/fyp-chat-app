@@ -19,10 +19,16 @@ class UserState extends ChangeNotifier {
 
   User? chattingWith;
 
-  final StreamController<PlainMessage> messageStreamController =
+  final StreamController<PlainMessage> _messageStreamController =
       StreamController();
 
+  late final Stream<PlainMessage> _messageStream;
+
+  Stream<PlainMessage> get messageStream => _messageStream;
+  StreamSink<PlainMessage> get messageSink => _messageStreamController.sink;
+
   UserState() {
+    _messageStream = _messageStreamController.stream.asBroadcastStream();
     init();
   }
 
