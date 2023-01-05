@@ -9,7 +9,6 @@ import 'package:fyp_chat_app/network/auth_api.dart';
 import 'package:fyp_chat_app/network/devices_api.dart';
 import 'package:fyp_chat_app/screens/chatroom/chatroom.dart';
 import 'package:fyp_chat_app/screens/home/select_contact.dart';
-import 'package:fyp_chat_app/screens/register_or_login/loading_screen.dart';
 import 'package:fyp_chat_app/screens/settings/settings_screen.dart';
 import 'package:fyp_chat_app/storage/contact_store.dart';
 import 'package:fyp_chat_app/storage/credential_store.dart';
@@ -71,7 +70,7 @@ class _HomeScreenState extends State<HomeScreen> {
           builder: (_, snapshot) {
             if (!snapshot.hasData) {
               return const Center(
-                child: LoadingScreen(),
+                child: CircularProgressIndicator(),
               );
             }
             final contacts = snapshot.data!;
