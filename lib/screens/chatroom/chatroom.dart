@@ -1,5 +1,7 @@
 import 'dart:async';
+import 'dart:io';
 
+import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:fyp_chat_app/models/plain_message.dart';
 import 'package:fyp_chat_app/models/user.dart';
@@ -60,6 +62,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
   Widget build(BuildContext context) {
     return Consumer<UserState>(
       builder: (context, userState, child) => Scaffold(
+          extendBody: true,
           appBar: AppBar(
             leadingWidth: 72,
             titleSpacing: 8,
@@ -183,6 +186,169 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                 user: types.User(
                   id: Provider.of<UserState>(context, listen: false).me!.userId,
                 ),
+                customBottomWidget: Column(children: <Widget>[
+                  Padding(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
+                    child: Row(
+                      children: <Widget>[
+                        Flexible(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                            alignment: Alignment.centerLeft,
+                            decoration: BoxDecoration(
+                              border: Border.all(color: Colors.grey.shade600),
+                              borderRadius: BorderRadius.circular(16.0),
+                            ),
+                            child: Scrollbar(
+                              controller: _scrollController,
+                              child: TextField(
+                                textAlignVertical: TextAlignVertical.center,
+                                keyboardType: TextInputType.multiline,
+                                controller: _messageController,
+                                style: const TextStyle(color: Colors.black),
+                                cursorColor: Theme.of(context).primaryColor,
+                                decoration: InputDecoration(
+                                  contentPadding: EdgeInsets.zero,
+                                  isCollapsed: true,
+                                  filled: true,
+                                  fillColor: Colors.white70,
+                                  hintText: 'Message',
+                                  hintStyle:
+                                      TextStyle(color: Colors.grey.shade600),
+                                  border: InputBorder.none,
+                                  prefixIcon: IconButton(
+                                    icon: _emojiBoardShown
+                                        ? Icon(
+                                            Icons.keyboard,
+                                            color: Colors.grey.shade600,
+                                          )
+                                        : Icon(
+                                            Icons.emoji_emotions_outlined,
+                                            color: Colors.grey.shade600,
+                                          ),
+                                    onPressed: () {
+                                      FocusManager.instance.primaryFocus
+                                          ?.unfocus();
+                                      setState(() {
+                                        _emojiBoardShown = !_emojiBoardShown;
+                                      });
+                                    },
+                                  ),
+                                  suffixIcon: (_textMessage)
+                                      ? null
+                                      : Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            IconButton(
+                                              icon: Icon(
+                                                Icons.attach_file,
+                                                color: Colors.grey.shade600,
+                                              ),
+                                              onPressed: () {
+                                                print("attachment");
+                                              },
+                                            ),
+                                            IconButton(
+                                              icon: Icon(
+                                                Icons.camera_alt,
+                                                color: Colors.grey.shade600,
+                                              ),
+                                              onPressed: () {
+                                                print("camera");
+                                                // Navigator.push(
+                                                //     context,
+                                                //     MaterialPageRoute(
+                                                //         builder: (builder) =>
+                                                //             CameraApp()));
+                                              },
+                                            ),
+                                          ],
+                                        ),
+                                ),
+                                onChanged: (text) {
+                                  setState(() {
+                                    _textMessage = text.trim().isNotEmpty;
+                                  });
+                                },
+                                onTap: () {
+                                  setState(() {
+                                    _emojiBoardShown = false;
+                                  });
+                                },
+                                minLines: 1,
+                                maxLines: 5,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        CircleAvatar(
+                          radius: 25,
+                          backgroundColor: Theme.of(context).primaryColor,
+                          child: IconButton(
+                            icon: _textMessage
+                                ? const Icon(Icons.send, color: Colors.white)
+                                : const Icon(Icons.mic, color: Colors.white),
+                            onPressed: () {
+                              if (message.trim().isNotEmpty) {
+                                _sendMessage(message);
+                              }
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Offstage(
+                    offstage: !_emojiBoardShown,
+                    child: SizedBox(
+                        height: 250,
+                        child: EmojiPicker(
+                          textEditingController: _messageController,
+                          onEmojiSelected: (category, emoji) {
+                            setState(() {
+                              _textMessage = message.trim().isNotEmpty;
+                            });
+                          },
+                          onBackspacePressed: () {
+                            setState(() {
+                              _textMessage = message.trim().isNotEmpty;
+                            });
+                          },
+                          config: Config(
+                            columns: 8,
+                            emojiSizeMax: 32 * (Platform.isIOS ? 1.30 : 1.0),
+                            verticalSpacing: 0,
+                            horizontalSpacing: 0,
+                            gridPadding: EdgeInsets.zero,
+                            initCategory: Category.RECENT,
+                            bgColor: const Color(0xFFF2F2F2),
+                            indicatorColor: Theme.of(context).primaryColor,
+                            iconColor: Colors.grey,
+                            iconColorSelected: Theme.of(context).primaryColor,
+                            backspaceColor: Theme.of(context).primaryColor,
+                            skinToneDialogBgColor: Colors.white,
+                            skinToneIndicatorColor: Colors.grey,
+                            enableSkinTones: true,
+                            showRecentsTab: true,
+                            recentsLimit: 28,
+                            replaceEmojiOnLimitExceed: false,
+                            noRecents: const Text(
+                              'No Recents',
+                              style: TextStyle(
+                                  fontSize: 20, color: Colors.black26),
+                              textAlign: TextAlign.center,
+                            ),
+                            loadingIndicator: const SizedBox.shrink(),
+                            tabIndicatorAnimDuration: kTabScrollDuration,
+                            categoryIcons: const CategoryIcons(),
+                            buttonMode: ButtonMode.MATERIAL,
+                            checkPlatformCompatibility: true,
+                          ),
+                        )),
+                  ),
+                ]),
               );
             },
           )
@@ -364,7 +530,8 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
           //             buttonMode: ButtonMode.MATERIAL,
           //             checkPlatformCompatibility: true,
           //           ),
-          //         )),
+          //         )
+          //      ),
           //   ),
           // ]),
           ),
