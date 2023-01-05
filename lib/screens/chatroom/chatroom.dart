@@ -29,7 +29,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
   final ScrollController _scrollController = ScrollController();
   bool _textMessage = false;
   bool _emojiBoardShown = false;
-  late final Future<void> _messageHistoryFuture;
+  late final Future<bool> _messageHistoryFuture;
   late final List<PlainMessage> _messages;
 
   @override
@@ -38,9 +38,10 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
     _messageHistoryFuture = _loadMessageHistory();
   }
 
-  Future<void> _loadMessageHistory() async {
+  Future<bool> _loadMessageHistory() async {
     _messages =
         await MessageStore().getMessageByUserId(widget.targetUser.userId);
+    return true;
   }
 
   String get message => _messageController.text;
