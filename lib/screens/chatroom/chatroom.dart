@@ -34,7 +34,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
   bool _emojiBoardShown = false;
   late final StreamController<List<PlainMessage>> _messageStreamController;
   late final Stream<List<PlainMessage>> _messageStream;
-
+  bool _messageholding = true;
   @override
   void initState() {
     super.initState();
@@ -62,106 +62,109 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
   Widget build(BuildContext context) {
     return Consumer<UserState>(
       builder: (context, userState, child) => Scaffold(
-        appBar: AppBar(
-          leadingWidth: 72,
-          titleSpacing: 8,
-          leading: InkWell(
-            onTap: () {
-              Navigator.pop(context);
-            },
-            borderRadius: BorderRadius.circular(40.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              mainAxisSize: MainAxisSize.max,
-              children: const [
-                Expanded(
-                  child: Icon(
-                    Icons.arrow_back,
+        appBar: _messageholding
+            ? AppBar()
+            : AppBar(
+                leadingWidth: 72,
+                titleSpacing: 8,
+                leading: InkWell(
+                  onTap: () {
+                    Navigator.pop(context);
+                  },
+                  borderRadius: BorderRadius.circular(40.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.max,
+                    children: const [
+                      Expanded(
+                        child: Icon(
+                          Icons.arrow_back,
+                        ),
+                      ),
+                      // SizedBox(width: 4),
+                      Expanded(
+                        child: CircleAvatar(
+                          // child: profilePicture ? null : Icon(Icons.person, size: 48),
+                          child:
+                              Icon(Icons.person, size: 20, color: Colors.white),
+                          radius: 32,
+                          backgroundColor: Colors.blueGrey,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                // SizedBox(width: 4),
-                Expanded(
-                  child: CircleAvatar(
-                    // child: profilePicture ? null : Icon(Icons.person, size: 48),
-                    child: Icon(Icons.person, size: 20, color: Colors.white),
-                    radius: 32,
-                    backgroundColor: Colors.blueGrey,
+                //top bar with pop up menu button
+                title: SizedBox(
+                  width: MediaQuery.of(context).size.width,
+                  child: InkWell(
+                    onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                        builder: (context) => const ContactInfo())),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(widget.targetUser.name),
+                        const Text(
+                          "Online",
+                          style: TextStyle(
+                              fontWeight: FontWeight.normal, fontSize: 14),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ],
-            ),
-          ),
-          //top bar with pop up menu button
-          title: SizedBox(
-            width: MediaQuery.of(context).size.width,
-            child: InkWell(
-              onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute(builder: (context) => const ContactInfo())),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(widget.targetUser.name),
-                  const Text(
-                    "Online",
-                    style:
-                        TextStyle(fontWeight: FontWeight.normal, fontSize: 14),
-                  ),
+                actions: [
+                  PopupMenuButton(
+                    onSelected: (value) {
+                      _onMenuItemSelected(value as int, userState);
+                    },
+                    itemBuilder: (context) => [
+                      _buildPopupMenuItem("Add to Contact", 0),
+                      _buildPopupMenuItem("Search", 1),
+                      _buildPopupMenuItem("Mute Notifications", 2),
+                      PopupMenuItem(
+                        value: 3,
+                        child: PopupMenuButton(
+                          padding: EdgeInsets.zero,
+                          child: Container(
+                            alignment: Alignment.center,
+                            height: 48.0, //default height
+                            width: double.infinity,
+                            child: Row(
+                              children: const <Widget>[
+                                Text("More"),
+                                Spacer(),
+                                Icon(
+                                  Icons.keyboard_arrow_right,
+                                  color: Colors.grey,
+                                ),
+                              ],
+                            ),
+                          ),
+                          itemBuilder: (innerContext) {
+                            return [
+                              PopupMenuItem(
+                                value: 101,
+                                child: const Text("Block User"),
+                                onTap: () {
+                                  Navigator.of(innerContext).pop();
+                                },
+                              ),
+                              PopupMenuItem(
+                                value: 102,
+                                child: const Text("Report User"),
+                                onTap: () {
+                                  Navigator.of(innerContext).pop();
+                                },
+                              ),
+                            ];
+                          },
+                        ),
+                      ),
+                    ],
+                  )
                 ],
               ),
-            ),
-          ),
-          actions: [
-            PopupMenuButton(
-              onSelected: (value) {
-                _onMenuItemSelected(value as int, userState);
-              },
-              itemBuilder: (context) => [
-                _buildPopupMenuItem("Add to Contact", 0),
-                _buildPopupMenuItem("Search", 1),
-                _buildPopupMenuItem("Mute Notifications", 2),
-                PopupMenuItem(
-                  value: 3,
-                  child: PopupMenuButton(
-                    padding: EdgeInsets.zero,
-                    child: Container(
-                      alignment: Alignment.center,
-                      height: 48.0, //default height
-                      width: double.infinity,
-                      child: Row(
-                        children: const <Widget>[
-                          Text("More"),
-                          Spacer(),
-                          Icon(
-                            Icons.keyboard_arrow_right,
-                            color: Colors.grey,
-                          ),
-                        ],
-                      ),
-                    ),
-                    itemBuilder: (innerContext) {
-                      return [
-                        PopupMenuItem(
-                          value: 101,
-                          child: const Text("Block User"),
-                          onTap: () {
-                            Navigator.of(innerContext).pop();
-                          },
-                        ),
-                        PopupMenuItem(
-                          value: 102,
-                          child: const Text("Report User"),
-                          onTap: () {
-                            Navigator.of(innerContext).pop();
-                          },
-                        ),
-                      ];
-                    },
-                  ),
-                ),
-              ],
-            )
-          ],
-        ),
         body: Column(children: <Widget>[
           //show chat messages on screen
           Expanded(
@@ -177,11 +180,14 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                 return ListView.builder(
                   itemBuilder: (_, i) {
                     final message = messages[i];
-                    return MessageBubble(
-                      text: message.content,
-                      time: DateFormat.Hm().format(message.sentAt),
-                      isCurrentUser:
-                          message.recipientUserId == widget.targetUser.userId,
+                    return GestureDetector(
+                      onLongPress: () {},
+                      child: MessageBubble(
+                        text: message.content,
+                        time: DateFormat.Hm().format(message.sentAt),
+                        isCurrentUser:
+                            message.recipientUserId == widget.targetUser.userId,
+                      ),
                     );
                   },
                   itemCount: messages.length,
