@@ -78,42 +78,60 @@ class SignalClient {
       throw Exception('Sender Device Id is null');
     }
 
-    final keyList = await KeysApi().getAllKeyBundle(recipientUserId);
-    final keyBundle = KeyBundle.fromDto(keyList);
     DateTime sentTime = DateTime.now();
 
-    await Future.wait(keyBundle.deviceKeyBundles.map(
-      (deviceKeyBundle) async {
+    // check if already establish session
+    final remotePrimaryAddress = SignalProtocolAddress(
+      recipientUserId,
+      1, // device#1 is primary device
+    );
+
+    final containsSession =
+        await DiskSessionStore().containsSession(remotePrimaryAddress);
+
+    if (!containsSession) {
+      final keyList = await KeysApi().getAllKeyBundle(recipientUserId);
+      final keyBundle = KeyBundle.fromDto(keyList);
+
+      await Future.wait(keyBundle.deviceKeyBundles.map((deviceKeyBundle) async {
         final remoteAddress = SignalProtocolAddress(
           recipientUserId,
           deviceKeyBundle.deviceId,
         );
-        // check session is existed or not
-        final containsSession =
-            await DiskSessionStore().containsSession(remoteAddress);
-        if (!containsSession) {
-          // init session
-          final sessionBuilder = SessionBuilder(
-            DiskSessionStore(),
-            DiskPreKeyStore(),
-            DiskSignedPreKeyStore(),
-            DiskIdentityKeyStore(),
-            remoteAddress,
-          );
-          final oneTimeKey = deviceKeyBundle.oneTimeKey;
-          final signedPreKey = deviceKeyBundle.signedPreKey;
-          final retrievedPreKey = PreKeyBundle(
-            deviceKeyBundle.registrationId,
-            deviceKeyBundle.deviceId,
-            oneTimeKey?.id,
-            oneTimeKey?.key,
-            signedPreKey.id,
-            signedPreKey.key,
-            signedPreKey.signature,
-            keyBundle.identityKey,
-          );
-          await sessionBuilder.processPreKeyBundle(retrievedPreKey);
-        }
+        // init session
+        final sessionBuilder = SessionBuilder(
+          DiskSessionStore(),
+          DiskPreKeyStore(),
+          DiskSignedPreKeyStore(),
+          DiskIdentityKeyStore(),
+          remoteAddress,
+        );
+        final oneTimeKey = deviceKeyBundle.oneTimeKey;
+        final signedPreKey = deviceKeyBundle.signedPreKey;
+        final retrievedPreKey = PreKeyBundle(
+          deviceKeyBundle.registrationId,
+          deviceKeyBundle.deviceId,
+          oneTimeKey?.id,
+          oneTimeKey?.key,
+          signedPreKey.id,
+          signedPreKey.key,
+          signedPreKey.signature,
+          keyBundle.identityKey,
+        );
+        // store session
+        await sessionBuilder.processPreKeyBundle(retrievedPreKey);
+      }));
+    }
+
+    final deviceIds =
+        await DiskSessionStore().getSubDeviceSessions(recipientUserId);
+
+    await Future.wait([1, ...deviceIds].map(
+      (deviceId) async {
+        final remoteAddress = SignalProtocolAddress(
+          recipientUserId,
+          deviceId,
+        );
         // encrypt message
         final remoteSessionCipher = SessionCipher(
           DiskSessionStore(),
@@ -129,7 +147,7 @@ class SignalClient {
         final message = SendMessageDao(
           senderDeviceId: senderDeviceId,
           recipientUserId: recipientUserId,
-          recipientDeviceId: deviceKeyBundle.deviceId,
+          recipientDeviceId: deviceId,
           cipherTextType: cipherText.getType(),
           content: cipherText,
           sentAt: sentTime,
