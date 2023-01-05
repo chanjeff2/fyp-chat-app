@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:fyp_chat_app/dto/message_dto.dart';
 import 'package:fyp_chat_app/dto/send_message_dto.dart';
 import 'package:fyp_chat_app/models/message.dart';
+import 'package:fyp_chat_app/models/message_to_server.dart';
 import 'package:fyp_chat_app/models/send_message_dao.dart';
 import 'package:libsignal_protocol_dart/libsignal_protocol_dart.dart';
 
@@ -74,9 +75,14 @@ void main() {
     final serialized = SendMessageDao(
       senderDeviceId: deviceId,
       recipientUserId: 'recipientUserId',
-      recipientDeviceId: remoteDeviceId,
-      cipherTextType: ciphertext.getType(),
-      content: ciphertext as PreKeySignalMessage,
+      messages: [
+        MessageToServer(
+          cipherTextType: ciphertext.getType(),
+          recipientDeviceId: remoteDeviceId,
+          recipientRegistrationId: remoteRegistrationId,
+          content: ciphertext,
+        ),
+      ],
       sentAt: sentAt,
     ).toDto();
     final messageDto = receiveMessage(serialized);
@@ -89,7 +95,8 @@ void main() {
     const localAddress = SignalProtocolAddress('sender', deviceId);
     final remoteSessionCipher =
         SessionCipher.fromStore(remoteStore, localAddress);
-    final decrypted = await remoteSessionCipher.decrypt(ciphertext);
+    final decrypted =
+        await remoteSessionCipher.decrypt(ciphertext as PreKeySignalMessage);
     final receivedPlaintext = utf8.decode(decrypted);
     expect(receivedPlaintext, plaintext);
   });
@@ -99,8 +106,8 @@ MessageDto receiveMessage(SendMessageDto dto) {
   return MessageDto(
     senderUserId: 'senderUserId',
     senderDeviceId: dto.senderDeviceId.toString(),
-    cipherTextType: dto.cipherTextType.toString(),
-    content: dto.content,
+    cipherTextType: dto.messages[0].cipherTextType.toString(),
+    content: dto.messages[0].content,
     sentAt: dto.sentAt,
   );
 }
