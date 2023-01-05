@@ -229,7 +229,6 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                       children: <Widget>[
                         Flexible(
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12),
                             alignment: Alignment.centerLeft,
                             decoration: BoxDecoration(
                               border: Border.all(color: Colors.grey.shade600),
@@ -318,19 +317,24 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                           ),
                         ),
                         const SizedBox(width: 8),
-                        CircleAvatar(
-                          radius: 25,
-                          backgroundColor: Theme.of(context).primaryColor,
-                          child: IconButton(
-                            icon: _textMessage
-                                ? const Icon(Icons.send, color: Colors.white)
-                                : const Icon(Icons.mic, color: Colors.white),
-                            onPressed: () {
-                              if (message.trim().isNotEmpty) {
-                                _sendMessage(message);
-                              }
-                            },
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            shape: const CircleBorder(),
+                            padding: const EdgeInsets.all(12),
+                            backgroundColor: Theme.of(context)
+                                .primaryColor, // <-- Button color
+                            foregroundColor: Theme.of(context)
+                                .highlightColor, // <-- Splash color
+                            minimumSize: const Size(0, 0),
                           ),
+                          child: _textMessage
+                              ? const Icon(Icons.send, color: Colors.white)
+                              : const Icon(Icons.mic, color: Colors.white),
+                          onPressed: () {
+                            if (message.trim().isNotEmpty) {
+                              _sendMessage(message);
+                            }
+                          },
                         ),
                       ],
                     ),
