@@ -12,6 +12,9 @@ class SendMessageDto {
   final String recipientUserId;
 
   @JsonKey(required: true)
+  final String chatroomId;
+
+  @JsonKey(required: true)
   final List<MessageToServerDto> messages;
 
   @JsonKey(required: true)
@@ -20,6 +23,7 @@ class SendMessageDto {
   SendMessageDto({
     required this.senderDeviceId,
     required this.recipientUserId,
+    required this.chatroomId,
     required this.messages,
     required this.sentAt,
   });

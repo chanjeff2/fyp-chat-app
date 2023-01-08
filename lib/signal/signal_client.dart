@@ -3,6 +3,8 @@ import 'dart:typed_data';
 
 import 'package:fyp_chat_app/dto/update_keys_dto.dart';
 import 'package:fyp_chat_app/extensions/signal_lib_extension.dart';
+import 'package:fyp_chat_app/models/chatroom.dart';
+import 'package:fyp_chat_app/models/group_chat.dart';
 import 'package:fyp_chat_app/models/key_bundle.dart';
 import 'package:fyp_chat_app/models/message.dart';
 import 'package:fyp_chat_app/models/message_to_server.dart';
@@ -136,15 +138,13 @@ class SignalClient {
     );
   }
 
-  Future<PlainMessage> sendMessage(
-      String recipientUserId, String content) async {
-    final senderDeviceId = await DeviceInfoHelper().getDeviceId();
-    if (senderDeviceId == null) {
-      throw Exception('Sender Device Id is null');
-    }
-
-    DateTime sentTime = DateTime.now();
-
+  Future<void> _sendMessage(
+    int senderDeviceId,
+    String recipientUserId,
+    String chatroomId,
+    String content,
+    DateTime sentAt,
+  ) async {
     // check if already establish session
     final remotePrimaryAddress = SignalProtocolAddress(
       recipientUserId,
@@ -173,8 +173,9 @@ class SignalClient {
     final message = SendMessageDao(
       senderDeviceId: senderDeviceId,
       recipientUserId: recipientUserId,
+      chatroomId: chatroomId,
       messages: messages,
-      sentAt: sentTime,
+      sentAt: sentAt,
     ).toDto();
 
     final response = await EventsApi().sendMessage(message);
@@ -206,19 +207,44 @@ class SignalClient {
     final messageRetry = SendMessageDao(
       senderDeviceId: senderDeviceId,
       recipientUserId: recipientUserId,
+      chatroomId: chatroomId,
       messages: messagesRetry,
-      sentAt: sentTime,
+      sentAt: sentAt,
     ).toDto();
 
     await EventsApi().sendMessage(message);
+  }
+
+  Future<PlainMessage> sendMessageToChatroom(
+      Chatroom chatroom, String content) async {
+    // TODO: support group chat
+    final senderDeviceId = await DeviceInfoHelper().getDeviceId();
+    if (senderDeviceId == null) {
+      throw Exception('Sender Device Id is null');
+    }
+
+    DateTime sentAt = DateTime.now();
+
+    switch (chatroom.type) {
+      case ChatroomType.oneToOne:
+        chatroom as OneToOneChat;
+        await _sendMessage(senderDeviceId, chatroom.target.userId, chatroom.id,
+            content, sentAt);
+        break;
+      case ChatroomType.group:
+        chatroom as GroupChat;
+        await Future.wait(chatroom.members.map((e) async => await _sendMessage(
+            senderDeviceId, e.user.userId, chatroom.id, content, sentAt)));
+        break;
+    }
 
     // save message to disk
     final me = await AccountStore().getAccount() ?? await AccountApi().getMe();
     final plainMessage = PlainMessage(
       senderUserId: me.userId,
-      chatroomId: recipientUserId, // TODO: update to chatroom id
+      chatroomId: chatroom.id,
       content: content,
-      sentAt: sentTime,
+      sentAt: sentAt,
     );
 
     final messageId = await MessageStore().storeMessage(plainMessage);
@@ -276,12 +302,12 @@ class SignalClient {
 
     final plainMessage = PlainMessage(
       senderUserId: sender.userId,
-      chatroomId: sender.userId, // TODO: update to chatroom id
+      chatroomId: message.chatroomId, // TODO: update to chatroom id
       content: plaintext,
       sentAt: message.sentAt,
     );
 
-    // TODO: support grooup chat
+    // TODO: support group chat
     if (await ChatroomStore().contains(sender.userId)) {
       final chatroom = OneToOneChat(
         target: sender,

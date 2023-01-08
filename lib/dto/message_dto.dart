@@ -11,6 +11,9 @@ class MessageDto {
   final String senderDeviceId;
 
   @JsonKey(required: true)
+  final String chatroomId;
+
+  @JsonKey(required: true)
   final String cipherTextType;
 
   @JsonKey(required: true)
@@ -22,6 +25,7 @@ class MessageDto {
   MessageDto({
     required this.senderUserId,
     required this.senderDeviceId,
+    required this.chatroomId,
     required this.cipherTextType,
     required this.content,
     required this.sentAt,

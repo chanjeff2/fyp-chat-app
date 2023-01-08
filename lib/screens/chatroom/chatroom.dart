@@ -4,7 +4,6 @@ import 'dart:io';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:fyp_chat_app/models/chatroom.dart';
-import 'package:fyp_chat_app/models/one_to_one_chat.dart';
 import 'package:fyp_chat_app/models/plain_message.dart';
 import 'package:fyp_chat_app/models/received_plain_message.dart';
 import 'package:fyp_chat_app/models/user_state.dart';
@@ -85,9 +84,8 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
   void _sendMessage(String message) async {
     _messageController.clear();
     _textMessage = false;
-    // TODO: support group chat
-    final sentMessage = await SignalClient()
-        .sendMessage((widget.chatroom as OneToOneChat).target.userId, message);
+    final sentMessage =
+        await SignalClient().sendMessageToChatroom(widget.chatroom, message);
     setState(() {
       _messages.insert(0, sentMessage);
     });
