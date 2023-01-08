@@ -6,6 +6,7 @@ import 'package:fyp_chat_app/extensions/signal_lib_extension.dart';
 import 'package:fyp_chat_app/models/key_bundle.dart';
 import 'package:fyp_chat_app/models/message.dart';
 import 'package:fyp_chat_app/models/message_to_server.dart';
+import 'package:fyp_chat_app/models/one_to_one_chat.dart';
 import 'package:fyp_chat_app/models/plain_message.dart';
 import 'package:fyp_chat_app/models/pre_key.dart';
 import 'package:fyp_chat_app/models/received_plain_message.dart';
@@ -18,6 +19,7 @@ import 'package:fyp_chat_app/network/keys_api.dart';
 import 'package:fyp_chat_app/network/users_api.dart';
 import 'package:fyp_chat_app/signal/device_helper.dart';
 import 'package:fyp_chat_app/storage/account_store.dart';
+import 'package:fyp_chat_app/storage/chatroom_store.dart';
 import 'package:fyp_chat_app/storage/contact_store.dart';
 import 'package:fyp_chat_app/storage/disk_identity_key_store.dart';
 import 'package:fyp_chat_app/storage/disk_pre_key_store.dart';
@@ -279,12 +281,24 @@ class SignalClient {
       sentAt: message.sentAt,
     );
 
+    // TODO: support grooup chat
+    if (await ChatroomStore().contains(sender.userId)) {
+      final chatroom = OneToOneChat(
+        target: sender,
+        unread: 1,
+        latestMessage: plainMessage,
+      );
+      await ChatroomStore().save(chatroom);
+    }
+    final chatroom = await ChatroomStore().get(sender.userId);
+
     // save message to disk
     final messageId = await MessageStore().storeMessage(plainMessage);
     plainMessage.id = messageId;
 
     final receivedPlainMessage = ReceivedPlainMessage(
       sender: sender,
+      chatroom: chatroom!,
       message: plainMessage,
     );
     return receivedPlainMessage;

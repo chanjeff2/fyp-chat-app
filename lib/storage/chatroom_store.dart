@@ -4,6 +4,7 @@ import 'package:fyp_chat_app/models/group_chat.dart';
 import 'package:fyp_chat_app/models/one_to_one_chat.dart';
 import 'package:fyp_chat_app/storage/disk_storage.dart';
 import 'package:fyp_chat_app/storage/group_member_store.dart';
+import 'package:sqflite/sqflite.dart';
 
 class ChatroomStore {
   // singleton
@@ -14,6 +15,17 @@ class ChatroomStore {
   }
 
   static const table = 'chatroom';
+
+  Future<bool> contains(String id) async {
+    final db = await DiskStorage().db;
+    final result = await db.query(
+      table,
+      columns: ['COUNT(*)'],
+      where: '${ChatroomEntity.columnId} = ?',
+      whereArgs: [id],
+    );
+    return (Sqflite.firstIntValue(result) ?? 0) > 0;
+  }
 
   Future<List<Chatroom>> getAllChatroom() async {
     final db = await DiskStorage().db;

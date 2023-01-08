@@ -3,9 +3,10 @@ import 'dart:io';
 
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/material.dart';
+import 'package:fyp_chat_app/models/chatroom.dart';
+import 'package:fyp_chat_app/models/one_to_one_chat.dart';
 import 'package:fyp_chat_app/models/plain_message.dart';
 import 'package:fyp_chat_app/models/received_plain_message.dart';
-import 'package:fyp_chat_app/models/user.dart';
 import 'package:fyp_chat_app/models/user_state.dart';
 import 'package:fyp_chat_app/screens/chatroom/contact_info.dart';
 import 'package:fyp_chat_app/signal/signal_client.dart';
@@ -18,10 +19,10 @@ import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
 class ChatRoomScreen extends StatefulWidget {
   const ChatRoomScreen({
     Key? key,
-    required this.targetUser,
+    required this.chatroom,
   }) : super(key: key);
 
-  final User targetUser;
+  final Chatroom chatroom;
 
   @override
   State<ChatRoomScreen> createState() => _ChatRoomScreenState();
@@ -44,8 +45,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
     super.initState();
     _messageHistoryFuture = _loadMessageHistory();
     // set chatting with
-    Provider.of<UserState>(context, listen: false).chattingWith =
-        widget.targetUser;
+    Provider.of<UserState>(context, listen: false).chatroom = widget.chatroom;
     // register new message listener
     _messageSubscription = Provider.of<UserState>(context, listen: false)
         .messageStream
@@ -60,13 +60,13 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
   void dispose() {
     super.dispose();
     // remove chatting with
-    Provider.of<UserState>(context, listen: false).chattingWith = null;
+    Provider.of<UserState>(context, listen: false).chatroom = null;
     _messageSubscription.cancel();
   }
 
   Future<bool> _loadMessageHistory() async {
     final messages = await MessageStore().getMessageByChatroomId(
-      widget.targetUser.userId,
+      widget.chatroom.id,
       start: _page * _pageSize,
       count: _pageSize,
     );
@@ -85,8 +85,9 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
   void _sendMessage(String message) async {
     _messageController.clear();
     _textMessage = false;
-    final sentMessage =
-        await SignalClient().sendMessage(widget.targetUser.userId, message);
+    // TODO: support group chat
+    final sentMessage = await SignalClient()
+        .sendMessage((widget.chatroom as OneToOneChat).target.userId, message);
     setState(() {
       _messages.insert(0, sentMessage);
     });
@@ -135,7 +136,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(widget.targetUser.name),
+                  Text(widget.chatroom.name),
                   const Text(
                     "Online",
                     style: TextStyle(

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:fyp_chat_app/models/user.dart';
-import 'package:fyp_chat_app/screens/chatroom/chatroom.dart';
+import 'package:fyp_chat_app/models/chatroom.dart';
 
 // Contact in selecting user, which shows status
 class ContactOption extends StatelessWidget {
@@ -39,12 +38,12 @@ class ContactOption extends StatelessWidget {
 class HomeContact extends StatelessWidget {
   const HomeContact({
     Key? key,
-    required this.user,
+    required this.chatroom,
     required this.unread,
     this.onClick,
   }) : super(key: key); // Require session?
   final int unread;
-  final User user;
+  final Chatroom chatroom;
   final VoidCallback? onClick;
 
   String updateDateTime(DateTime latestActivityTime) {
@@ -78,7 +77,7 @@ class HomeContact extends StatelessWidget {
           title: Row(
             children: [
               Text(
-                user.name,
+                chatroom.name,
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,

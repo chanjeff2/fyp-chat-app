@@ -1,27 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:fyp_chat_app/components/default_option.dart';
 import 'package:fyp_chat_app/components/contact_option.dart';
+import 'package:fyp_chat_app/models/chatroom.dart';
+import 'package:fyp_chat_app/models/one_to_one_chat.dart';
 import 'package:fyp_chat_app/models/user.dart';
 import 'package:fyp_chat_app/network/api.dart';
 import 'package:fyp_chat_app/network/users_api.dart';
+import 'package:fyp_chat_app/storage/chatroom_store.dart';
 
 import '../../storage/contact_store.dart';
 
 class SelectContact extends StatefulWidget {
   const SelectContact({
     Key? key,
-    this.onNewContact,
+    this.onNewChatroom,
   }) : super(key: key);
-  final void Function(User)? onNewContact;
+  final void Function(Chatroom)? onNewChatroom;
 
   @override
   State<SelectContact> createState() => _SelectContactState();
 }
 
 class _SelectContactState extends State<SelectContact> {
-  final List<Contact> _contacts = [
-
-  ];
+  final List<Contact> _contacts = [];
 
   String addContactInput = "";
 
@@ -82,11 +83,15 @@ class _SelectContactState extends State<SelectContact> {
                         try {
                           User addUser = User.fromDto(await UsersApi()
                               .getUserByUsername(addContactInput));
-                          //local storage on disk
-                          ContactStore().storeContact(addUser);
+                          // local storage on disk
+                          await ContactStore().storeContact(addUser);
+                          // TODO: support group chat
+                          final chatroom =
+                              OneToOneChat(target: addUser, unread: 0);
+                          await ChatroomStore().save(chatroom);
                           // callback and return to home
                           Navigator.of(context).pop();
-                          widget.onNewContact?.call(addUser);
+                          widget.onNewChatroom?.call(chatroom);
                           //print(_contacts.length);
                         } on ApiException catch (e) {
                           ScaffoldMessenger.of(context).showSnackBar(
