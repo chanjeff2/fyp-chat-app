@@ -214,7 +214,7 @@ class SignalClient {
     final me = await AccountStore().getAccount() ?? await AccountApi().getMe();
     final plainMessage = PlainMessage(
       senderUserId: me.userId,
-      recipientUserId: recipientUserId,
+      chatroomId: recipientUserId, // TODO: update to chatroom id
       content: content,
       sentAt: sentTime,
     );
@@ -274,7 +274,7 @@ class SignalClient {
 
     final plainMessage = PlainMessage(
       senderUserId: sender.userId,
-      recipientUserId: me.userId,
+      chatroomId: sender.userId, // TODO: update to chatroom id
       content: plaintext,
       sentAt: message.sentAt,
     );

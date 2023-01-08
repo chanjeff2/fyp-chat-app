@@ -65,7 +65,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
   }
 
   Future<bool> _loadMessageHistory() async {
-    final messages = await MessageStore().getMessageByUserId(
+    final messages = await MessageStore().getMessageByChatroomId(
       widget.targetUser.userId,
       start: _page * _pageSize,
       count: _pageSize,
