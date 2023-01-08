@@ -240,6 +240,8 @@ class SignalClient {
       // get user from server
       final userDto = await UsersApi().getUserById(message.senderUserId);
       sender = User.fromDto(userDto);
+      // add sender to contact
+      await ContactStore().storeContact(sender);
     }
     // set up address
     final remoteAddress = SignalProtocolAddress(

@@ -1,6 +1,8 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:fyp_chat_app/dto/message_dto.dart';
+import 'package:fyp_chat_app/models/received_plain_message.dart';
+import 'package:fyp_chat_app/models/user_state.dart';
 import 'package:fyp_chat_app/signal/signal_client.dart';
 
 import '../models/message.dart' as message_model;
@@ -10,14 +12,26 @@ class FCMHandler {
   static const channelName = 'FCM Notifications';
   static const channelDescription = 'This channel is used for FCM messages.';
 
-  static Future<void> onForegroundMessage(RemoteMessage message) async {
-    // TODO: skip if the sender is the one currently chatting with
-    // instead notify update on the chat screen
-    _handleMessage(message);
+  static Future<void> onForegroundMessage(
+    UserState state,
+    RemoteMessage message,
+  ) async {
+    final plainMessage = await _handleMessage(message);
+    if (plainMessage != null) {
+      // notify for new message
+      state.messageSink.add(plainMessage);
+      if (state.chattingWith?.userId == plainMessage.sender.userId) {
+        return; // skip if the sender is the one currently chatting with
+      }
+      _showNotification(plainMessage);
+    }
   }
 
   static Future<void> onBackgroundMessage(RemoteMessage message) async {
-    _handleMessage(message);
+    final plainMessage = await _handleMessage(message);
+    if (plainMessage != null) {
+      _showNotification(plainMessage);
+    }
   }
 
   // user click on notification to open app when app is in background
@@ -25,18 +39,19 @@ class FCMHandler {
     _handleMessage(message);
   }
 
-  static Future<void> _handleMessage(RemoteMessage remoteMessage) async {
+  static Future<ReceivedPlainMessage?> _handleMessage(
+      RemoteMessage remoteMessage) async {
     final messageDto = MessageDto.fromJson(remoteMessage.data);
     final message = message_model.Message.fromDto(messageDto);
     final plainMessage = await SignalClient().processMessage(message);
-    if (plainMessage == null) {
-      return; // abort if cannot process message
-    }
+    return plainMessage;
+  }
 
+  static void _showNotification(ReceivedPlainMessage message) {
     FlutterLocalNotificationsPlugin().show(
-        plainMessage.message.id!,
-        plainMessage.sender.name,
-        plainMessage.message.content,
+        message.message.id!,
+        message.sender.name,
+        message.message.content,
         const NotificationDetails(
           android: AndroidNotificationDetails(
             channelId,

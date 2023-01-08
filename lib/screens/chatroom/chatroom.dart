@@ -1,19 +1,19 @@
 import 'dart:async';
-import 'dart:io' show Platform;
+import 'dart:io';
 
+import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:fyp_chat_app/models/plain_message.dart';
+import 'package:fyp_chat_app/models/received_plain_message.dart';
 import 'package:fyp_chat_app/models/user.dart';
 import 'package:fyp_chat_app/models/user_state.dart';
 import 'package:fyp_chat_app/screens/chatroom/contact_info.dart';
-import 'package:fyp_chat_app/screens/register_or_login/loading_screen.dart';
 import 'package:fyp_chat_app/signal/signal_client.dart';
 import 'package:fyp_chat_app/storage/message_store.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import 'package:fyp_chat_app/screens/chatroom/message_bubble.dart';
 
-import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
+import 'package:flutter_chat_ui/flutter_chat_ui.dart';
+import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
 
 class ChatRoomScreen extends StatefulWidget {
   const ChatRoomScreen({
@@ -32,36 +32,71 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
   final ScrollController _scrollController = ScrollController();
   bool _textMessage = false;
   bool _emojiBoardShown = false;
-  late final StreamController<List<PlainMessage>> _messageStreamController;
-  late final Stream<List<PlainMessage>> _messageStream;
+  late final Future<bool> _messageHistoryFuture;
+  final List<PlainMessage> _messages = [];
+  int _page = 0; // pagination
+  bool _isLastPage = false;
+  static const _pageSize = 100;
+  late StreamSubscription<ReceivedPlainMessage> _messageSubscription;
 
   @override
   void initState() {
     super.initState();
-    _messageStreamController = StreamController(
-      onListen: () async {
-        final messages =
-            await MessageStore().getMessageByUserId(widget.targetUser.userId);
-        _messageStreamController.add(messages);
-      },
+    _messageHistoryFuture = _loadMessageHistory();
+    // set chatting with
+    Provider.of<UserState>(context, listen: false).chattingWith =
+        widget.targetUser;
+    // register new message listener
+    _messageSubscription = Provider.of<UserState>(context, listen: false)
+        .messageStream
+        .listen((receivedMessage) {
+      setState(() {
+        _messages.insert(0, receivedMessage.message);
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    // remove chatting with
+    Provider.of<UserState>(context, listen: false).chattingWith = null;
+    _messageSubscription.cancel();
+  }
+
+  Future<bool> _loadMessageHistory() async {
+    final messages = await MessageStore().getMessageByUserId(
+      widget.targetUser.userId,
+      start: _page * _pageSize,
+      count: _pageSize,
     );
-    _messageStream = _messageStreamController.stream;
+    _page += 1;
+    if (messages.length < _pageSize) {
+      _isLastPage = true;
+    }
+    setState(() {
+      _messages.addAll(messages);
+    });
+    return true;
   }
 
   String get message => _messageController.text;
 
   void _sendMessage(String message) async {
-    final sentMessage =
-        await SignalClient().sendMessage(widget.targetUser.userId, message);
-    _messageStreamController.add([sentMessage]);
     _messageController.clear();
     _textMessage = false;
+    final sentMessage =
+        await SignalClient().sendMessage(widget.targetUser.userId, message);
+    setState(() {
+      _messages.insert(0, sentMessage);
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Consumer<UserState>(
       builder: (context, userState, child) => Scaffold(
+        extendBody: true,
         appBar: AppBar(
           leadingWidth: 72,
           titleSpacing: 8,
@@ -103,8 +138,10 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                   Text(widget.targetUser.name),
                   const Text(
                     "Online",
-                    style:
-                        TextStyle(fontWeight: FontWeight.normal, fontSize: 14),
+                    style: TextStyle(
+                      fontWeight: FontWeight.normal,
+                      fontSize: 14,
+                    ),
                   ),
                 ],
               ),
@@ -162,188 +199,203 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
             )
           ],
         ),
-        body: Column(children: <Widget>[
-          //show chat messages on screen
-          Expanded(
-            child: StreamBuilder<List<PlainMessage>>(
-              stream: _messageStream,
-              builder: (_, snapshot) {
-                if (!snapshot.hasData) {
-                  return const Center(
-                    child: LoadingScreen(),
-                  );
-                }
-                final messages = snapshot.data!;
-                return ListView.builder(
-                  reverse: true,
-                  itemBuilder: (_, i) {
-                    final message = messages[i];
-                    return MessageBubble(
-                      text: message.content,
-                      time: DateFormat.Hm().format(message.sentAt),
-                      isCurrentUser:
-                          message.recipientUserId == widget.targetUser.userId,
-                    );
-                  },
-                  itemCount: messages.length,
-                );
+        body: FutureBuilder(
+          future: _messageHistoryFuture,
+          builder: (_, snapshot) {
+            if (!snapshot.hasData) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            return Chat(
+              messages: _messages
+                  .map(
+                    (e) => types.TextMessage(
+                      id: e.id!.toString(),
+                      author: types.User(id: e.senderUserId),
+                      text: e.content,
+                      createdAt: e.sentAt.microsecondsSinceEpoch,
+                    ),
+                  )
+                  .toList(),
+              onSendPressed: (partialText) {
+                _sendMessage(partialText.text);
               },
-            ),
-          ),
-          //show text field bar and related button
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
-            child: Row(children: <Widget>[
-              Flexible(
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  alignment: Alignment.centerLeft,
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.grey.shade600),
-                    borderRadius: BorderRadius.circular(16.0),
-                  ),
-                  child: Scrollbar(
-                    controller: _scrollController,
-                    child: TextField(
-                      textAlignVertical: TextAlignVertical.center,
-                      keyboardType: TextInputType.multiline,
-                      controller: _messageController,
-                      style: const TextStyle(color: Colors.black),
-                      cursorColor: Theme.of(context).primaryColor,
-                      decoration: InputDecoration(
-                        contentPadding: EdgeInsets.zero,
-                        isCollapsed: true,
-                        filled: true,
-                        fillColor: Colors.white70,
-                        hintText: 'Message',
-                        hintStyle: TextStyle(color: Colors.grey.shade600),
-                        border: InputBorder.none,
-                        prefixIcon: IconButton(
-                          icon: _emojiBoardShown
-                              ? Icon(
-                                  Icons.keyboard,
-                                  color: Colors.grey.shade600,
-                                )
-                              : Icon(
-                                  Icons.emoji_emotions_outlined,
-                                  color: Colors.grey.shade600,
+              user: types.User(
+                id: Provider.of<UserState>(context, listen: false).me!.userId,
+              ),
+              onEndReached: _loadMessageHistory,
+              isLastPage: _isLastPage,
+              customBottomWidget: Column(children: <Widget>[
+                Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
+                  child: Row(
+                    children: <Widget>[
+                      Flexible(
+                        child: Container(
+                          alignment: Alignment.centerLeft,
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.grey.shade600),
+                            borderRadius: BorderRadius.circular(16.0),
+                          ),
+                          child: Scrollbar(
+                            controller: _scrollController,
+                            child: TextField(
+                              textAlignVertical: TextAlignVertical.center,
+                              keyboardType: TextInputType.multiline,
+                              controller: _messageController,
+                              style: const TextStyle(color: Colors.black),
+                              cursorColor: Theme.of(context).primaryColor,
+                              decoration: InputDecoration(
+                                contentPadding: EdgeInsets.zero,
+                                isCollapsed: true,
+                                filled: true,
+                                fillColor: Colors.white70,
+                                hintText: 'Message',
+                                hintStyle:
+                                    TextStyle(color: Colors.grey.shade600),
+                                border: InputBorder.none,
+                                prefixIcon: IconButton(
+                                  icon: _emojiBoardShown
+                                      ? Icon(
+                                          Icons.keyboard,
+                                          color: Colors.grey.shade600,
+                                        )
+                                      : Icon(
+                                          Icons.emoji_emotions_outlined,
+                                          color: Colors.grey.shade600,
+                                        ),
+                                  onPressed: () {
+                                    FocusManager.instance.primaryFocus
+                                        ?.unfocus();
+                                    setState(() {
+                                      _emojiBoardShown = !_emojiBoardShown;
+                                    });
+                                  },
                                 ),
-                          onPressed: () {
-                            FocusManager.instance.primaryFocus?.unfocus();
-                            setState(() {
-                              _emojiBoardShown = !_emojiBoardShown;
-                            });
-                          },
-                        ),
-                        suffixIcon: (_textMessage)
-                            ? null
-                            : Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  IconButton(
-                                    icon: Icon(
-                                      Icons.attach_file,
-                                      color: Colors.grey.shade600,
-                                    ),
-                                    onPressed: () {},
-                                  ),
-                                  IconButton(
-                                    icon: Icon(
-                                      Icons.camera_alt,
-                                      color: Colors.grey.shade600,
-                                    ),
-                                    onPressed: () {
-                                      // Navigator.push(
-                                      //     context,
-                                      //     MaterialPageRoute(
-                                      //         builder: (builder) =>
-                                      //             CameraApp()));
-                                    },
-                                  ),
-                                ],
+                                suffixIcon: (_textMessage)
+                                    ? null
+                                    : Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          IconButton(
+                                            icon: Icon(
+                                              Icons.attach_file,
+                                              color: Colors.grey.shade600,
+                                            ),
+                                            onPressed: () {
+                                              print("attachment");
+                                            },
+                                          ),
+                                          IconButton(
+                                            icon: Icon(
+                                              Icons.camera_alt,
+                                              color: Colors.grey.shade600,
+                                            ),
+                                            onPressed: () {
+                                              print("camera");
+                                              // Navigator.push(
+                                              //     context,
+                                              //     MaterialPageRoute(
+                                              //         builder: (builder) =>
+                                              //             CameraApp()));
+                                            },
+                                          ),
+                                        ],
+                                      ),
                               ),
+                              onChanged: (text) {
+                                setState(() {
+                                  _textMessage = text.trim().isNotEmpty;
+                                });
+                              },
+                              onTap: () {
+                                setState(() {
+                                  _emojiBoardShown = false;
+                                });
+                              },
+                              minLines: 1,
+                              maxLines: 5,
+                            ),
+                          ),
+                        ),
                       ),
-                      onChanged: (text) {
-                        setState(() {
-                          _textMessage = text.trim().isNotEmpty;
-                        });
-                      },
-                      onTap: () {
-                        setState(() {
-                          _emojiBoardShown = false;
-                        });
-                      },
-                      minLines: 1,
-                      maxLines: 5,
-                    ),
+                      const SizedBox(width: 8),
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          shape: const CircleBorder(),
+                          padding: const EdgeInsets.all(12),
+                          backgroundColor: Theme.of(context)
+                              .primaryColor, // <-- Button color
+                          foregroundColor: Theme.of(context)
+                              .highlightColor, // <-- Splash color
+                          minimumSize: const Size(0, 0),
+                        ),
+                        child: _textMessage
+                            ? const Icon(Icons.send, color: Colors.white)
+                            : const Icon(Icons.mic, color: Colors.white),
+                        onPressed: () {
+                          if (message.trim().isNotEmpty) {
+                            _sendMessage(message);
+                          }
+                        },
+                      ),
+                    ],
                   ),
                 ),
-              ),
-              const SizedBox(width: 8),
-              CircleAvatar(
-                radius: 25,
-                backgroundColor: Theme.of(context).primaryColor,
-                child: IconButton(
-                  icon: _textMessage
-                      ? const Icon(Icons.send, color: Colors.white)
-                      : const Icon(Icons.mic, color: Colors.white),
-                  onPressed: () {
-                    if (message.trim().isNotEmpty) {
-                      _sendMessage(message);
-                    }
-                  },
+                Offstage(
+                  offstage: !_emojiBoardShown,
+                  child: SizedBox(
+                      height: 250,
+                      child: EmojiPicker(
+                        textEditingController: _messageController,
+                        onEmojiSelected: (category, emoji) {
+                          setState(() {
+                            _textMessage = message.trim().isNotEmpty;
+                          });
+                        },
+                        onBackspacePressed: () {
+                          setState(() {
+                            _textMessage = message.trim().isNotEmpty;
+                          });
+                        },
+                        config: Config(
+                          columns: 8,
+                          emojiSizeMax: 32 * (Platform.isIOS ? 1.30 : 1.0),
+                          verticalSpacing: 0,
+                          horizontalSpacing: 0,
+                          gridPadding: EdgeInsets.zero,
+                          initCategory: Category.RECENT,
+                          bgColor: const Color(0xFFF2F2F2),
+                          indicatorColor: Theme.of(context).primaryColor,
+                          iconColor: Colors.grey,
+                          iconColorSelected: Theme.of(context).primaryColor,
+                          backspaceColor: Theme.of(context).primaryColor,
+                          skinToneDialogBgColor: Colors.white,
+                          skinToneIndicatorColor: Colors.grey,
+                          enableSkinTones: true,
+                          showRecentsTab: true,
+                          recentsLimit: 28,
+                          replaceEmojiOnLimitExceed: false,
+                          noRecents: const Text(
+                            'No Recents',
+                            style: TextStyle(
+                              fontSize: 20,
+                              color: Colors.black26,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          loadingIndicator: const SizedBox.shrink(),
+                          tabIndicatorAnimDuration: kTabScrollDuration,
+                          categoryIcons: const CategoryIcons(),
+                          buttonMode: ButtonMode.MATERIAL,
+                          checkPlatformCompatibility: true,
+                        ),
+                      )),
                 ),
-              ),
-            ]),
-          ),
-          Offstage(
-            offstage: !_emojiBoardShown,
-            child: SizedBox(
-                height: 250,
-                child: EmojiPicker(
-                  textEditingController: _messageController,
-                  onEmojiSelected: (category, emoji) {
-                    setState(() {
-                      _textMessage = message.trim().isNotEmpty;
-                    });
-                  },
-                  onBackspacePressed: () {
-                    setState(() {
-                      _textMessage = message.trim().isNotEmpty;
-                    });
-                  },
-                  config: Config(
-                    columns: 8,
-                    emojiSizeMax: 32 * (Platform.isIOS ? 1.30 : 1.0),
-                    verticalSpacing: 0,
-                    horizontalSpacing: 0,
-                    gridPadding: EdgeInsets.zero,
-                    initCategory: Category.RECENT,
-                    bgColor: const Color(0xFFF2F2F2),
-                    indicatorColor: Theme.of(context).primaryColor,
-                    iconColor: Colors.grey,
-                    iconColorSelected: Theme.of(context).primaryColor,
-                    backspaceColor: Theme.of(context).primaryColor,
-                    skinToneDialogBgColor: Colors.white,
-                    skinToneIndicatorColor: Colors.grey,
-                    enableSkinTones: true,
-                    showRecentsTab: true,
-                    recentsLimit: 28,
-                    replaceEmojiOnLimitExceed: false,
-                    noRecents: const Text(
-                      'No Recents',
-                      style: TextStyle(fontSize: 20, color: Colors.black26),
-                      textAlign: TextAlign.center,
-                    ),
-                    loadingIndicator: const SizedBox.shrink(),
-                    tabIndicatorAnimDuration: kTabScrollDuration,
-                    categoryIcons: const CategoryIcons(),
-                    buttonMode: ButtonMode.MATERIAL,
-                    checkPlatformCompatibility: true,
-                  ),
-                )),
-          ),
-        ]),
+              ]),
+            );
+          },
+        ),
       ),
     );
   }

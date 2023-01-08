@@ -3,13 +3,13 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:fyp_chat_app/components/contact_option.dart';
+import 'package:fyp_chat_app/models/received_plain_message.dart';
 import 'package:fyp_chat_app/models/user.dart';
 import 'package:fyp_chat_app/models/user_state.dart';
 import 'package:fyp_chat_app/network/auth_api.dart';
 import 'package:fyp_chat_app/network/devices_api.dart';
 import 'package:fyp_chat_app/screens/chatroom/chatroom.dart';
 import 'package:fyp_chat_app/screens/home/select_contact.dart';
-import 'package:fyp_chat_app/screens/register_or_login/loading_screen.dart';
 import 'package:fyp_chat_app/screens/settings/settings_screen.dart';
 import 'package:fyp_chat_app/storage/contact_store.dart';
 import 'package:fyp_chat_app/storage/credential_store.dart';
@@ -27,15 +27,38 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   var appBarHeight = AppBar().preferredSize.height;
-  late final StreamController<List<User>> _contactStreamController;
+  final Set<User> _contacts = {};
+  late final Future<bool> _loadContactsFuture;
+  late final StreamSubscription<ReceivedPlainMessage>
+      _messageStreamSubscription;
 
   @override
   void initState() {
     super.initState();
-    _contactStreamController = StreamController(onListen: () async {
-      final contacts = await ContactStore().getAllContact();
-      _contactStreamController.add(contacts);
+    _loadContactsFuture = _loadContacts();
+    _messageStreamSubscription = Provider.of<UserState>(context, listen: false)
+        .messageStream
+        .listen((receivedMessage) {
+      setState(() {
+        // update contact on receive new message
+        _contacts.add(receivedMessage.sender);
+        // TODO: update latest message and unread count
+      });
     });
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _messageStreamSubscription.cancel();
+  }
+
+  Future<bool> _loadContacts() async {
+    final contacts = await ContactStore().getAllContact();
+    setState(() {
+      _contacts.addAll(contacts);
+    });
+    return true;
   }
 
   @override
@@ -66,16 +89,16 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ],
         ),
-        body: StreamBuilder<List<User>>(
-          stream: _contactStreamController.stream,
+        body: FutureBuilder<bool>(
+          future: _loadContactsFuture,
           builder: (_, snapshot) {
             if (!snapshot.hasData) {
               return const Center(
-                child: LoadingScreen(),
+                child: CircularProgressIndicator(),
               );
             }
-            final contacts = snapshot.data!;
             final _rng = Random();
+            final contacts = _contacts.toList();
             return ListView.builder(
               itemBuilder: (_, i) => HomeContact(
                 user: contacts[i],
@@ -94,7 +117,9 @@ class _HomeScreenState extends State<HomeScreen> {
           onPressed: () {
             Navigator.of(context).push(_route(SelectContact(
               onNewContact: (contact) {
-                _contactStreamController.add([contact]);
+                setState(() {
+                  _contacts.add(contact);
+                });
                 Navigator.of(context).push(MaterialPageRoute(
                     builder: (_) => ChatRoomScreen(targetUser: contact)));
               },
@@ -149,8 +174,12 @@ class _HomeScreenState extends State<HomeScreen> {
         Navigator.of(context).push(_route(const SettingsScreen()));
         break;
       case 1:
-        await DevicesApi().removeDevice();
-        await AuthApi().logout();
+        try {
+          await DevicesApi().removeDevice();
+          await AuthApi().logout();
+        } catch (e) {
+          // nothing I can do
+        }
         await CredentialStore().removeCredential();
         await DiskStorage().deleteDatabase();
         await SecureStorage().deleteAll();
