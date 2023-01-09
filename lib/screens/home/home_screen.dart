@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:fyp_chat_app/components/contact_option.dart';
@@ -97,12 +96,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: CircularProgressIndicator(),
               );
             }
-            final _rng = Random();
             final chatroomList = _chatroomList.toList();
             return ListView.builder(
               itemBuilder: (_, i) => HomeContact(
                 chatroom: chatroomList[i],
-                unread: _rng.nextInt(15),
                 onClick: () {
                   Navigator.of(context).push(MaterialPageRoute(
                       builder: (context) =>

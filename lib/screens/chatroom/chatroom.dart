@@ -38,13 +38,15 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
   bool _isLastPage = false;
   static const _pageSize = 100;
   late StreamSubscription<ReceivedPlainMessage> _messageSubscription;
+  late final UserState _state;
 
   @override
   void initState() {
     super.initState();
     _messageHistoryFuture = _loadMessageHistory();
     // set chatting with
-    Provider.of<UserState>(context, listen: false).chatroom = widget.chatroom;
+    _state = Provider.of<UserState>(context, listen: false);
+    _state.chatroom = widget.chatroom;
     // register new message listener
     _messageSubscription = Provider.of<UserState>(context, listen: false)
         .messageStream
@@ -59,7 +61,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
   void dispose() {
     super.dispose();
     // remove chatting with
-    Provider.of<UserState>(context, listen: false).chatroom = null;
+    _state.chatroom = null;
     _messageSubscription.cancel();
   }
 
@@ -219,7 +221,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                 _sendMessage(partialText.text);
               },
               user: types.User(
-                id: Provider.of<UserState>(context, listen: false).me!.userId,
+                id: _state.me!.userId,
               ),
               onEndReached: _loadMessageHistory,
               isLastPage: _isLastPage,
