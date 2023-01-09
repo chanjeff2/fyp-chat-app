@@ -9,7 +9,8 @@ part 'chatroom_entity.g.dart';
 class ChatroomEntity {
   static const String createTableCommandFields = """
 $columnId TEXT PRIMARY KEY NOT NULL, 
-$columnType INTEGER NOT NULL
+$columnType INTEGER NOT NULL,
+$columnName TEXT
 """;
 
   static const columnId = "id";
