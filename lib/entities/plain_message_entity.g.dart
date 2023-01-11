@@ -1,12 +1,12 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'plain_message.dart';
+part of 'plain_message_entity.dart';
 
 // **************************************************************************
 // JsonSerializableGenerator
 // **************************************************************************
 
-PlainMessage _$PlainMessageFromJson(Map<String, dynamic> json) {
+PlainMessageEntity _$PlainMessageEntityFromJson(Map<String, dynamic> json) {
   $checkKeys(
     json,
     requiredKeys: const [
@@ -17,17 +17,17 @@ PlainMessage _$PlainMessageFromJson(Map<String, dynamic> json) {
       'isRead'
     ],
   );
-  return PlainMessage(
+  return PlainMessageEntity(
     id: json['id'] as int?,
     senderUserId: json['senderUserId'] as String,
     chatroomId: json['chatroomId'] as String,
     content: json['content'] as String,
-    sentAt: DateTime.parse(json['sentAt'] as String),
-    isRead: json['isRead'] == null ? false : intToBool(json['isRead'] as int),
+    sentAt: json['sentAt'] as String,
+    isRead: json['isRead'] as int,
   );
 }
 
-Map<String, dynamic> _$PlainMessageToJson(PlainMessage instance) {
+Map<String, dynamic> _$PlainMessageEntityToJson(PlainMessageEntity instance) {
   final val = <String, dynamic>{};
 
   void writeNotNull(String key, dynamic value) {
@@ -40,7 +40,7 @@ Map<String, dynamic> _$PlainMessageToJson(PlainMessage instance) {
   val['senderUserId'] = instance.senderUserId;
   val['chatroomId'] = instance.chatroomId;
   val['content'] = instance.content;
-  val['sentAt'] = toIso8601String(instance.sentAt);
-  val['isRead'] = boolToInt(instance.isRead);
+  val['sentAt'] = instance.sentAt;
+  val['isRead'] = instance.isRead;
   return val;
 }
