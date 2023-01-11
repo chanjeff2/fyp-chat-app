@@ -1,10 +1,10 @@
 import 'package:fyp_chat_app/entities/chatroom_entity.dart';
 import 'package:fyp_chat_app/entities/group_member_entity.dart';
 import 'package:fyp_chat_app/entities/plain_message_entity.dart';
-import 'package:fyp_chat_app/models/pre_key_pair.dart';
-import 'package:fyp_chat_app/models/session.dart';
-import 'package:fyp_chat_app/models/signed_pre_key_pair.dart';
-import 'package:fyp_chat_app/models/their_identity_key.dart';
+import 'package:fyp_chat_app/entities/pre_key_pair_entity.dart';
+import 'package:fyp_chat_app/entities/session_entity.dart';
+import 'package:fyp_chat_app/entities/signed_pre_key_pair_entity.dart';
+import 'package:fyp_chat_app/entities/their_identity_key_entity.dart';
 import 'package:fyp_chat_app/models/user.dart';
 import 'package:fyp_chat_app/storage/chatroom_store.dart';
 import 'package:fyp_chat_app/storage/contact_store.dart';
@@ -47,16 +47,16 @@ class DiskStorage {
       version: 12,
       onCreate: (db, version) {
         db.execute(
-          "CREATE TABLE ${DiskIdentityKeyStore.table}(${TheirIdentityKey.createTableCommandFields});",
+          "CREATE TABLE ${DiskIdentityKeyStore.table}(${TheirIdentityKeyEntity.createTableCommandFields});",
         );
         db.execute(
-          "CREATE TABLE ${DiskPreKeyStore.table}(${PreKeyPair.createTableCommandFields});",
+          "CREATE TABLE ${DiskPreKeyStore.table}(${PreKeyPairEntity.createTableCommandFields});",
         );
         db.execute(
-          "CREATE TABLE ${DiskSignedPreKeyStore.table}(${SignedPreKeyPair.createTableCommandFields});",
+          "CREATE TABLE ${DiskSignedPreKeyStore.table}(${SignedPreKeyPairEntity.createTableCommandFields});",
         );
         db.execute(
-          "CREATE TABLE ${DiskSessionStore.table}(${Session.createTableCommandFields});",
+          "CREATE TABLE ${DiskSessionStore.table}(${SessionEntity.createTableCommandFields});",
         );
         db.execute(
           "CREATE TABLE ${ContactStore.table}(${User.createTableCommandFields});",

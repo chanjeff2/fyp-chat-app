@@ -2,12 +2,14 @@ import 'package:fyp_chat_app/extensions/signal_lib_extension.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:libsignal_protocol_dart/libsignal_protocol_dart.dart';
 
-part 'pre_key_pair.g.dart';
+part 'pre_key_pair_entity.g.dart';
 
 @JsonSerializable()
-class PreKeyPair {
-  static const String createTableCommandFields =
-      "$columnId INTEGER PRIMARY KEY, $columnKeyPair TEXT";
+class PreKeyPairEntity {
+  static const String createTableCommandFields = """
+$columnId INTEGER PRIMARY KEY, 
+$columnKeyPair TEXT NOT NULL
+""";
 
   static const columnId = "id";
   @JsonKey(required: true, name: columnId)
@@ -17,14 +19,14 @@ class PreKeyPair {
   @JsonKey(required: true, name: columnKeyPair)
   final String keyPair;
 
-  PreKeyPair(this.id, this.keyPair);
+  PreKeyPairEntity(this.id, this.keyPair);
 
-  Map<String, dynamic> toJson() => _$PreKeyPairToJson(this);
+  Map<String, dynamic> toJson() => _$PreKeyPairEntityToJson(this);
 
-  factory PreKeyPair.fromJson(Map<String, dynamic> json) =>
-      _$PreKeyPairFromJson(json);
+  factory PreKeyPairEntity.fromJson(Map<String, dynamic> json) =>
+      _$PreKeyPairEntityFromJson(json);
 
-  PreKeyPair.fromPreKeyRecord(PreKeyRecord record)
+  PreKeyPairEntity.fromPreKeyRecord(PreKeyRecord record)
       : id = record.id,
         keyPair = record.encodeToString();
 

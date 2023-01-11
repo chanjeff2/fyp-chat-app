@@ -1,24 +1,25 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'session.dart';
+part of 'session_entity.dart';
 
 // **************************************************************************
 // JsonSerializableGenerator
 // **************************************************************************
 
-Session _$SessionFromJson(Map<String, dynamic> json) {
+SessionEntity _$SessionEntityFromJson(Map<String, dynamic> json) {
   $checkKeys(
     json,
     requiredKeys: const ['deviceId', 'userId', 'session'],
   );
-  return Session(
+  return SessionEntity(
     json['deviceId'] as int,
     json['userId'] as String,
     json['session'] as String,
   );
 }
 
-Map<String, dynamic> _$SessionToJson(Session instance) => <String, dynamic>{
+Map<String, dynamic> _$SessionEntityToJson(SessionEntity instance) =>
+    <String, dynamic>{
       'deviceId': instance.deviceId,
       'userId': instance.userId,
       'session': instance.session,

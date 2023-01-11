@@ -1,4 +1,4 @@
-import 'package:fyp_chat_app/models/session.dart';
+import 'package:fyp_chat_app/entities/session_entity.dart';
 import 'package:fyp_chat_app/storage/disk_storage.dart';
 import 'package:libsignal_protocol_dart/libsignal_protocol_dart.dart';
 
@@ -22,7 +22,8 @@ class DiskSessionStore extends SessionStore {
     final db = await DiskStorage().db;
     final result = await db.query(
       table,
-      where: '${Session.columnUserId} = ? AND ${Session.columnDeviceId} = ?',
+      where:
+          '${SessionEntity.columnUserId} = ? AND ${SessionEntity.columnDeviceId} = ?',
       whereArgs: [address.getName(), address.getDeviceId()],
     );
     return result.isNotEmpty;
@@ -33,7 +34,7 @@ class DiskSessionStore extends SessionStore {
     final db = await DiskStorage().db;
     await db.delete(
       table,
-      where: '${Session.columnUserId} = ?',
+      where: '${SessionEntity.columnUserId} = ?',
       whereArgs: [name],
     );
   }
@@ -43,7 +44,8 @@ class DiskSessionStore extends SessionStore {
     final db = await DiskStorage().db;
     await db.delete(
       table,
-      where: '${Session.columnUserId} = ? AND ${Session.columnDeviceId} = ?',
+      where:
+          '${SessionEntity.columnUserId} = ? AND ${SessionEntity.columnDeviceId} = ?',
       whereArgs: [address.getName(), address.getDeviceId()],
     );
   }
@@ -53,11 +55,11 @@ class DiskSessionStore extends SessionStore {
     final db = await DiskStorage().db;
     final result = await db.query(
       table,
-      where: '${Session.columnUserId} = ?',
+      where: '${SessionEntity.columnUserId} = ?',
       whereArgs: [name],
     );
     final deviceIds = result
-        .map((e) => Session.fromJson(e).deviceId)
+        .map((e) => SessionEntity.fromJson(e).deviceId)
         .where((deviceId) => deviceId != 1)
         .toList();
     return deviceIds;
@@ -69,11 +71,12 @@ class DiskSessionStore extends SessionStore {
     try {
       final result = await db.query(
         table,
-        where: '${Session.columnUserId} = ? AND ${Session.columnDeviceId} = ?',
+        where:
+            '${SessionEntity.columnUserId} = ? AND ${SessionEntity.columnDeviceId} = ?',
         whereArgs: [address.getName(), address.getDeviceId()],
       );
       if (result.isNotEmpty) {
-        return Session.fromJson(result[0]).toSessionRecord();
+        return SessionEntity.fromJson(result[0]).toSessionRecord();
       } else {
         return SessionRecord();
       }
@@ -85,7 +88,7 @@ class DiskSessionStore extends SessionStore {
   @override
   Future<void> storeSession(
       SignalProtocolAddress address, SessionRecord record) async {
-    final sessionMap = Session.fromSessionRecord(
+    final sessionMap = SessionEntity.fromSessionRecord(
       userId: address.getName(),
       deviceId: address.getDeviceId(),
       record: record,
@@ -95,7 +98,8 @@ class DiskSessionStore extends SessionStore {
     final count = await db.update(
       table,
       sessionMap,
-      where: '${Session.columnUserId} = ? AND ${Session.columnDeviceId} = ?',
+      where:
+          '${SessionEntity.columnUserId} = ? AND ${SessionEntity.columnDeviceId} = ?',
       whereArgs: [address.getName(), address.getDeviceId()],
     );
     // if no existing record, insert new record
