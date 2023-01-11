@@ -57,17 +57,22 @@ class SignalClient {
     final oneTimeKeys = generatePreKeys(0, 110);
     final signedPreKey = generateSignedPreKey(identityKeyPair, 0);
 
+    late final int? deviceId;
+
     // store keys
-    await DiskIdentityKeyStore().storeIdentityKeyPair(identityKeyPair);
-    for (var p in oneTimeKeys) {
-      await DiskPreKeyStore().storePreKey(p.id, p);
-    }
-    await DiskSignedPreKeyStore()
-        .storeSignedPreKey(signedPreKey.id, signedPreKey);
+    await Future.wait([
+      DiskIdentityKeyStore().storeIdentityKeyPair(identityKeyPair),
+      Future.wait(
+          oneTimeKeys.map((p) => DiskPreKeyStore().storePreKey(p.id, p))),
+      DiskSignedPreKeyStore().storeSignedPreKey(signedPreKey.id, signedPreKey),
+      DeviceInfoHelper().getDeviceId().then((id) {
+        deviceId = id;
+      }),
+    ]);
 
     // upload keys to Server
     final dto = UpdateKeysDto(
-      (await DeviceInfoHelper().getDeviceId())!,
+      deviceId!,
       identityKey: identityKeyPair.getPublicKey().encodeToString(),
       oneTimeKeys:
           oneTimeKeys.map((e) => PreKey.fromPreKeyRecord(e).toDto()).toList(),
