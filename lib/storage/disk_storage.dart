@@ -5,7 +5,7 @@ import 'package:fyp_chat_app/entities/pre_key_pair_entity.dart';
 import 'package:fyp_chat_app/entities/session_entity.dart';
 import 'package:fyp_chat_app/entities/signed_pre_key_pair_entity.dart';
 import 'package:fyp_chat_app/entities/their_identity_key_entity.dart';
-import 'package:fyp_chat_app/models/user.dart';
+import 'package:fyp_chat_app/entities/user_entity.dart';
 import 'package:fyp_chat_app/storage/chatroom_store.dart';
 import 'package:fyp_chat_app/storage/contact_store.dart';
 import 'package:fyp_chat_app/storage/disk_identity_key_store.dart';
@@ -59,7 +59,7 @@ class DiskStorage {
           "CREATE TABLE ${DiskSessionStore.table}(${SessionEntity.createTableCommandFields});",
         );
         db.execute(
-          "CREATE TABLE ${ContactStore.table}(${User.createTableCommandFields});",
+          "CREATE TABLE ${ContactStore.table}(${UserEntity.createTableCommandFields});",
         );
         db.execute(
           "CREATE TABLE ${MessageStore.table}(${PlainMessageEntity.createTableCommandFields});",
