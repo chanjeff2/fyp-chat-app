@@ -7,7 +7,7 @@ import 'package:fyp_chat_app/models/received_plain_message.dart';
 import 'package:fyp_chat_app/models/user_state.dart';
 import 'package:fyp_chat_app/network/auth_api.dart';
 import 'package:fyp_chat_app/network/devices_api.dart';
-import 'package:fyp_chat_app/screens/chatroom/chatroom.dart';
+import 'package:fyp_chat_app/screens/chatroom/chatroom_screen.dart';
 import 'package:fyp_chat_app/screens/home/select_contact.dart';
 import 'package:fyp_chat_app/screens/settings/settings_screen.dart';
 import 'package:fyp_chat_app/storage/chatroom_store.dart';
