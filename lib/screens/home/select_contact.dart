@@ -81,8 +81,8 @@ class _SelectContactState extends State<SelectContact> {
                         });
                         //add the user to local storage contact
                         try {
-                          User addUser = User.fromDto(await UsersApi()
-                              .getUserByUsername(addContactInput));
+                          User addUser = await UsersApi()
+                              .getUserByUsername(addContactInput);
                           // local storage on disk
                           await ContactStore().storeContact(addUser);
                           // TODO: support group chat

@@ -279,8 +279,7 @@ class SignalClient {
       sender = senderInDisk;
     } else {
       // get user from server
-      final userDto = await UsersApi().getUserById(message.senderUserId);
-      sender = User.fromDto(userDto);
+      sender = await UsersApi().getUserById(message.senderUserId);
       // add sender to contact
       await ContactStore().storeContact(sender);
     }
