@@ -18,12 +18,19 @@ class GroupChat extends Chatroom {
     required this.name,
     PlainMessage? latestMessage,
     required int unread,
-  }) : super(id: id, latestMessage: latestMessage, unread: unread);
+    required DateTime createdAt,
+  }) : super(
+          id: id,
+          latestMessage: latestMessage,
+          unread: unread,
+          createdAt: createdAt,
+        );
 
   @override
   ChatroomEntity toEntity() => ChatroomEntity(
         id: id,
         type: type.index,
         name: name,
+        createdAt: createdAt.toIso8601String(),
       );
 }

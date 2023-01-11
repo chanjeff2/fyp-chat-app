@@ -9,12 +9,13 @@ part of 'chatroom_entity.dart';
 ChatroomEntity _$ChatroomEntityFromJson(Map<String, dynamic> json) {
   $checkKeys(
     json,
-    requiredKeys: const ['id', 'type', 'name'],
+    requiredKeys: const ['id', 'type', 'name', 'createdAt'],
   );
   return ChatroomEntity(
     id: json['id'] as String,
     type: json['type'] as int,
     name: json['name'] as String?,
+    createdAt: json['createdAt'] as String,
   );
 }
 
@@ -23,4 +24,5 @@ Map<String, dynamic> _$ChatroomEntityToJson(ChatroomEntity instance) =>
       'id': instance.id,
       'type': instance.type,
       'name': instance.name,
+      'createdAt': instance.createdAt,
     };

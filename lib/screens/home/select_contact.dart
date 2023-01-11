@@ -86,8 +86,11 @@ class _SelectContactState extends State<SelectContact> {
                           // local storage on disk
                           await ContactStore().storeContact(addUser);
                           // TODO: support group chat
-                          final chatroom =
-                              OneToOneChat(target: addUser, unread: 0);
+                          final chatroom = OneToOneChat(
+                            target: addUser,
+                            unread: 0,
+                            createdAt: DateTime.now(),
+                          );
                           await ChatroomStore().save(chatroom);
                           // callback and return to home
                           Navigator.of(context).pop();

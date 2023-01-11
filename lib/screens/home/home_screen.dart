@@ -26,7 +26,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   var appBarHeight = AppBar().preferredSize.height;
-  final Set<Chatroom> _chatroomList = {};
+  final Map<String, Chatroom> _chatroomMap = {};
   late final Future<bool> _loadChatroomFuture;
   late final StreamSubscription<ReceivedPlainMessage>
       _messageStreamSubscription;
@@ -40,8 +40,7 @@ class _HomeScreenState extends State<HomeScreen> {
         .listen((receivedMessage) {
       setState(() {
         // update contact on receive new message
-        _chatroomList.add(receivedMessage.chatroom);
-        // TODO: update latest message and unread count
+        _chatroomMap[receivedMessage.chatroom.id] = receivedMessage.chatroom;
       });
     });
   }
@@ -55,7 +54,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<bool> _loadChatroom() async {
     final chatroomList = await ChatroomStore().getAllChatroom();
     setState(() {
-      _chatroomList.addAll(chatroomList);
+      _chatroomMap.addEntries(chatroomList.map((e) => MapEntry(e.id, e)));
     });
     return true;
   }
@@ -96,7 +95,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: CircularProgressIndicator(),
               );
             }
-            final chatroomList = _chatroomList.toList();
+            final chatroomList = _chatroomMap.values.toList();
+            chatroomList.sort((a, b) => a.compareByLastActivityTime(b) * -1);
             return ListView.builder(
               itemBuilder: (_, i) => HomeContact(
                 chatroom: chatroomList[i],
@@ -115,7 +115,7 @@ class _HomeScreenState extends State<HomeScreen> {
             Navigator.of(context).push(_route(SelectContact(
               onNewChatroom: (chatroom) {
                 setState(() {
-                  _chatroomList.add(chatroom);
+                  _chatroomMap[chatroom.id] = chatroom;
                 });
                 Navigator.of(context).push(MaterialPageRoute(
                     builder: (_) => ChatRoomScreen(chatroom: chatroom)));

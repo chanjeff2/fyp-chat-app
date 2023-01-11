@@ -16,8 +16,18 @@ class OneToOneChat extends Chatroom {
     required this.target,
     PlainMessage? latestMessage,
     required int unread,
-  }) : super(id: target.userId, latestMessage: latestMessage, unread: unread);
+    required DateTime createdAt,
+  }) : super(
+          id: target.userId,
+          latestMessage: latestMessage,
+          unread: unread,
+          createdAt: createdAt,
+        );
 
   @override
-  ChatroomEntity toEntity() => ChatroomEntity(id: id, type: type.index);
+  ChatroomEntity toEntity() => ChatroomEntity(
+        id: id,
+        type: type.index,
+        createdAt: createdAt.toIso8601String(),
+      );
 }

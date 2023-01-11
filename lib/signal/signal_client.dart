@@ -258,6 +258,7 @@ class SignalClient {
       chatroomId: chatroom.id,
       content: content,
       sentAt: sentAt,
+      isRead: true,
     );
 
     final messageId = await MessageStore().storeMessage(plainMessage);
@@ -330,6 +331,7 @@ class SignalClient {
         target: sender,
         unread: 1,
         latestMessage: plainMessage,
+        createdAt: DateTime.now(),
       );
       await ChatroomStore().save(chatroom);
     }

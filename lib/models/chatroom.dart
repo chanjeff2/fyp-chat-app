@@ -17,12 +17,29 @@ abstract class Chatroom {
   String get name;
   final PlainMessage? latestMessage;
   final int unread;
+  final DateTime createdAt; // exist if read from db
 
   Chatroom({
     required this.id,
     this.latestMessage,
     required this.unread,
+    required this.createdAt,
   });
+
+  /// Compares the last activity time of this Chatroom object to [other],
+  /// returning zero if the values are equal.
+  ///
+  /// the activity time of a chatroom is the [latestMessage.sentAt] or [createdAt]
+  ///
+  /// This function returns:
+  ///  * a negative value if this activity time [isBefore] [other].
+  ///  * `0` if this activity time [isAtSameMomentAs] [other], and
+  ///  * a positive value otherwise (when this activity time [isAfter] [other]).
+  int compareByLastActivityTime(Chatroom other) {
+    final timestampThis = latestMessage?.sentAt ?? createdAt;
+    final timestampOther = other.latestMessage?.sentAt ?? other.createdAt;
+    return timestampThis.compareTo(timestampOther);
+  }
 
   static Future<Chatroom?> fromEntity(ChatroomEntity e) async {
     switch (ChatroomType.values[e.type]) {
@@ -45,6 +62,7 @@ abstract class Chatroom {
           target: target,
           latestMessage: latestMessage,
           unread: await unreadFuture,
+          createdAt: DateTime.parse(e.createdAt),
         );
       case ChatroomType.group:
         final members = await GroupMemberStore().getByChatroomId(e.id);
@@ -61,6 +79,7 @@ abstract class Chatroom {
           members: members,
           latestMessage: latestMessage,
           unread: unread,
+          createdAt: DateTime.parse(e.createdAt),
         );
     }
   }

@@ -10,7 +10,8 @@ class ChatroomEntity {
   static const String createTableCommandFields = """
 $columnId TEXT PRIMARY KEY NOT NULL, 
 $columnType INTEGER NOT NULL,
-$columnName TEXT
+$columnName TEXT,
+$columnCreatedAt TEXT NOT NULL
 """;
 
   static const columnId = "id";
@@ -31,10 +32,17 @@ $columnName TEXT
   @JsonKey(required: true, name: columnName)
   final String? name;
 
+  static const columnCreatedAt = "createdAt";
+
+  /// exist after created in db
+  @JsonKey(required: true, name: columnCreatedAt)
+  final String createdAt;
+
   ChatroomEntity({
     required this.id,
     required this.type,
     this.name,
+    required this.createdAt,
   });
 
   Map<String, dynamic> toJson() => _$ChatroomEntityToJson(this);
