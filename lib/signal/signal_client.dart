@@ -155,8 +155,7 @@ class SignalClient {
         await DiskSessionStore().containsSession(remotePrimaryAddress);
 
     if (!containsSession) {
-      final keyList = await KeysApi().getAllKeyBundle(recipientUserId);
-      final keyBundle = KeyBundle.fromDto(keyList);
+      final keyBundle = await KeysApi().getAllKeyBundle(recipientUserId);
 
       await _establishSession(recipientUserId, keyBundle);
     }
@@ -196,8 +195,8 @@ class SignalClient {
     final messagesRetry = await Future.wait(
       [...response.misMatchDeviceIds, ...response.missingDeviceIds]
           .map((deviceId) async {
-        final keys = await KeysApi().getKeyBundle(recipientUserId, deviceId);
-        final keyBundle = KeyBundle.fromDto(keys);
+        final keyBundle =
+            await KeysApi().getKeyBundle(recipientUserId, deviceId);
         await _establishSession(recipientUserId, keyBundle);
 
         return generateMessageToServer(recipientUserId, deviceId, content);
