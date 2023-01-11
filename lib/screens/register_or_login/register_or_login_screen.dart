@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fyp_chat_app/dto/login_dto.dart';
+import 'package:fyp_chat_app/models/access_token.dart';
 import 'package:fyp_chat_app/models/user_state.dart';
 import 'package:fyp_chat_app/network/account_api.dart';
 import 'package:fyp_chat_app/network/api.dart';
@@ -8,7 +9,6 @@ import 'package:fyp_chat_app/signal/signal_client.dart';
 import 'package:fyp_chat_app/storage/credential_store.dart';
 import 'package:provider/provider.dart';
 
-import '../../dto/access_token_dto.dart';
 import '../../dto/register_dto.dart';
 import '../../network/auth_api.dart';
 
@@ -141,7 +141,7 @@ class _RegisterOrLoginScreenState extends State<RegisterOrLoginScreen> {
                           _isLoading = true;
                         });
                         try {
-                          late final AccessTokenDto accessToken;
+                          late final AccessToken accessToken;
                           if (_isRegister) {
                             // register
                             accessToken = await AuthApi().register(
@@ -156,14 +156,14 @@ class _RegisterOrLoginScreenState extends State<RegisterOrLoginScreen> {
                               LoginDto(username: username, password: password),
                             );
                           }
+                          // init signal stuffs
+                          await SignalClient().initialize();
                           // store credential
                           await CredentialStore()
                               .storeCredential(username, password);
                           await CredentialStore().storeToken(accessToken);
                           Provider.of<UserState>(context, listen: false)
                               .setAccessTokenStatus(true);
-                          // init signal stuffs
-                          await SignalClient().initialize();
                           // get account profile
                           final account = await AccountApi().getMe();
                           userState.setMe(account);

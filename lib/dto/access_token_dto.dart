@@ -23,4 +23,6 @@ class AccessTokenDto {
 
   factory AccessTokenDto.fromJson(Map<String, dynamic> json) =>
       _$AccessTokenDtoFromJson(json);
+
+  Map<String, dynamic> toJson() => _$AccessTokenDtoToJson(this);
 }
