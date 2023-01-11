@@ -1,14 +1,18 @@
+import 'package:fyp_chat_app/entities/chatroom_entity.dart';
+import 'package:fyp_chat_app/entities/group_member_entity.dart';
 import 'package:fyp_chat_app/models/plain_message.dart';
 import 'package:fyp_chat_app/models/pre_key_pair.dart';
 import 'package:fyp_chat_app/models/session.dart';
 import 'package:fyp_chat_app/models/signed_pre_key_pair.dart';
 import 'package:fyp_chat_app/models/their_identity_key.dart';
 import 'package:fyp_chat_app/models/user.dart';
+import 'package:fyp_chat_app/storage/chatroom_store.dart';
 import 'package:fyp_chat_app/storage/contact_store.dart';
 import 'package:fyp_chat_app/storage/disk_identity_key_store.dart';
 import 'package:fyp_chat_app/storage/disk_pre_key_store.dart';
 import 'package:fyp_chat_app/storage/disk_session_store.dart';
 import 'package:fyp_chat_app/storage/disk_signed_pre_key_store.dart';
+import 'package:fyp_chat_app/storage/group_member_store.dart';
 import 'package:fyp_chat_app/storage/message_store.dart';
 import 'package:fyp_chat_app/storage/secure_storage.dart';
 import 'package:sqflite_sqlcipher/sqflite.dart';
@@ -59,6 +63,12 @@ class DiskStorage {
         );
         db.execute(
           "CREATE TABLE ${MessageStore.table}(${PlainMessage.createTableCommandFields});",
+        );
+        db.execute(
+          "CREATE TABLE ${ChatroomStore.table}(${ChatroomEntity.createTableCommandFields});",
+        );
+        db.execute(
+          "CREATE TABLE ${GroupMemberStore.table}(${GroupMemberEntity.createTableCommandFields});",
         );
       },
     );

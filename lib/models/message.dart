@@ -6,6 +6,7 @@ import '../dto/message_dto.dart';
 class Message {
   final String senderUserId;
   final int senderDeviceId;
+  final String chatroomId;
   final int cipherTextType;
   final Uint8List content;
   final DateTime sentAt;
@@ -13,6 +14,7 @@ class Message {
   Message({
     required this.senderUserId,
     required this.senderDeviceId,
+    required this.chatroomId,
     required this.cipherTextType,
     required this.content,
     required this.sentAt,
@@ -21,6 +23,7 @@ class Message {
   Message.fromDto(MessageDto dto)
       : senderUserId = dto.senderUserId,
         senderDeviceId = int.parse(dto.senderDeviceId),
+        chatroomId = dto.chatroomId,
         cipherTextType = int.parse(dto.cipherTextType),
         content = CiphertextMessageExtension.decodeFromString(dto.content),
         sentAt = DateTime.parse(dto.sentAt);

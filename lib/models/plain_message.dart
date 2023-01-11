@@ -4,8 +4,14 @@ part 'plain_message.g.dart';
 
 @JsonSerializable()
 class PlainMessage {
-  static const String createTableCommandFields =
-      "$columnId INTEGER PRIMARY KEY AUTOINCREMENT, $columnSenderUserId TEXT, $columnRecipientUserId TEXT, $columnContent TEXT, $columnSentAt TEXT, $columnIsRead INTEGER";
+  static const String createTableCommandFields = """
+$columnId INTEGER PRIMARY KEY AUTOINCREMENT, 
+$columnSenderUserId TEXT NOT NULL, 
+$columnChatroomId TEXT NOT NULL, 
+$columnContent TEXT NOT NULL, 
+$columnSentAt TEXT NOT NULL, 
+$columnIsRead INTEGER NOT NULL
+""";
 
   static const columnId = "id";
   @JsonKey(name: columnId, includeIfNull: false)
@@ -15,9 +21,9 @@ class PlainMessage {
   @JsonKey(required: true, name: columnSenderUserId)
   final String senderUserId;
 
-  static const columnRecipientUserId = "recipientUserId";
-  @JsonKey(required: true, name: columnRecipientUserId)
-  final String recipientUserId;
+  static const columnChatroomId = "chatroomId";
+  @JsonKey(required: true, name: columnChatroomId)
+  final String chatroomId;
 
   static const columnContent = "content";
   @JsonKey(required: true, name: columnContent)
@@ -44,7 +50,7 @@ class PlainMessage {
   PlainMessage({
     this.id,
     required this.senderUserId,
-    required this.recipientUserId,
+    required this.chatroomId,
     required this.content,
     required this.sentAt,
     this.isRead = false,

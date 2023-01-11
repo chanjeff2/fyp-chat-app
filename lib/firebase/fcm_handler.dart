@@ -20,8 +20,8 @@ class FCMHandler {
     if (plainMessage != null) {
       // notify for new message
       state.messageSink.add(plainMessage);
-      if (state.chattingWith?.userId == plainMessage.sender.userId) {
-        return; // skip if the sender is the one currently chatting with
+      if (state.chatroom?.id == plainMessage.chatroom.id) {
+        return; // skip if the chatroom is the one currently opened
       }
       _showNotification(plainMessage);
     }

@@ -12,6 +12,7 @@ SendMessageDto _$SendMessageDtoFromJson(Map<String, dynamic> json) {
     requiredKeys: const [
       'senderDeviceId',
       'recipientUserId',
+      'chatroomId',
       'messages',
       'sentAt'
     ],
@@ -19,6 +20,7 @@ SendMessageDto _$SendMessageDtoFromJson(Map<String, dynamic> json) {
   return SendMessageDto(
     senderDeviceId: json['senderDeviceId'] as int,
     recipientUserId: json['recipientUserId'] as String,
+    chatroomId: json['chatroomId'] as String,
     messages: (json['messages'] as List<dynamic>)
         .map((e) => MessageToServerDto.fromJson(e as Map<String, dynamic>))
         .toList(),
@@ -30,6 +32,7 @@ Map<String, dynamic> _$SendMessageDtoToJson(SendMessageDto instance) =>
     <String, dynamic>{
       'senderDeviceId': instance.senderDeviceId,
       'recipientUserId': instance.recipientUserId,
+      'chatroomId': instance.chatroomId,
       'messages': instance.messages,
       'sentAt': instance.sentAt,
     };

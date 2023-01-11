@@ -75,6 +75,7 @@ void main() {
     final serialized = SendMessageDao(
       senderDeviceId: deviceId,
       recipientUserId: 'recipientUserId',
+      chatroomId: 'recipientUserId', // TODO: handle group chat
       messages: [
         MessageToServer(
           cipherTextType: ciphertext.getType(),
@@ -106,6 +107,7 @@ MessageDto receiveMessage(SendMessageDto dto) {
   return MessageDto(
     senderUserId: 'senderUserId',
     senderDeviceId: dto.senderDeviceId.toString(),
+    chatroomId: 'senderUserId',
     cipherTextType: dto.messages[0].cipherTextType.toString(),
     content: dto.messages[0].content,
     sentAt: dto.sentAt,

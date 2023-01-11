@@ -1,17 +1,16 @@
 import 'dart:async';
-import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:fyp_chat_app/components/contact_option.dart';
+import 'package:fyp_chat_app/models/chatroom.dart';
 import 'package:fyp_chat_app/models/received_plain_message.dart';
-import 'package:fyp_chat_app/models/user.dart';
 import 'package:fyp_chat_app/models/user_state.dart';
 import 'package:fyp_chat_app/network/auth_api.dart';
 import 'package:fyp_chat_app/network/devices_api.dart';
-import 'package:fyp_chat_app/screens/chatroom/chatroom.dart';
+import 'package:fyp_chat_app/screens/chatroom/chatroom_screen.dart';
 import 'package:fyp_chat_app/screens/home/select_contact.dart';
 import 'package:fyp_chat_app/screens/settings/settings_screen.dart';
-import 'package:fyp_chat_app/storage/contact_store.dart';
+import 'package:fyp_chat_app/storage/chatroom_store.dart';
 import 'package:fyp_chat_app/storage/credential_store.dart';
 import 'package:provider/provider.dart';
 import 'package:fyp_chat_app/storage/disk_storage.dart';
@@ -27,22 +26,21 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   var appBarHeight = AppBar().preferredSize.height;
-  final Set<User> _contacts = {};
-  late final Future<bool> _loadContactsFuture;
+  final Map<String, Chatroom> _chatroomMap = {};
+  late final Future<bool> _loadChatroomFuture;
   late final StreamSubscription<ReceivedPlainMessage>
       _messageStreamSubscription;
 
   @override
   void initState() {
     super.initState();
-    _loadContactsFuture = _loadContacts();
+    _loadChatroomFuture = _loadChatroom();
     _messageStreamSubscription = Provider.of<UserState>(context, listen: false)
         .messageStream
         .listen((receivedMessage) {
       setState(() {
         // update contact on receive new message
-        _contacts.add(receivedMessage.sender);
-        // TODO: update latest message and unread count
+        _chatroomMap[receivedMessage.chatroom.id] = receivedMessage.chatroom;
       });
     });
   }
@@ -53,10 +51,10 @@ class _HomeScreenState extends State<HomeScreen> {
     _messageStreamSubscription.cancel();
   }
 
-  Future<bool> _loadContacts() async {
-    final contacts = await ContactStore().getAllContact();
+  Future<bool> _loadChatroom() async {
+    final chatroomList = await ChatroomStore().getAllChatroom();
     setState(() {
-      _contacts.addAll(contacts);
+      _chatroomMap.addEntries(chatroomList.map((e) => MapEntry(e.id, e)));
     });
     return true;
   }
@@ -90,38 +88,37 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
         body: FutureBuilder<bool>(
-          future: _loadContactsFuture,
+          future: _loadChatroomFuture,
           builder: (_, snapshot) {
             if (!snapshot.hasData) {
               return const Center(
                 child: CircularProgressIndicator(),
               );
             }
-            final _rng = Random();
-            final contacts = _contacts.toList();
+            final chatroomList = _chatroomMap.values.toList();
+            chatroomList.sort((a, b) => a.compareByLastActivityTime(b) * -1);
             return ListView.builder(
               itemBuilder: (_, i) => HomeContact(
-                user: contacts[i],
-                unread: _rng.nextInt(15),
+                chatroom: chatroomList[i],
                 onClick: () {
                   Navigator.of(context).push(MaterialPageRoute(
                       builder: (context) =>
-                          ChatRoomScreen(targetUser: contacts[i])));
+                          ChatRoomScreen(chatroom: chatroomList[i])));
                 },
               ),
-              itemCount: contacts.length,
+              itemCount: chatroomList.length,
             );
           },
         ),
         floatingActionButton: FloatingActionButton(
           onPressed: () {
             Navigator.of(context).push(_route(SelectContact(
-              onNewContact: (contact) {
+              onNewChatroom: (chatroom) {
                 setState(() {
-                  _contacts.add(contact);
+                  _chatroomMap[chatroom.id] = chatroom;
                 });
                 Navigator.of(context).push(MaterialPageRoute(
-                    builder: (_) => ChatRoomScreen(targetUser: contact)));
+                    builder: (_) => ChatRoomScreen(chatroom: chatroom)));
               },
             )));
           },

@@ -1,11 +1,15 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:fyp_chat_app/dto/account_dto.dart';
 import 'package:fyp_chat_app/dto/update_keys_dto.dart';
 import 'package:fyp_chat_app/extensions/signal_lib_extension.dart';
+import 'package:fyp_chat_app/models/chatroom.dart';
+import 'package:fyp_chat_app/models/group_chat.dart';
 import 'package:fyp_chat_app/models/key_bundle.dart';
 import 'package:fyp_chat_app/models/message.dart';
 import 'package:fyp_chat_app/models/message_to_server.dart';
+import 'package:fyp_chat_app/models/one_to_one_chat.dart';
 import 'package:fyp_chat_app/models/plain_message.dart';
 import 'package:fyp_chat_app/models/pre_key.dart';
 import 'package:fyp_chat_app/models/received_plain_message.dart';
@@ -13,11 +17,11 @@ import 'package:fyp_chat_app/models/signed_pre_key.dart';
 import 'package:fyp_chat_app/models/user.dart';
 import 'package:fyp_chat_app/network/devices_api.dart';
 import 'package:fyp_chat_app/network/events_api.dart';
-import 'package:fyp_chat_app/network/account_api.dart';
 import 'package:fyp_chat_app/network/keys_api.dart';
 import 'package:fyp_chat_app/network/users_api.dart';
 import 'package:fyp_chat_app/signal/device_helper.dart';
 import 'package:fyp_chat_app/storage/account_store.dart';
+import 'package:fyp_chat_app/storage/chatroom_store.dart';
 import 'package:fyp_chat_app/storage/contact_store.dart';
 import 'package:fyp_chat_app/storage/disk_identity_key_store.dart';
 import 'package:fyp_chat_app/storage/disk_pre_key_store.dart';
@@ -134,15 +138,13 @@ class SignalClient {
     );
   }
 
-  Future<PlainMessage> sendMessage(
-      String recipientUserId, String content) async {
-    final senderDeviceId = await DeviceInfoHelper().getDeviceId();
-    if (senderDeviceId == null) {
-      throw Exception('Sender Device Id is null');
-    }
-
-    DateTime sentTime = DateTime.now();
-
+  Future<void> _sendMessage(
+    int senderDeviceId,
+    String recipientUserId,
+    String chatroomId,
+    String content,
+    DateTime sentAt,
+  ) async {
     // check if already establish session
     final remotePrimaryAddress = SignalProtocolAddress(
       recipientUserId,
@@ -171,8 +173,9 @@ class SignalClient {
     final message = SendMessageDao(
       senderDeviceId: senderDeviceId,
       recipientUserId: recipientUserId,
+      chatroomId: chatroomId,
       messages: messages,
-      sentAt: sentTime,
+      sentAt: sentAt,
     ).toDto();
 
     final response = await EventsApi().sendMessage(message);
@@ -204,19 +207,58 @@ class SignalClient {
     final messageRetry = SendMessageDao(
       senderDeviceId: senderDeviceId,
       recipientUserId: recipientUserId,
+      chatroomId: chatroomId,
       messages: messagesRetry,
-      sentAt: sentTime,
+      sentAt: sentAt,
     ).toDto();
 
     await EventsApi().sendMessage(message);
+  }
+
+  Future<PlainMessage> sendMessageToChatroom(
+    AccountDto me, // pass me to speed up process
+    Chatroom chatroom,
+    String content,
+  ) async {
+    // TODO: support group chat
+    final senderDeviceId = await DeviceInfoHelper().getDeviceId();
+    if (senderDeviceId == null) {
+      throw Exception('Sender Device Id is null');
+    }
+
+    DateTime sentAt = DateTime.now();
+
+    switch (chatroom.type) {
+      case ChatroomType.oneToOne:
+        chatroom as OneToOneChat;
+        await _sendMessage(
+          senderDeviceId,
+          chatroom.target.userId,
+          me.userId, // chatroom id w.r.t. recipient, i.e. my user id
+          content,
+          sentAt,
+        );
+        break;
+      case ChatroomType.group:
+        chatroom as GroupChat;
+        await Future.wait(chatroom.members.map((e) async => await _sendMessage(
+              senderDeviceId,
+              e.user.userId,
+              chatroom.id,
+              content,
+              sentAt,
+            )));
+        break;
+    }
 
     // save message to disk
-    final me = await AccountStore().getAccount() ?? await AccountApi().getMe();
+
     final plainMessage = PlainMessage(
       senderUserId: me.userId,
-      recipientUserId: recipientUserId,
+      chatroomId: chatroom.id,
       content: content,
-      sentAt: sentTime,
+      sentAt: sentAt,
+      isRead: true,
     );
 
     final messageId = await MessageStore().storeMessage(plainMessage);
@@ -274,7 +316,7 @@ class SignalClient {
 
     final plainMessage = PlainMessage(
       senderUserId: sender.userId,
-      recipientUserId: me.userId,
+      chatroomId: message.chatroomId, // TODO: update to chatroom id
       content: plaintext,
       sentAt: message.sentAt,
     );
@@ -283,8 +325,21 @@ class SignalClient {
     final messageId = await MessageStore().storeMessage(plainMessage);
     plainMessage.id = messageId;
 
+    // TODO: support group chat
+    if (!(await ChatroomStore().contains(sender.userId))) {
+      final chatroom = OneToOneChat(
+        target: sender,
+        unread: 1,
+        latestMessage: plainMessage,
+        createdAt: DateTime.now(),
+      );
+      await ChatroomStore().save(chatroom);
+    }
+    final chatroom = await ChatroomStore().get(sender.userId);
+
     final receivedPlainMessage = ReceivedPlainMessage(
       sender: sender,
+      chatroom: chatroom!,
       message: plainMessage,
     );
     return receivedPlainMessage;
