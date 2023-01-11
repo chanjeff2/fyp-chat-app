@@ -1,23 +1,23 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'pre_key_pair.dart';
+part of 'pre_key_pair_entity.dart';
 
 // **************************************************************************
 // JsonSerializableGenerator
 // **************************************************************************
 
-PreKeyPair _$PreKeyPairFromJson(Map<String, dynamic> json) {
+PreKeyPairEntity _$PreKeyPairEntityFromJson(Map<String, dynamic> json) {
   $checkKeys(
     json,
     requiredKeys: const ['id', 'keyPair'],
   );
-  return PreKeyPair(
+  return PreKeyPairEntity(
     json['id'] as int,
     json['keyPair'] as String,
   );
 }
 
-Map<String, dynamic> _$PreKeyPairToJson(PreKeyPair instance) =>
+Map<String, dynamic> _$PreKeyPairEntityToJson(PreKeyPairEntity instance) =>
     <String, dynamic>{
       'id': instance.id,
       'keyPair': instance.keyPair,

@@ -1,50 +1,11 @@
-import 'package:json_annotation/json_annotation.dart';
+import 'package:fyp_chat_app/entities/plain_message_entity.dart';
 
-part 'plain_message.g.dart';
-
-@JsonSerializable()
 class PlainMessage {
-  static const String createTableCommandFields = """
-$columnId INTEGER PRIMARY KEY AUTOINCREMENT, 
-$columnSenderUserId TEXT NOT NULL, 
-$columnChatroomId TEXT NOT NULL, 
-$columnContent TEXT NOT NULL, 
-$columnSentAt TEXT NOT NULL, 
-$columnIsRead INTEGER NOT NULL
-""";
-
-  static const columnId = "id";
-  @JsonKey(name: columnId, includeIfNull: false)
   int? id;
-
-  static const columnSenderUserId = "senderUserId";
-  @JsonKey(required: true, name: columnSenderUserId)
   final String senderUserId;
-
-  static const columnChatroomId = "chatroomId";
-  @JsonKey(required: true, name: columnChatroomId)
   final String chatroomId;
-
-  static const columnContent = "content";
-  @JsonKey(required: true, name: columnContent)
   final String content;
-
-  static const columnSentAt = "sentAt";
-  @JsonKey(
-    required: true,
-    name: columnSentAt,
-    fromJson: DateTime.parse,
-    toJson: toIso8601String,
-  )
   final DateTime sentAt;
-
-  static const columnIsRead = "isRead";
-  @JsonKey(
-    required: true,
-    name: columnIsRead,
-    fromJson: intToBool,
-    toJson: boolToInt,
-  )
   final bool isRead;
 
   PlainMessage({
@@ -56,10 +17,20 @@ $columnIsRead INTEGER NOT NULL
     this.isRead = false,
   });
 
-  Map<String, dynamic> toJson() => _$PlainMessageToJson(this);
+  PlainMessage.fromEntity(PlainMessageEntity entity)
+      : senderUserId = entity.senderUserId,
+        chatroomId = entity.chatroomId,
+        content = entity.content,
+        sentAt = DateTime.parse(entity.sentAt),
+        isRead = entity.isRead == 1;
 
-  factory PlainMessage.fromJson(Map<String, dynamic> json) =>
-      _$PlainMessageFromJson(json);
+  PlainMessageEntity toEntity() => PlainMessageEntity(
+        senderUserId: senderUserId,
+        chatroomId: chatroomId,
+        content: content,
+        sentAt: sentAt.toIso8601String(),
+        isRead: isRead ? 1 : 0,
+      );
 }
 
 String toIso8601String(DateTime dateTime) {

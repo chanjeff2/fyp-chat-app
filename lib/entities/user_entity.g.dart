@@ -1,24 +1,25 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'user.dart';
+part of 'user_entity.dart';
 
 // **************************************************************************
 // JsonSerializableGenerator
 // **************************************************************************
 
-User _$UserFromJson(Map<String, dynamic> json) {
+UserEntity _$UserEntityFromJson(Map<String, dynamic> json) {
   $checkKeys(
     json,
     requiredKeys: const ['userId', 'username'],
   );
-  return User(
+  return UserEntity(
     userId: json['userId'] as String,
     username: json['username'] as String,
     displayName: json['displayName'] as String?,
   );
 }
 
-Map<String, dynamic> _$UserToJson(User instance) => <String, dynamic>{
+Map<String, dynamic> _$UserEntityToJson(UserEntity instance) =>
+    <String, dynamic>{
       'userId': instance.userId,
       'username': instance.username,
       'displayName': instance.displayName,

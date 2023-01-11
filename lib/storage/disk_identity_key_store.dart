@@ -1,6 +1,6 @@
 import 'package:collection/collection.dart';
 import 'package:fyp_chat_app/extensions/signal_lib_extension.dart';
-import 'package:fyp_chat_app/models/their_identity_key.dart';
+import 'package:fyp_chat_app/entities/their_identity_key_entity.dart';
 import 'package:fyp_chat_app/signal/device_helper.dart';
 import 'package:fyp_chat_app/storage/disk_storage.dart';
 import 'package:fyp_chat_app/storage/secure_storage.dart';
@@ -35,11 +35,11 @@ class DiskIdentityKeyStore extends IdentityKeyStore {
     final result = await db.query(
       table,
       where:
-          '${TheirIdentityKey.columnUserId} = ? AND ${TheirIdentityKey.columnDeviceId} = ?',
+          '${TheirIdentityKeyEntity.columnUserId} = ? AND ${TheirIdentityKeyEntity.columnDeviceId} = ?',
       whereArgs: [address.getName(), address.getDeviceId()],
     );
     if (result.isEmpty) return null;
-    return TheirIdentityKey.fromJson(result[0]).toIdentityKey();
+    return TheirIdentityKeyEntity.fromJson(result[0]).toIdentityKey();
   }
 
   @override
@@ -93,7 +93,7 @@ class DiskIdentityKeyStore extends IdentityKeyStore {
     final result = await db.query(
       table,
       where:
-          '${TheirIdentityKey.columnUserId} = ? AND ${TheirIdentityKey.columnDeviceId} = ?',
+          '${TheirIdentityKeyEntity.columnUserId} = ? AND ${TheirIdentityKeyEntity.columnDeviceId} = ?',
       whereArgs: [address.getName(), address.getDeviceId()],
     );
     if (result.isEmpty) {
@@ -101,7 +101,7 @@ class DiskIdentityKeyStore extends IdentityKeyStore {
     }
 
     final identityKeyOnDisk =
-        TheirIdentityKey.fromJson(result[0]).toIdentityKey();
+        TheirIdentityKeyEntity.fromJson(result[0]).toIdentityKey();
 
     final isEqual = const ListEquality().equals(
       identityKeyOnDisk.serialize(),
@@ -111,7 +111,7 @@ class DiskIdentityKeyStore extends IdentityKeyStore {
     if (isEqual) {
       return false;
     } else {
-      final identityKeyMap = TheirIdentityKey.fromIdentityKey(
+      final identityKeyMap = TheirIdentityKeyEntity.fromIdentityKey(
         deviceId: address.getDeviceId(),
         userId: address.getName(),
         key: identityKey,
@@ -121,7 +121,7 @@ class DiskIdentityKeyStore extends IdentityKeyStore {
         table,
         identityKeyMap,
         where:
-            '${TheirIdentityKey.columnUserId} = ? AND ${TheirIdentityKey.columnDeviceId} = ?',
+            '${TheirIdentityKeyEntity.columnUserId} = ? AND ${TheirIdentityKeyEntity.columnDeviceId} = ?',
         whereArgs: [address.getName(), address.getDeviceId()],
       );
       // if no existing record, insert new record
