@@ -37,8 +37,8 @@ class MessageStore {
       table,
       columns: ['COUNT(*)'],
       where:
-          '${PlainMessage.columnChatroomId} = ? AND ${PlainMessage.columnIsRead} = ?',
-      whereArgs: [chatroomId, 0],
+          '${PlainMessage.columnChatroomId} = ? AND ${PlainMessage.columnIsRead} = 0',
+      whereArgs: [chatroomId],
     );
     return Sqflite.firstIntValue(result) ?? 0;
   }
@@ -77,6 +77,18 @@ class MessageStore {
       {PlainMessage.columnIsRead: 1},
       where: '${PlainMessage.columnId} = ?',
       whereArgs: [messageId],
+    );
+    return count > 0;
+  }
+
+  Future<bool> readAllMessageOfChatroom(String chatroomId) async {
+    final db = await DiskStorage().db;
+    final count = await db.update(
+      table,
+      {PlainMessage.columnIsRead: 1},
+      where:
+          '${PlainMessage.columnChatroomId} = ? AND ${PlainMessage.columnIsRead} = 0',
+      whereArgs: [chatroomId],
     );
     return count > 0;
   }
