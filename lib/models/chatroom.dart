@@ -27,21 +27,24 @@ abstract class Chatroom {
   static Future<Chatroom?> fromEntity(ChatroomEntity e) async {
     switch (ChatroomType.values[e.type]) {
       case ChatroomType.oneToOne:
-        final target = await ContactStore().getContactById(e.id);
-        if (target == null) {
-          return null;
-        }
-        final messages = await MessageStore().getMessageByChatroomId(
+        // start all read request at the same time
+        final targetFuture = ContactStore().getContactById(e.id);
+        final messagesFuture = MessageStore().getMessageByChatroomId(
           e.id,
           count: 1,
         );
+        final unreadFuture =
+            MessageStore().getNumberOfUnreadMessageByChatroomId(e.id);
+        final target = await targetFuture;
+        if (target == null) {
+          return null;
+        }
+        final messages = await messagesFuture;
         final latestMessage = messages.isEmpty ? null : messages[0];
-        final unread =
-            await MessageStore().getNumberOfUnreadMessageByChatroomId(e.id);
         return OneToOneChat(
           target: target,
           latestMessage: latestMessage,
-          unread: unread,
+          unread: await unreadFuture,
         );
       case ChatroomType.group:
         final members = await GroupMemberStore().getByChatroomId(e.id);

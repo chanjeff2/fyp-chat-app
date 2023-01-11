@@ -86,8 +86,11 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
   void _sendMessage(String message) async {
     _messageController.clear();
     _textMessage = false;
-    final sentMessage =
-        await SignalClient().sendMessageToChatroom(widget.chatroom, message);
+    final sentMessage = await SignalClient().sendMessageToChatroom(
+      _state.me!,
+      widget.chatroom,
+      message,
+    );
     setState(() {
       _messages.insert(0, sentMessage);
     });
