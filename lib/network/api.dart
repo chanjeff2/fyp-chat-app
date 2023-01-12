@@ -47,20 +47,23 @@ abstract class Api {
       // not expired
       return accessToken;
     }
-    AccessTokenDto? newAccessToken;
+    AccessToken? newAccessToken;
     if (accessToken != null &&
         accessToken.isAccessTokenExpired() &&
         accessToken.refreshToken != null &&
         !accessToken.isRefreshTokenExpired()) {
       // access token expired, refresh token not expired
+      log('Api: access token expired. attempt to refresh token.');
       try {
         newAccessToken =
             await AuthApi().refreshToken(accessToken.refreshToken!);
       } catch (e) {
         // refresh token failed
+        log('Api: refresh token failed. error: $e');
       }
     }
     if (newAccessToken == null) {
+      log('Api: attempt to re-login');
       // both expired or token not exist
       final loginDto = await CredentialStore().getCredential();
       if (loginDto == null) {
@@ -69,8 +72,8 @@ abstract class Api {
       }
       newAccessToken = await AuthApi().login(loginDto);
     }
-    CredentialStore().storeToken(newAccessToken);
-    return AccessToken.fromDto(newAccessToken);
+    await CredentialStore().storeToken(newAccessToken);
+    return newAccessToken;
   }
 
   @protected

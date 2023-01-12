@@ -57,17 +57,22 @@ class SignalClient {
     final oneTimeKeys = generatePreKeys(0, 110);
     final signedPreKey = generateSignedPreKey(identityKeyPair, 0);
 
+    late final int? deviceId;
+
     // store keys
-    await DiskIdentityKeyStore().storeIdentityKeyPair(identityKeyPair);
-    for (var p in oneTimeKeys) {
-      await DiskPreKeyStore().storePreKey(p.id, p);
-    }
-    await DiskSignedPreKeyStore()
-        .storeSignedPreKey(signedPreKey.id, signedPreKey);
+    await Future.wait([
+      DiskIdentityKeyStore().storeIdentityKeyPair(identityKeyPair),
+      Future.wait(
+          oneTimeKeys.map((p) => DiskPreKeyStore().storePreKey(p.id, p))),
+      DiskSignedPreKeyStore().storeSignedPreKey(signedPreKey.id, signedPreKey),
+      DeviceInfoHelper().getDeviceId().then((id) {
+        deviceId = id;
+      }),
+    ]);
 
     // upload keys to Server
     final dto = UpdateKeysDto(
-      (await DeviceInfoHelper().getDeviceId())!,
+      deviceId!,
       identityKey: identityKeyPair.getPublicKey().encodeToString(),
       oneTimeKeys:
           oneTimeKeys.map((e) => PreKey.fromPreKeyRecord(e).toDto()).toList(),
@@ -155,8 +160,7 @@ class SignalClient {
         await DiskSessionStore().containsSession(remotePrimaryAddress);
 
     if (!containsSession) {
-      final keyList = await KeysApi().getAllKeyBundle(recipientUserId);
-      final keyBundle = KeyBundle.fromDto(keyList);
+      final keyBundle = await KeysApi().getAllKeyBundle(recipientUserId);
 
       await _establishSession(recipientUserId, keyBundle);
     }
@@ -196,8 +200,8 @@ class SignalClient {
     final messagesRetry = await Future.wait(
       [...response.misMatchDeviceIds, ...response.missingDeviceIds]
           .map((deviceId) async {
-        final keys = await KeysApi().getKeyBundle(recipientUserId, deviceId);
-        final keyBundle = KeyBundle.fromDto(keys);
+        final keyBundle =
+            await KeysApi().getKeyBundle(recipientUserId, deviceId);
         await _establishSession(recipientUserId, keyBundle);
 
         return generateMessageToServer(recipientUserId, deviceId, content);
@@ -280,8 +284,7 @@ class SignalClient {
       sender = senderInDisk;
     } else {
       // get user from server
-      final userDto = await UsersApi().getUserById(message.senderUserId);
-      sender = User.fromDto(userDto);
+      sender = await UsersApi().getUserById(message.senderUserId);
       // add sender to contact
       await ContactStore().storeContact(sender);
     }

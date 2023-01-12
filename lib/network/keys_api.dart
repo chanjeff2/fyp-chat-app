@@ -1,5 +1,7 @@
-import '../dto/key_bundle_dto.dart';
-import '../dto/update_keys_dto.dart';
+import 'package:fyp_chat_app/dto/key_bundle_dto.dart';
+import 'package:fyp_chat_app/dto/update_keys_dto.dart';
+import 'package:fyp_chat_app/models/key_bundle.dart';
+
 import 'api.dart';
 
 class KeysApi extends Api {
@@ -17,13 +19,15 @@ class KeysApi extends Api {
     await patch("/update-keys", body: dto.toJson(), useAuth: true);
   }
 
-  Future<KeyBundleDto> getKeyBundle(String userId, int deviceId) async {
+  Future<KeyBundle> getKeyBundle(String userId, int deviceId) async {
     final json = await get("/$userId/devices/$deviceId", useAuth: true);
-    return KeyBundleDto.fromJson(json);
+    final dto = KeyBundleDto.fromJson(json);
+    return KeyBundle.fromDto(dto);
   }
 
-  Future<KeyBundleDto> getAllKeyBundle(String userId) async {
+  Future<KeyBundle> getAllKeyBundle(String userId) async {
     final json = await get("/$userId/devices", useAuth: true);
-    return KeyBundleDto.fromJson(json);
+    final dto = KeyBundleDto.fromJson(json);
+    return KeyBundle.fromDto(dto);
   }
 }
