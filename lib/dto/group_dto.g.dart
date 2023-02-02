@@ -9,7 +9,7 @@ part of 'group_dto.dart';
 GroupDto _$GroupDtoFromJson(Map<String, dynamic> json) {
   $checkKeys(
     json,
-    requiredKeys: const ['_id', 'name', 'members'],
+    requiredKeys: const ['_id', 'name', 'members', 'createdAt'],
   );
   return GroupDto(
     id: json['_id'] as String,

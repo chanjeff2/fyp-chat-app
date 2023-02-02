@@ -9,22 +9,18 @@ part of 'group_member_dto.dart';
 GroupMemberDto _$GroupMemberDtoFromJson(Map<String, dynamic> json) {
   $checkKeys(
     json,
-    requiredKeys: const ['_id', 'role', 'members'],
+    requiredKeys: const ['user', 'role'],
   );
   return GroupMemberDto(
-    user: UserDto.fromJson(json['_id'] as Map<String, dynamic>),
+    user: UserDto.fromJson(json['user'] as Map<String, dynamic>),
     role: $enumDecode(_$RoleEnumMap, json['role']),
-    members: (json['members'] as List<dynamic>)
-        .map((e) => GroupMemberDto.fromJson(e as Map<String, dynamic>))
-        .toList(),
   );
 }
 
 Map<String, dynamic> _$GroupMemberDtoToJson(GroupMemberDto instance) =>
     <String, dynamic>{
-      '_id': instance.user.toJson(),
+      'user': instance.user.toJson(),
       'role': _$RoleEnumMap[instance.role]!,
-      'members': instance.members.map((e) => e.toJson()).toList(),
     };
 
 const _$RoleEnumMap = {

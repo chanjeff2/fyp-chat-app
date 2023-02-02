@@ -15,6 +15,7 @@ class GroupDto {
   @JsonKey(required: true)
   List<GroupMemberDto> members;
 
+  @JsonKey(required: true)
   String createdAt;
 
   GroupDto({

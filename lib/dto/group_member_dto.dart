@@ -5,19 +5,15 @@ part 'group_member_dto.g.dart';
 
 @JsonSerializable(explicitToJson: true)
 class GroupMemberDto {
-  @JsonKey(required: true, name: "_id")
+  @JsonKey(required: true)
   UserDto user;
 
   @JsonKey(required: true)
   Role role;
 
-  @JsonKey(required: true)
-  List<GroupMemberDto> members;
-
   GroupMemberDto({
     required this.user,
     required this.role,
-    required this.members,
   });
 
   Map<String, dynamic> toJson() => _$GroupMemberDtoToJson(this);
