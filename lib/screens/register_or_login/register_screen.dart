@@ -45,13 +45,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
               TextFormField(
                 controller: _usernameController,
                 decoration: const InputDecoration(
-                  labelText: "Username",
-                  contentPadding: const EdgeInsets.symmetric(vertical: 15.0, horizontal: 15.0),
-                  border: OutlineInputBorder(
-                    borderRadius: const BorderRadius.all(const Radius.circular(10.0)),
-                    borderSide: BorderSide()
-                  )
-                ),
+                    labelText: "Username",
+                    contentPadding: const EdgeInsets.symmetric(
+                        vertical: 15.0, horizontal: 15.0),
+                    border: OutlineInputBorder(
+                        borderRadius:
+                            const BorderRadius.all(const Radius.circular(10.0)),
+                        borderSide: BorderSide())),
                 validator: (username) {
                   if (username?.isEmpty ?? true) {
                     return "username cannot be empty";
@@ -65,11 +65,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 obscureText: !_isPasswordVisible,
                 decoration: InputDecoration(
                     labelText: "Password",
-                    contentPadding: const EdgeInsets.symmetric(vertical: 15.0, horizontal: 15.0),
+                    contentPadding: const EdgeInsets.symmetric(
+                        vertical: 15.0, horizontal: 15.0),
                     border: OutlineInputBorder(
-                      borderRadius: const BorderRadius.all(const Radius.circular(10.0)),
-                      borderSide: BorderSide()
-                    ),
+                        borderRadius:
+                            const BorderRadius.all(const Radius.circular(10.0)),
+                        borderSide: BorderSide()),
                     suffixIcon: IconButton(
                       onPressed: () {
                         setState(() {
@@ -95,11 +96,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   enabled: _isRegister,
                   decoration: InputDecoration(
                       labelText: "Confirm Password",
-                      contentPadding: const EdgeInsets.symmetric(vertical: 15.0, horizontal: 15.0),
+                      contentPadding: const EdgeInsets.symmetric(
+                          vertical: 15.0, horizontal: 15.0),
                       border: OutlineInputBorder(
-                        borderRadius: const BorderRadius.all(const Radius.circular(10.0)),
-                        borderSide: BorderSide()
-                      ),
+                          borderRadius: const BorderRadius.all(
+                              const Radius.circular(10.0)),
+                          borderSide: BorderSide()),
                       suffixIcon: IconButton(
                         onPressed: () {
                           setState(() {
@@ -142,10 +144,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       final accessToken = await AuthApi().login(
                         LoginDto(username: username, password: password),
                       );
-                      // store credential
-                      await CredentialStore()
-                          .storeCredential(username, password);
-                      await CredentialStore().storeToken(accessToken);
                       Provider.of<UserState>(context, listen: false)
                           .setAccessTokenStatus(true);
                       // get account profile

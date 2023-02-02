@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/cupertino.dart';
-import 'package:fyp_chat_app/dto/access_token_dto.dart';
 import 'package:fyp_chat_app/models/access_token.dart';
 import 'package:fyp_chat_app/network/auth_api.dart';
 import 'package:fyp_chat_app/storage/credential_store.dart';
@@ -47,7 +46,6 @@ abstract class Api {
       // not expired
       return accessToken;
     }
-    AccessToken? newAccessToken;
     if (accessToken != null &&
         accessToken.isAccessTokenExpired() &&
         accessToken.refreshToken != null &&
@@ -55,25 +53,20 @@ abstract class Api {
       // access token expired, refresh token not expired
       log('Api: access token expired. attempt to refresh token.');
       try {
-        newAccessToken =
-            await AuthApi().refreshToken(accessToken.refreshToken!);
+        return await AuthApi().refreshToken(accessToken.refreshToken!);
       } catch (e) {
         // refresh token failed
         log('Api: refresh token failed. error: $e');
       }
     }
-    if (newAccessToken == null) {
-      log('Api: attempt to re-login');
-      // both expired or token not exist
-      final loginDto = await CredentialStore().getCredential();
-      if (loginDto == null) {
-        // wtf?
-        throw AccessTokenNotFoundException();
-      }
-      newAccessToken = await AuthApi().login(loginDto);
+    log('Api: attempt to re-login');
+    // both expired or token not exist
+    final loginDto = await CredentialStore().getCredential();
+    if (loginDto == null) {
+      // wtf?
+      throw AccessTokenNotFoundException();
     }
-    await CredentialStore().storeToken(newAccessToken);
-    return newAccessToken;
+    return await AuthApi().login(loginDto);
   }
 
   @protected

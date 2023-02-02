@@ -6,7 +6,6 @@ import 'package:fyp_chat_app/network/account_api.dart';
 import 'package:fyp_chat_app/network/api.dart';
 import 'package:fyp_chat_app/screens/register_or_login/loading_screen.dart';
 import 'package:fyp_chat_app/signal/signal_client.dart';
-import 'package:fyp_chat_app/storage/credential_store.dart';
 import 'package:provider/provider.dart';
 
 import '../../dto/register_dto.dart';
@@ -158,10 +157,7 @@ class _RegisterOrLoginScreenState extends State<RegisterOrLoginScreen> {
                           }
                           // init signal stuffs
                           await SignalClient().initialize();
-                          // store credential
-                          await CredentialStore()
-                              .storeCredential(username, password);
-                          await CredentialStore().storeToken(accessToken);
+
                           Provider.of<UserState>(context, listen: false)
                               .setAccessTokenStatus(true);
                           // get account profile
