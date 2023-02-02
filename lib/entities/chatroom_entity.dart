@@ -16,7 +16,7 @@ $columnCreatedAt TEXT NOT NULL
 
   static const columnId = "id";
 
-  /// the user id of target user for [OneToOneChat], a random uuid for [GroupChat]
+  /// the user id of target user for [OneToOneChat], group id for [GroupChat]
   @JsonKey(required: true, name: columnId)
   final String id;
 
