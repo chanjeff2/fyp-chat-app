@@ -32,4 +32,9 @@ class GroupChatApi extends Api {
     final dto = GroupDto.fromJson(json);
     return GroupChat.fromDto(dto);
   }
+
+  Future<List<GroupChat>> getMyGroups() async {
+    final List<dynamic> json = await get("", useAuth: true);
+    return json.map((e) => GroupChat.fromDto(GroupDto.fromJson(e))).toList();
+  }
 }
