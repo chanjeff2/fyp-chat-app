@@ -1,3 +1,4 @@
+import 'package:fyp_chat_app/dto/group_dto.dart';
 import 'package:fyp_chat_app/entities/chatroom_entity.dart';
 import 'package:fyp_chat_app/models/chatroom.dart';
 import 'package:fyp_chat_app/models/group_member.dart';
@@ -33,4 +34,17 @@ class GroupChat extends Chatroom {
         name: name,
         createdAt: createdAt.toIso8601String(),
       );
+
+  GroupChat.fromDto(GroupDto dto)
+      : members = dto.members
+            .map(
+              (e) => GroupMember.fromDto(e),
+            )
+            .toList(),
+        name = dto.name,
+        super(
+          id: dto.id,
+          createdAt: DateTime.parse(dto.createdAt),
+          unread: 0,
+        );
 }

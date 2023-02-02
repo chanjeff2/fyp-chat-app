@@ -17,6 +17,7 @@ GroupDto _$GroupDtoFromJson(Map<String, dynamic> json) {
     members: (json['members'] as List<dynamic>)
         .map((e) => GroupMemberDto.fromJson(e as Map<String, dynamic>))
         .toList(),
+    createdAt: json['createdAt'] as String,
   );
 }
 
@@ -24,4 +25,5 @@ Map<String, dynamic> _$GroupDtoToJson(GroupDto instance) => <String, dynamic>{
       '_id': instance.id,
       'name': instance.name,
       'members': instance.members.map((e) => e.toJson()).toList(),
+      'createdAt': instance.createdAt,
     };

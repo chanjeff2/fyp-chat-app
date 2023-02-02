@@ -15,10 +15,13 @@ class GroupDto {
   @JsonKey(required: true)
   List<GroupMemberDto> members;
 
+  String createdAt;
+
   GroupDto({
     required this.id,
     required this.name,
     required this.members,
+    required this.createdAt,
   });
 
   Map<String, dynamic> toJson() => _$GroupDtoToJson(this);
