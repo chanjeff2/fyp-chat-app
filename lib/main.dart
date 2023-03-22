@@ -65,6 +65,15 @@ class _MyAppState extends State<MyApp> {
     final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
         FlutterLocalNotificationsPlugin();
 
+    var initializationSettingsAndroid = const AndroidInitializationSettings("ic_launcher");
+    var initializationSettingsIOS = const DarwinInitializationSettings();
+    var initializationSettings = InitializationSettings(
+        android: initializationSettingsAndroid,
+        iOS: initializationSettingsIOS
+      );
+    
+    flutterLocalNotificationsPlugin.initialize(initializationSettings);
+
     await flutterLocalNotificationsPlugin
         .resolvePlatformSpecificImplementation<
             AndroidFlutterLocalNotificationsPlugin>()
