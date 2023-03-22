@@ -3,7 +3,7 @@
     <!-- Required to fetch data from the internet. -->
     <uses-permission android:name="android.permission.INTERNET" />
    <application
-        android:label="fyp_chat_app"
+        android:label="USTalk"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
