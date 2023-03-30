@@ -8,6 +8,7 @@ import 'package:fyp_chat_app/models/user_state.dart';
 import 'package:fyp_chat_app/network/auth_api.dart';
 import 'package:fyp_chat_app/network/devices_api.dart';
 import 'package:fyp_chat_app/screens/chatroom/chatroom_screen.dart';
+import 'package:fyp_chat_app/screens/chatroom/chatroom_screen_group.dart';
 import 'package:fyp_chat_app/screens/home/select_contact.dart';
 import 'package:fyp_chat_app/screens/settings/settings_screen.dart';
 import 'package:fyp_chat_app/storage/chatroom_store.dart';
@@ -101,9 +102,18 @@ class _HomeScreenState extends State<HomeScreen> {
               itemBuilder: (_, i) => HomeContact(
                 chatroom: chatroomList[i],
                 onClick: () {
-                  Navigator.of(context).push(MaterialPageRoute(
-                      builder: (context) =>
-                          ChatRoomScreen(chatroom: chatroomList[i])));
+                  switch (chatroomList[i].type) {
+                    case ChatroomType.oneToOne:
+                      Navigator.of(context).push(MaterialPageRoute(
+                          builder: (context) =>
+                              ChatRoomScreen(chatroom: chatroomList[i])));
+                      break;
+                    case ChatroomType.group:
+                      Navigator.of(context).push(MaterialPageRoute(
+                          builder: (context) =>
+                              ChatRoomScreen(chatroom: chatroomList[i])));
+                      break;
+                  }
                 },
               ),
               itemCount: chatroomList.length,
@@ -117,8 +127,19 @@ class _HomeScreenState extends State<HomeScreen> {
                 setState(() {
                   _chatroomMap[chatroom.id] = chatroom;
                 });
-                Navigator.of(context).push(MaterialPageRoute(
-                    builder: (_) => ChatRoomScreen(chatroom: chatroom)));
+                switch (chatroom.type) {
+                  case ChatroomType.oneToOne:
+                    Navigator.of(context).push(MaterialPageRoute(
+                      builder: (_) => ChatRoomScreen(chatroom: chatroom)));
+                    break;
+                  case ChatroomType.group:
+                    Navigator.of(context).push(MaterialPageRoute(
+                      builder: (_) => ChatRoomScreenGroup(chatroom: chatroom)));
+                    break;
+                  default:
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text("Bro what is this type, ${chatroom.type}?")));
+                }
               },
             )));
           },

@@ -85,7 +85,7 @@ class _SelectContactState extends State<SelectContact> {
                       },
                       child: const DefaultOption(
                         icon: Icons.group_add,
-                        name: "Add group",
+                        name: "Create group",
                       ),
                     );
 
