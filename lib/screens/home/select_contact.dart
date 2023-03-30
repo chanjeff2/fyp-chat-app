@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:fyp_chat_app/components/default_option.dart';
 import 'package:fyp_chat_app/components/contact_option.dart';
+import 'package:fyp_chat_app/dto/create_group_dto.dart';
 import 'package:fyp_chat_app/models/chatroom.dart';
+import 'package:fyp_chat_app/models/group_chat.dart';
 import 'package:fyp_chat_app/models/one_to_one_chat.dart';
 import 'package:fyp_chat_app/models/user.dart';
 import 'package:fyp_chat_app/network/api.dart';
+import 'package:fyp_chat_app/network/group_chat_api.dart';
 import 'package:fyp_chat_app/network/users_api.dart';
 import 'package:fyp_chat_app/storage/chatroom_store.dart';
 
@@ -58,11 +61,27 @@ class _SelectContactState extends State<SelectContact> {
                 switch (index) {
                   case 0:
                     return InkWell(
-                      onTap: () {
-                        /*
-                  Navigator.push(context,
-                      MaterialPageRoute(builder: (builder) => CreateGroup()));
-                  */
+                      onTap: () async {
+                        // TODO: support join group
+                        // enter group name
+                        final name = await inputDialog(
+                          "Add Group",
+                          "Please enter the Group name",
+                        );
+                        if (name == null || name.isEmpty) return;
+                        // create group on server
+                        late final GroupChat group;
+                        try {
+                          group = await GroupChatApi()
+                              .createGroup(CreateGroupDto(name: name));
+                        } on ApiException catch (e) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text("error: ${e.message}")));
+                        }
+                        await ChatroomStore().save(group);
+                        // callback and return to home
+                        Navigator.of(context).pop();
+                        widget.onNewChatroom?.call(group);
                       },
                       child: const DefaultOption(
                         icon: Icons.group_add,
@@ -74,7 +93,10 @@ class _SelectContactState extends State<SelectContact> {
                     return InkWell(
                       onTap: () async {
                         //Pop up screen for add content
-                        final name = await addContactDialog();
+                        final name = await inputDialog(
+                          "Add Contact",
+                          "Please enter their username",
+                        );
                         if (name == null || name.isEmpty) return;
                         setState(() {
                           addContactInput = name;
@@ -85,7 +107,6 @@ class _SelectContactState extends State<SelectContact> {
                               .getUserByUsername(addContactInput);
                           // local storage on disk
                           await ContactStore().storeContact(addUser);
-                          // TODO: support group chat
                           final chatroom = OneToOneChat(
                             target: addUser,
                             unread: 0,
@@ -124,14 +145,13 @@ class _SelectContactState extends State<SelectContact> {
         ));
   }
 
-  Future<String?> addContactDialog() => showDialog<String>(
+  Future<String?> inputDialog(String title, String hint) => showDialog<String>(
         context: context,
         builder: (context) => AlertDialog(
-          title: const Text('Add Contact'),
+          title: Text(title),
           content: TextField(
             autofocus: true,
-            decoration:
-                const InputDecoration(hintText: "Please enter the username"),
+            decoration: InputDecoration(hintText: hint),
             controller: addContactController,
           ),
           actions: [

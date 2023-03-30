@@ -26,7 +26,7 @@ class GroupMemberStore {
         if (user == null) {
           return null;
         }
-        return GroupMember(id: e.id, user: user);
+        return GroupMember(id: e.id, user: user, role: e.role);
       }),
     );
     return members.whereType<GroupMember>().toList();
@@ -47,7 +47,7 @@ class GroupMemberStore {
     if (user == null) {
       return null;
     }
-    return GroupMember(id: entity.id, user: user);
+    return GroupMember(id: entity.id, user: user, role: entity.role);
   }
 
   Future<bool> remove(String id) async {
@@ -75,6 +75,7 @@ class GroupMemberStore {
       id: member.id,
       chatroomId: chatroomId,
       userId: member.user.userId,
+      role: member.role,
     );
     final map = entity.toJson();
     final db = await DiskStorage().db;

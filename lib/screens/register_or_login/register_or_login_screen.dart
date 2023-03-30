@@ -4,9 +4,10 @@ import 'package:fyp_chat_app/models/access_token.dart';
 import 'package:fyp_chat_app/models/user_state.dart';
 import 'package:fyp_chat_app/network/account_api.dart';
 import 'package:fyp_chat_app/network/api.dart';
+import 'package:fyp_chat_app/network/group_chat_api.dart';
 import 'package:fyp_chat_app/screens/register_or_login/loading_screen.dart';
 import 'package:fyp_chat_app/signal/signal_client.dart';
-import 'package:fyp_chat_app/storage/credential_store.dart';
+import 'package:fyp_chat_app/storage/chatroom_store.dart';
 import 'package:provider/provider.dart';
 
 import '../../dto/register_dto.dart';
@@ -142,6 +143,7 @@ class _RegisterOrLoginScreenState extends State<RegisterOrLoginScreen> {
                         });
                         try {
                           late final AccessToken accessToken;
+                          late final Future restoreFuture;
                           if (_isRegister) {
                             // register
                             accessToken = await AuthApi().register(
@@ -155,15 +157,17 @@ class _RegisterOrLoginScreenState extends State<RegisterOrLoginScreen> {
                             accessToken = await AuthApi().login(
                               LoginDto(username: username, password: password),
                             );
+                            // start restore chatroom
+                            restoreFuture = restoreGroupChat();
                           }
                           // init signal stuffs
                           await SignalClient().initialize();
-                          // store credential
-                          await CredentialStore()
-                              .storeCredential(username, password);
-                          await CredentialStore().storeToken(accessToken);
+
                           Provider.of<UserState>(context, listen: false)
                               .setAccessTokenStatus(true);
+
+                          // wait restore chatroom finish
+                          await restoreFuture;
                           // get account profile
                           final account = await AccountApi().getMe();
                           userState.setMe(account);
@@ -207,4 +211,9 @@ class _RegisterOrLoginScreenState extends State<RegisterOrLoginScreen> {
             ),
           ),
         );
+
+  Future<void> restoreGroupChat() async {
+    final groups = await GroupChatApi().getMyGroups();
+    await Future.wait(groups.map((group) => ChatroomStore().save(group)));
+  }
 }

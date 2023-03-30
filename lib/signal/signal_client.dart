@@ -144,6 +144,7 @@ class SignalClient {
   }
 
   Future<void> _sendMessage(
+    String myUserId, // to avoid send to sender device
     int senderDeviceId,
     String recipientUserId,
     String chatroomId,
@@ -168,8 +169,13 @@ class SignalClient {
     final deviceIds =
         await DiskSessionStore().getSubDeviceSessions(recipientUserId);
 
+    // remove my device if send to self
+    final devices = (myUserId == recipientUserId)
+        ? ([1, ...deviceIds]).where((id) => id != senderDeviceId)
+        : ([1, ...deviceIds]);
+
     final messages = await Future.wait(
-      [1, ...deviceIds].map((deviceId) async =>
+      devices.map((deviceId) async =>
           generateMessageToServer(recipientUserId, deviceId, content)),
     );
 
@@ -216,7 +222,7 @@ class SignalClient {
       sentAt: sentAt,
     ).toDto();
 
-    await EventsApi().sendMessage(message);
+    await EventsApi().sendMessage(messageRetry);
   }
 
   Future<PlainMessage> sendMessageToChatroom(
@@ -236,6 +242,7 @@ class SignalClient {
       case ChatroomType.oneToOne:
         chatroom as OneToOneChat;
         await _sendMessage(
+          me.userId,
           senderDeviceId,
           chatroom.target.userId,
           me.userId, // chatroom id w.r.t. recipient, i.e. my user id
@@ -246,6 +253,7 @@ class SignalClient {
       case ChatroomType.group:
         chatroom as GroupChat;
         await Future.wait(chatroom.members.map((e) async => await _sendMessage(
+              me.userId,
               senderDeviceId,
               e.user.userId,
               chatroom.id,

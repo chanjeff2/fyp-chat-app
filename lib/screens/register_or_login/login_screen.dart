@@ -44,13 +44,13 @@ class _LoginScreenState extends State<LoginScreen> {
               TextFormField(
                 controller: _usernameController,
                 decoration: const InputDecoration(
-                  labelText: "Username",
-                  contentPadding: EdgeInsets.symmetric(vertical: 15.0, horizontal: 15.0),
-                  border: OutlineInputBorder(
-                    borderRadius: const BorderRadius.all(const Radius.circular(10.0)),
-                    borderSide: BorderSide()
-                  )
-                ),
+                    labelText: "Username",
+                    contentPadding:
+                        EdgeInsets.symmetric(vertical: 15.0, horizontal: 15.0),
+                    border: OutlineInputBorder(
+                        borderRadius:
+                            const BorderRadius.all(const Radius.circular(10.0)),
+                        borderSide: BorderSide())),
                 validator: (username) {
                   if (username?.isEmpty ?? true) {
                     return "username cannot be empty";
@@ -64,12 +64,13 @@ class _LoginScreenState extends State<LoginScreen> {
                 obscureText: !_isPasswordVisible,
                 decoration: InputDecoration(
                     labelText: "Password",
-                    contentPadding: const EdgeInsets.symmetric(vertical: 15.0, horizontal: 15.0),
+                    contentPadding: const EdgeInsets.symmetric(
+                        vertical: 15.0, horizontal: 15.0),
                     // ignore: prefer_const_constructors
                     border: OutlineInputBorder(
-                      borderRadius: const BorderRadius.all(Radius.circular(10.0)),
-                      borderSide: const BorderSide()
-                    ),
+                        borderRadius:
+                            const BorderRadius.all(Radius.circular(10.0)),
+                        borderSide: const BorderSide()),
                     suffixIcon: IconButton(
                       onPressed: () {
                         setState(() {
@@ -97,13 +98,9 @@ class _LoginScreenState extends State<LoginScreen> {
                     }
                     try {
                       // login
-                      final accessToken = await AuthApi().login(
+                      await AuthApi().login(
                         LoginDto(username: username, password: password),
                       );
-                      // store credential
-                      await CredentialStore()
-                          .storeCredential(username, password);
-                      await CredentialStore().storeToken(accessToken);
                       Provider.of<UserState>(context, listen: false)
                           .setAccessTokenStatus(true);
                       // get account profile
