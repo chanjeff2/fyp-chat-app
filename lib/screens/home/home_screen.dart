@@ -111,7 +111,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     case ChatroomType.group:
                       Navigator.of(context).push(MaterialPageRoute(
                           builder: (context) =>
-                              ChatRoomScreen(chatroom: chatroomList[i])));
+                              ChatRoomScreenGroup(chatroom: chatroomList[i])));
                       break;
                   }
                 },
@@ -130,15 +130,17 @@ class _HomeScreenState extends State<HomeScreen> {
                 switch (chatroom.type) {
                   case ChatroomType.oneToOne:
                     Navigator.of(context).push(MaterialPageRoute(
-                      builder: (_) => ChatRoomScreen(chatroom: chatroom)));
+                        builder: (_) => ChatRoomScreen(chatroom: chatroom)));
                     break;
                   case ChatroomType.group:
                     Navigator.of(context).push(MaterialPageRoute(
-                      builder: (_) => ChatRoomScreenGroup(chatroom: chatroom)));
+                        builder: (_) =>
+                            ChatRoomScreenGroup(chatroom: chatroom)));
                     break;
                   default:
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text("Bro what is this type, ${chatroom.type}?")));
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                        content:
+                            Text("Bro what is this type, ${chatroom.type}?")));
                 }
               },
             )));
