@@ -38,4 +38,5 @@ class Palette {
   Palette._();
 
   static MaterialColor ustBlue = generateMaterialColor(const Color(0xFF003366));
+  static MaterialColor ustGold = generateMaterialColor(const Color(0xFF996600));
 }
