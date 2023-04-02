@@ -62,9 +62,9 @@ class _CreateGroupScreen extends State<CreateGroupScreen> {
                   child: ListTile(
                     tileColor: CheckedColor[index],
                     onTap: () {
-                      isChecked[index] = !(isChecked[index]);
-                      CheckedColor[index] =
+                        CheckedColor[index] =
                           isChecked[index] ? Colors.black : Colors.white;
+                      isChecked[index] = !(isChecked[index]);
                       print(CheckedColor[index]);
                       print(isChecked[index]);
                     },
