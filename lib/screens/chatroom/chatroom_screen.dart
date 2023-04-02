@@ -231,7 +231,8 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                   color: (userState.me!.userId != message.author.id)
                         ? const Color(0xfff5f5f7) : Theme.of(context).primaryColor,
                   showNip: !nextMessageInGroup,
-                  padding: const BubbleEdges.all(0)
+                  padding: const BubbleEdges.all(0),
+                  elevation: 1,
               ),
               onSendPressed: (partialText) {
                 _sendMessage(partialText.text);
