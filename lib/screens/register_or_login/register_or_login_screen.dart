@@ -143,7 +143,7 @@ class _RegisterOrLoginScreenState extends State<RegisterOrLoginScreen> {
                         });
                         try {
                           late final AccessToken accessToken;
-                          late final Future restoreFuture;
+                          Future? restoreFuture;
                           if (_isRegister) {
                             // register
                             accessToken = await AuthApi().register(
@@ -167,7 +167,9 @@ class _RegisterOrLoginScreenState extends State<RegisterOrLoginScreen> {
                               .setAccessTokenStatus(true);
 
                           // wait restore chatroom finish
-                          await restoreFuture;
+                          if (restoreFuture != null) {
+                            await restoreFuture;
+                          }
                           // get account profile
                           final account = await AccountApi().getMe();
                           userState.setMe(account);
