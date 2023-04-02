@@ -97,14 +97,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         String? name = await inputDialog(
                           "Display Name",
                           "Please enter your Display Name(Enter nothing input your username by default)",
+                          displayNameController,
                         );
-                        if (name == null || name.isEmpty) {
-                          name = userState.me!.username;
-                        }
-                        //send post request to server to update display name
                         String? tempDisplayName = userState.me!.displayName;
-                        userState.me!.displayName = name;
                         try {
+                          if (name == null || name.isEmpty) {
+                            name = userState.me!.username;
+                          }
+                          //send post request to server to update display name
+                          userState.me!.displayName = name;
                           await AccountApi().updateAccount(userState.me!);
                         } catch (e) {
                           userState.me!.displayName = tempDisplayName;
@@ -140,14 +141,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         String? status = await inputDialog(
                           "Status",
                           "Please enter your Status(Enter nothing input default status)",
+                          statusController,
                         );
-                        if (status == null || status.isEmpty) {
-                          status = "Hi! I'm using USTalk.";
-                        }
-                        //send post request to server to update display name
                         String? tempStatus = userState.me!.status;
-                        userState.me!.status = status;
                         try {
+                          if (status == null || status.isEmpty) {
+                            status = "Hi! I'm using USTalk.";
+                          }
+                          //send post request to server to update display name
+                          userState.me!.status = status;
                           await AccountApi().updateAccount(userState.me!);
                         } catch (e) {
                           userState.me!.status = tempStatus;
@@ -181,7 +183,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ));
   }
 
-  Future<String?> inputDialog(String title, String hint, String function) =>
+  Future<String?> inputDialog(
+          String title, String hint, TextEditingController controller) =>
       showDialog<String>(
         context: context,
         builder: (context) => AlertDialog(
@@ -189,22 +192,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
           content: TextField(
             autofocus: true,
             decoration: InputDecoration(hintText: hint),
-            controller:
-                function == "status" ? statusController : displayNameController,
+            controller: controller,
           ),
           actions: [
             TextButton(
                 onPressed: () {
-                  if (function == "status") {
-                    Navigator.of(context).pop(statusController.text);
-                    statusController.clear();
-                  } else {
-                    Navigator.of(context).pop(displayNameController.text);
-                    displayNameController.clear();
-                  }
+                  submitDialog(controller);
                 },
                 child: const Text('Submit'))
           ],
         ),
       );
+  void submitDialog(TextEditingController controller) {
+    Navigator.of(context).pop(controller.text);
+    controller.clear();
+  }
 }
