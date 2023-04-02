@@ -20,6 +20,8 @@ import 'package:path/path.dart';
 import 'dart:math';
 import 'dart:convert';
 
+import 'package:synchronized/synchronized.dart';
+
 // Class for accessing storage that handles all key store
 class DiskStorage {
   // singleton
@@ -34,6 +36,8 @@ class DiskStorage {
   static const databasePasswordKey = "databasePasswordKey";
 
   static Database? _database;
+
+  final _lock = Lock();
 
   Future<Database> get db async {
     return _database ??= await _initDatabase();
@@ -75,12 +79,14 @@ class DiskStorage {
   }
 
   Future<String> getDatabasePassword() async {
-    var password = await SecureStorage().read(key: databasePasswordKey);
-    if (password == null) {
-      password = generateDatabasePassword();
-      SecureStorage().write(key: databasePasswordKey, value: password);
-    }
-    return password;
+    return await _lock.synchronized(() async {
+      var password = await SecureStorage().read(key: databasePasswordKey);
+      if (password == null) {
+        password = generateDatabasePassword();
+        SecureStorage().write(key: databasePasswordKey, value: password);
+      }
+      return password;
+    });
   }
 
   String generateDatabasePassword() {
