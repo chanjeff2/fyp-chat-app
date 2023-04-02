@@ -135,8 +135,10 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
           title: SizedBox(
             width: MediaQuery.of(context).size.width,
             child: InkWell(
-              onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute(builder: (context) => const ContactInfo())),
+              onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                  builder: (context) => ContactInfo(
+                        chatroom: widget.chatroom,
+                      ))),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -214,7 +216,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
               messages: _messages
                   .map(
                     (e) => types.TextMessage(
-                      id: e.id?.toString() ?? "0",
+                      id: e.id.toString(),
                       author: types.User(id: e.senderUserId),
                       text: e.content,
                       createdAt: e.sentAt.millisecondsSinceEpoch,

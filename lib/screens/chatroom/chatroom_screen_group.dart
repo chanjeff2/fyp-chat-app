@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:fyp_chat_app/models/chatroom.dart';
+import 'package:fyp_chat_app/models/group_chat.dart';
 import 'package:fyp_chat_app/models/plain_message.dart';
 import 'package:fyp_chat_app/models/received_plain_message.dart';
 import 'package:fyp_chat_app/models/user_state.dart';
@@ -142,18 +143,22 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
           title: SizedBox(
             width: MediaQuery.of(context).size.width,
             child: InkWell(
-              onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute(builder: (context) => const ContactInfo())),
+              onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                  builder: (context) =>
+                      ContactInfo(chatroom: widget.chatroom))),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(widget.chatroom.name),
-                  const Text(
-                    "Member 1, Member 2, Member 3...",
-                    style: TextStyle(
-                      fontWeight: FontWeight.normal,
-                      fontSize: 14,
-                    ),
+                  Text(
+                    (widget.chatroom as GroupChat).members.isEmpty
+                        ? _state.me!.username
+                        : _state.me!.username +
+                            (widget.chatroom as GroupChat)
+                                .members[0]
+                                .toString() +
+                            ", ...",
+                    style: TextStyle(fontSize: 12),
                   ),
                 ],
               ),
@@ -221,7 +226,7 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
               messages: _messages
                   .map(
                     (e) => types.TextMessage(
-                      id: e.id?.toString() ?? "0",
+                      id: e.id.toString(),
                       author: types.User(id: e.senderUserId),
                       text: e.content,
                       createdAt: e.sentAt.millisecondsSinceEpoch,
