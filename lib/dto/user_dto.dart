@@ -12,13 +12,14 @@ class UserDto {
 
   String? displayName;
 
+  String? status;
+
   UserDto({
     required this.userId,
     required this.username,
     this.displayName,
+    this.status,
   });
-
-  get status => null;
 
   Map<String, dynamic> toJson() => _$UserDtoToJson(this);
 
