@@ -9,6 +9,7 @@ import 'package:fyp_chat_app/models/user.dart';
 import 'package:fyp_chat_app/network/api.dart';
 import 'package:fyp_chat_app/network/group_chat_api.dart';
 import 'package:fyp_chat_app/network/users_api.dart';
+import 'package:fyp_chat_app/screens/home/create_group_screen.dart';
 import 'package:fyp_chat_app/storage/chatroom_store.dart';
 
 import '../../storage/contact_store.dart';
@@ -64,24 +65,26 @@ class _SelectContactState extends State<SelectContact> {
                       onTap: () async {
                         // TODO: support join group
                         // enter group name
-                        final name = await inputDialog(
-                          "Add Group",
-                          "Please enter the Group name",
-                        );
-                        if (name == null || name.isEmpty) return;
-                        // create group on server
-                        late final GroupChat group;
-                        try {
-                          group = await GroupChatApi()
-                              .createGroup(CreateGroupDto(name: name));
-                        } on ApiException catch (e) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text("error: ${e.message}")));
-                        }
-                        await ChatroomStore().save(group);
-                        // callback and return to home
-                        Navigator.of(context).pop();
-                        widget.onNewChatroom?.call(group);
+                        Navigator.of(context).push(MaterialPageRoute(
+                            builder: (context) => const CreateGroupScreen()));
+                        // final name = await inputDialog(
+                        //   "Add Group",
+                        //   "Please enter the Group name",
+                        // );
+                        // if (name == null || name.isEmpty) return;
+                        // // create group on server
+                        // late final GroupChat group;
+                        // try {
+                        //   group = await GroupChatApi()
+                        //       .createGroup(CreateGroupDto(name: name));
+                        // } on ApiException catch (e) {
+                        //   ScaffoldMessenger.of(context).showSnackBar(
+                        //       SnackBar(content: Text("error: ${e.message}")));
+                        // }
+                        // await ChatroomStore().save(group);
+                        // // callback and return to home
+                        // Navigator.of(context).pop();
+                        // widget.onNewChatroom?.call(group);
                       },
                       child: const DefaultOption(
                         icon: Icons.group_add,

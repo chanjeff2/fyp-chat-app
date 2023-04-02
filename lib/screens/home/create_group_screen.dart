@@ -17,8 +17,9 @@ class CreateGroupScreen extends StatefulWidget {
 class _CreateGroupScreen extends State<CreateGroupScreen> {
   final Map<String, Chatroom> _chatroomMap = {};
   late final Future<bool> _loadChatroomFuture;
-  List<bool> isChecked = [];
-  List<Color> CheckedColor = [];
+  List<bool?> isChecked = [];
+  List<String> outputArray = [];
+  List<Chatroom> filterList = [];
 
   void initState() {
     super.initState();
@@ -49,23 +50,20 @@ class _CreateGroupScreen extends State<CreateGroupScreen> {
           }
           final chatroomList = _chatroomMap.values.toList();
           chatroomList.sort((a, b) => a.compareByLastActivityTime(b) * -1);
-          var filterList = chatroomList
+          filterList = chatroomList
               .where((i) => i.type == ChatroomType.oneToOne)
               .toList();
           isChecked = List.filled(filterList.length, false);
-          CheckedColor = List.filled(filterList.length, Colors.white);
           return ListView.builder(
             itemBuilder: (context, index) {
-              return InkWell(
+              return Ink(
+                color: isChecked[index]! ? Colors.black : Colors.white,
                 child: Padding(
                   padding: const EdgeInsets.symmetric(vertical: 8.0),
                   child: ListTile(
-                    tileColor: CheckedColor[index],
+                    tileColor: isChecked[index]! ? Colors.black : Colors.white,
                     onTap: () {
-                        CheckedColor[index] =
-                          isChecked[index] ? Colors.black : Colors.white;
-                      isChecked[index] = !(isChecked[index]);
-                      print(CheckedColor[index]);
+                      isChecked[index] = !(isChecked[index]!);
                       print(isChecked[index]);
                     },
                     leading: const CircleAvatar(
@@ -83,11 +81,6 @@ class _CreateGroupScreen extends State<CreateGroupScreen> {
                           ),
                         ),
                         Spacer(),
-                        // Checkbox(
-                        //     value: isChecked[index],
-                        //     onChanged: (bool? value) {
-                        //       isChecked[index] = value!;
-                        //     })
                       ],
                     ),
                   ),
@@ -99,7 +92,15 @@ class _CreateGroupScreen extends State<CreateGroupScreen> {
         },
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {},
+        onPressed: () {
+          outputArray = filterList
+              .where((element) =>
+                isChecked[filterList.indexOf(element)]!
+              )
+              .map(((e) => e.name))
+              .toList();
+          print(outputArray);
+        },
         tooltip: 'Increment',
         child: const Icon(Icons.add),
       ),
@@ -107,59 +108,3 @@ class _CreateGroupScreen extends State<CreateGroupScreen> {
   }
 }
 
-class GroupContact extends StatelessWidget {
-  const GroupContact({
-    Key? key,
-    required this.chatroom,
-    this.onClick,
-    required this.index,
-  }) : super(key: key); // Require session?
-  final Chatroom chatroom;
-  final VoidCallback? onClick;
-  final int index;
-
-  String updateDateTime(DateTime latestActivityTime) {
-    DateTime now = DateTime.now();
-    DateTime dayBegin = DateTime(now.year, now.month, now.day);
-    final diff = dayBegin.difference(latestActivityTime).inDays;
-    if (diff < 1) {
-      return "${latestActivityTime.hour.toString().padLeft(2, '0')}:${latestActivityTime.minute.toString().padLeft(2, '0')}";
-    }
-    if (diff == 1) {
-      return "Yesterday";
-    }
-    if (diff > 1) {
-      return "${latestActivityTime.day.toString()}/${latestActivityTime.month.toString()}/${latestActivityTime.year.toString()}";
-    }
-    return "HOW?";
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onClick,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8.0),
-        child: ListTile(
-          leading: const CircleAvatar(
-            child: Icon(Icons.person, size: 28, color: Colors.white),
-            radius: 28,
-            backgroundColor: Colors.blueGrey,
-          ),
-          title: Row(
-            children: [
-              Text(
-                chatroom.name,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              Spacer(),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
