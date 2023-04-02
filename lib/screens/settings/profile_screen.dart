@@ -13,7 +13,8 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  late TextEditingController textController;
+  late TextEditingController statusController;
+  late TextEditingController displayNameController;
 
   @override
   void initState() {
@@ -21,13 +22,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     super.initState();
 
-    textController = TextEditingController();
+    statusController = TextEditingController();
+    displayNameController = TextEditingController();
   }
 
   //dispose the add contact controller
   @override
   void dispose() {
-    textController.dispose();
+    statusController.dispose();
+    displayNameController.dispose();
     super.dispose();
   }
 
@@ -178,20 +181,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ));
   }
 
-  Future<String?> inputDialog(String title, String hint) => showDialog<String>(
+  Future<String?> inputDialog(String title, String hint, String function) =>
+      showDialog<String>(
         context: context,
         builder: (context) => AlertDialog(
           title: Text(title),
           content: TextField(
             autofocus: true,
             decoration: InputDecoration(hintText: hint),
-            controller: textController,
+            controller:
+                function == "status" ? statusController : displayNameController,
           ),
           actions: [
             TextButton(
                 onPressed: () {
-                  Navigator.of(context).pop(textController.text);
-                  textController.clear();
+                  if (function == "status") {
+                    Navigator.of(context).pop(statusController.text);
+                    statusController.clear();
+                  } else {
+                    Navigator.of(context).pop(displayNameController.text);
+                    displayNameController.clear();
+                  }
                 },
                 child: const Text('Submit'))
           ],
