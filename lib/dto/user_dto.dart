@@ -18,6 +18,8 @@ class UserDto {
     this.displayName,
   });
 
+  get status => null;
+
   Map<String, dynamic> toJson() => _$UserDtoToJson(this);
 
   factory UserDto.fromJson(Map<String, dynamic> json) =>

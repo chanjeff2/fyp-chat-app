@@ -15,6 +15,7 @@ UserEntity _$UserEntityFromJson(Map<String, dynamic> json) {
     userId: json['userId'] as String,
     username: json['username'] as String,
     displayName: json['displayName'] as String?,
+    status: json['status'] as String?,
   );
 }
 
@@ -23,4 +24,5 @@ Map<String, dynamic> _$UserEntityToJson(UserEntity instance) =>
       'userId': instance.userId,
       'username': instance.username,
       'displayName': instance.displayName,
+      'status': instance.status,
     };

@@ -10,6 +10,7 @@ class UserEntity {
 $columnUserId TEXT PRIMARY KEY NOT NULL, 
 $columnUsername TEXT UNIQUE NOT NULL, 
 $columnDisplayName TEXT
+$columnStatus TEXT
 """;
 
   static const columnUserId = "userId";
@@ -24,12 +25,17 @@ $columnDisplayName TEXT
   @JsonKey(name: columnDisplayName)
   final String? displayName;
 
+  static const columnStatus = "status";
+  @JsonKey(name: columnDisplayName)
+  final String? status;
+
   String get name => displayName ?? username;
 
   UserEntity({
     required this.userId,
     required this.username,
     this.displayName,
+    this.status,
   });
 
   Map<String, dynamic> toJson() => _$UserEntityToJson(this);
@@ -40,5 +46,6 @@ $columnDisplayName TEXT
   UserEntity.fromDto(UserDto dto)
       : userId = dto.userId,
         username = dto.username,
-        displayName = dto.displayName;
+        displayName = dto.displayName,
+        status = dto.status;
 }
