@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_chat_ui/flutter_chat_ui.dart';
 import 'package:fyp_chat_app/components/contact_option.dart';
+import 'package:fyp_chat_app/components/palette.dart';
 import 'package:fyp_chat_app/models/chatroom.dart';
 import 'package:fyp_chat_app/storage/chatroom_store.dart';
 import 'package:intl/intl.dart';
@@ -17,7 +18,7 @@ class CreateGroupScreen extends StatefulWidget {
 class _CreateGroupScreen extends State<CreateGroupScreen> {
   final Map<String, Chatroom> _chatroomMap = {};
   late final Future<bool> _loadChatroomFuture;
-  List<bool?> isChecked = [];
+  List<bool> isChecked = [];
   List<String> outputArray = [];
   List<Chatroom> filterList = [];
 
@@ -30,6 +31,14 @@ class _CreateGroupScreen extends State<CreateGroupScreen> {
     final chatroomList = await ChatroomStore().getAllChatroom();
     setState(() {
       _chatroomMap.addEntries(chatroomList.map((e) => MapEntry(e.id, e)));
+    });
+    final listOfRooms = _chatroomMap.values.toList();
+    listOfRooms.sort((a, b) => a.compareByLastActivityTime(b) * -1);
+    filterList = listOfRooms
+        .where((i) => i.type == ChatroomType.oneToOne)
+        .toList();
+    setState(() {
+      isChecked = List.filled(filterList.length, false);
     });
     return true;
   }
@@ -48,40 +57,33 @@ class _CreateGroupScreen extends State<CreateGroupScreen> {
               child: CircularProgressIndicator(),
             );
           }
-          final chatroomList = _chatroomMap.values.toList();
-          chatroomList.sort((a, b) => a.compareByLastActivityTime(b) * -1);
-          filterList = chatroomList
-              .where((i) => i.type == ChatroomType.oneToOne)
-              .toList();
-          isChecked = List.filled(filterList.length, false);
           return ListView.builder(
             itemBuilder: (context, index) {
-              return Ink(
-                color: isChecked[index]! ? Colors.black : Colors.white,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8.0),
-                  child: ListTile(
-                    tileColor: isChecked[index]! ? Colors.black : Colors.white,
-                    onTap: () {
-                      isChecked[index] = !(isChecked[index]!);
-                      print(isChecked[index]);
-                    },
-                    leading: const CircleAvatar(
-                      child: Icon(Icons.person, size: 28, color: Colors.white),
-                      radius: 28,
-                      backgroundColor: Colors.blueGrey,
+              return InkWell(
+                onTap: () {
+                  setState(() {
+                    isChecked[index] = !(isChecked[index]);
+                  });
+                },
+                child: ListTile(
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  tileColor: isChecked[index] ? Palette.ustGrey[500] : Colors.white,
+                  leading: const CircleAvatar(
+                    child: Icon(Icons.person, size: 28, color: Colors.white),
+                    radius: 28,
+                    backgroundColor: Colors.blueGrey,
+                  ),
+                  title: Text(
+                    filterList[index].name,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
                     ),
-                    title: Row(
-                      children: [
-                        Text(
-                          filterList[index].name,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Spacer(),
-                      ],
+                  ),
+                  subtitle: const Text(
+                    "Hi! I'm using USTalk.", // Status
+                    style: TextStyle(
+                      fontSize: 14,
                     ),
                   ),
                 ),
@@ -95,7 +97,7 @@ class _CreateGroupScreen extends State<CreateGroupScreen> {
         onPressed: () {
           outputArray = filterList
               .where((element) =>
-                isChecked[filterList.indexOf(element)]!
+                isChecked[filterList.indexOf(element)]
               )
               .map(((e) => e.name))
               .toList();
