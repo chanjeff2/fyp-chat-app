@@ -3,6 +3,7 @@ import 'package:flutter_chat_ui/flutter_chat_ui.dart';
 import 'package:fyp_chat_app/components/contact_option.dart';
 import 'package:fyp_chat_app/components/palette.dart';
 import 'package:fyp_chat_app/dto/create_group_dto.dart';
+import 'package:fyp_chat_app/dto/send_invitation_dto.dart';
 import 'package:fyp_chat_app/models/chatroom.dart';
 import 'package:fyp_chat_app/network/api.dart';
 import 'package:fyp_chat_app/network/group_chat_api.dart';
@@ -134,8 +135,9 @@ class _CreateGroupScreen extends State<CreateGroupScreen> {
         onPressed: () async {
           outputArray = filterList
               .where((element) => isChecked[filterList.indexOf(element)])
-              .map(((e) => e.name))
+              .map(((e) => e.id))
               .toList();
+          print(outputArray);
           final name = await inputDialog(
             "Add Group",
             "Please enter the Group name",
@@ -155,6 +157,14 @@ class _CreateGroupScreen extends State<CreateGroupScreen> {
           Navigator.of(context).pop();
           Navigator.of(context).pop();
           widget.onNewChatroom?.call(group);
+          try {
+            outputArray.forEach((element) {
+              GroupChatApi().inviteMember(group.id, SendInvitationDto(target: element, sentAt: DateTime.now().toIso8601String()));
+            });
+          } on ApiException catch (e) {
+            ScaffoldMessenger.of(context)
+                .showSnackBar(SnackBar(content: Text("error: ${e.message}")));
+          }
         },
         tooltip: 'Increment',
         child: const Icon(Icons.add),
