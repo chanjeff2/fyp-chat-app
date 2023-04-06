@@ -18,13 +18,15 @@ class PlainMessage {
   });
 
   PlainMessage.fromEntity(PlainMessageEntity entity)
-      : senderUserId = entity.senderUserId,
+      : id = entity.id,
+        senderUserId = entity.senderUserId,
         chatroomId = entity.chatroomId,
         content = entity.content,
         sentAt = DateTime.parse(entity.sentAt),
         isRead = entity.isRead == 1;
 
   PlainMessageEntity toEntity() => PlainMessageEntity(
+        id: id,
         senderUserId: senderUserId,
         chatroomId: chatroomId,
         content: content,
