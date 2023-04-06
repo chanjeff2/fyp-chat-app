@@ -91,6 +91,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                   ),
                   const SizedBox(height: 20),
+                  // User name
+                  InkWell(
+                      child: ListTile(
+                    leading: const SizedBox(
+                      height: double.infinity,
+                      child: Icon(Icons.person, color: Colors.black, size: 30),
+                    ),
+                    title: const Text(
+                      "User Name",
+                      style:
+                          TextStyle(fontWeight: FontWeight.w500, fontSize: 16),
+                    ),
+                    subtitle: Text(
+                      userState.me!.username,
+                      style: const TextStyle(fontSize: 18),
+                    ),
+                  )),
+                  const Divider(thickness: 2, indent: 62),
                   // Display name
                   InkWell(
                       onTap: () async {
@@ -102,11 +120,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         String? tempDisplayName = userState.me!.displayName;
                         try {
                           if (name == null || name.isEmpty) {
-                            name = userState.me!.username;
+                            return;
                           }
                           //send post request to server to update display name
                           userState.me!.displayName = name;
-                          await AccountApi().updateAccount(userState.me!);
+                          userState.setMe(
+                              await AccountApi().updateProfile(userState.me!));
                         } catch (e) {
                           userState.me!.displayName = tempDisplayName;
                           ScaffoldMessenger.of(context).showSnackBar(
@@ -119,8 +138,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       child: ListTile(
                         leading: const SizedBox(
                           height: double.infinity,
-                          child:
-                              Icon(Icons.person, color: Colors.black, size: 30),
                         ),
                         title: const Text(
                           "Display Name",
@@ -128,7 +145,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               fontWeight: FontWeight.w500, fontSize: 16),
                         ),
                         subtitle: Text(
-                          userState.me!.displayName ?? userState.me!.username,
+                          (userState.me!.displayName ?? userState.me!.username),
                           style: const TextStyle(fontSize: 18),
                         ),
                         trailing: Icon(Icons.edit,
@@ -140,17 +157,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       onTap: () async {
                         String? status = await inputDialog(
                           "Status",
-                          "Please enter your Status(Enter nothing input default status)",
+                          "Please enter your Status",
                           statusController,
                         );
                         String? tempStatus = userState.me!.status;
                         try {
                           if (status == null || status.isEmpty) {
-                            status = "Hi! I'm using USTalk.";
+                            return;
                           }
                           //send post request to server to update display name
                           userState.me!.status = status;
-                          await AccountApi().updateAccount(userState.me!);
+                          userState.setMe(
+                              await AccountApi().updateProfile(userState.me!));
                         } catch (e) {
                           userState.me!.status = tempStatus;
                           ScaffoldMessenger.of(context).showSnackBar(

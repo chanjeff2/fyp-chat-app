@@ -28,8 +28,9 @@ class AccountApi extends Api {
     return ac;
   }
 
-  Future<AccountDto> updateProfile() async {
-    final json = await patch("/update-profile", useAuth: true);
+  Future<AccountDto> updateProfile(AccountDto accountDto) async {
+    final json = await patch("/update-profile",
+        body: accountDto.toJson(), useAuth: true);
     final ac = AccountDto.fromJson(json);
     AccountStore().storeAccount(ac);
     return ac;
