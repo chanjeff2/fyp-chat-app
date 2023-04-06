@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fyp_chat_app/models/account.dart';
 import 'package:fyp_chat_app/models/user_state.dart';
 import 'package:fyp_chat_app/network/api.dart';
 import 'package:provider/provider.dart';
@@ -122,8 +123,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             return;
                           }
                           //send post request to server to update display name
-                          userState.setMe(await AccountApi()
-                              .updateProfile(userState.me!.toDto()));
+                          userState.setMe(await AccountApi().updateProfile(
+                              Account(
+                                      userId: userState.me!.userId,
+                                      username: userState.me!.username,
+                                      displayName: name,
+                                      status: userState.me!.status)
+                                  .toDto()));
                         } catch (e) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
@@ -163,8 +169,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             return;
                           }
                           //send post request to server to update display name
-                          userState.setMe(await AccountApi()
-                              .updateProfile(userState.me!.toDto()));
+                          userState.setMe(await AccountApi().updateProfile(
+                              Account(
+                                      userId: userState.me!.userId,
+                                      username: userState.me!.username,
+                                      displayName: userState.me!.displayName,
+                                      status: status)
+                                  .toDto()));
                         } catch (e) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
