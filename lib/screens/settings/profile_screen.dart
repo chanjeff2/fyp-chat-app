@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fyp_chat_app/models/account.dart';
 import 'package:fyp_chat_app/models/user_state.dart';
-import 'package:fyp_chat_app/network/api.dart';
 import 'package:provider/provider.dart';
 
 import '../../network/account_api.dart';
@@ -163,7 +162,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           "Please enter your Status",
                           statusController,
                         );
-                        String? tempStatus = userState.me!.status;
                         try {
                           if (status == null || status.isEmpty) {
                             return;
@@ -197,7 +195,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                         subtitle: Text(
                           userState.me!.status.toString(),
-                          style: TextStyle(fontSize: 18),
+                          style: const TextStyle(fontSize: 18),
                         ),
                         trailing: Icon(Icons.edit,
                             color: Theme.of(context).primaryColor),

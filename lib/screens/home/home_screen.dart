@@ -236,7 +236,7 @@ class _HomeScreenState extends State<HomeScreen> {
         position: RelativeRect.fromRect(
             Rect.fromLTWH(_tapPosition.dx, _tapPosition.dy, 100, 100),
             Rect.fromLTWH(0, 0, overlay!.paintBounds.size.width,
-                overlay!.paintBounds.size.height)),
+                overlay.paintBounds.size.height)),
         items: [
           PopupMenuItem(
             child: const Text('Delete chatroom'),

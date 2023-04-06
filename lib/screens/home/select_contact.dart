@@ -144,7 +144,7 @@ class _SelectContactState extends State<SelectContact> {
                     );
 
                   default:
-                    return ContactOption();
+                    return const ContactOption();
                 }
               }),
         ));

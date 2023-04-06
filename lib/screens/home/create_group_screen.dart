@@ -161,13 +161,13 @@ class _CreateGroupScreen extends State<CreateGroupScreen> {
           //print(group.id);
           //invite member
           try {
-            outputArray.forEach((element) {
+            for (var element in outputArray) {
               GroupChatApi().inviteMember(
                   group.id,
                   SendInvitationDto(
                       target: element,
                       sentAt: DateTime.now().toIso8601String()));
-            });
+            }
           } on ApiException catch (e) {
             ScaffoldMessenger.of(context)
                 .showSnackBar(SnackBar(content: Text("error: ${e.message}")));

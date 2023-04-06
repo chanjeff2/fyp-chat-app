@@ -163,7 +163,7 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
                                 .members[0]
                                 .toString() +
                             ", ...",
-                    style: TextStyle(fontSize: 12),
+                    style: const TextStyle(fontSize: 12),
                   ),
                 ],
               ),
