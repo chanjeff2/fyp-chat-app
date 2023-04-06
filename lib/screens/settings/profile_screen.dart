@@ -117,17 +117,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           "Please enter your Display Name(Enter nothing input your username by default)",
                           displayNameController,
                         );
-                        String? tempDisplayName = userState.me!.displayName;
                         try {
                           if (name == null || name.isEmpty) {
                             return;
                           }
                           //send post request to server to update display name
-                          userState.me!.displayName = name;
-                          userState.setMe(
-                              await AccountApi().updateProfile(userState.me!));
+                          userState.setMe(await AccountApi()
+                              .updateProfile(userState.me!.toDto()));
                         } catch (e) {
-                          userState.me!.displayName = tempDisplayName;
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Text(e.toString()),
@@ -166,11 +163,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             return;
                           }
                           //send post request to server to update display name
-                          userState.me!.status = status;
-                          userState.setMe(
-                              await AccountApi().updateProfile(userState.me!));
+                          userState.setMe(await AccountApi()
+                              .updateProfile(userState.me!.toDto()));
                         } catch (e) {
-                          userState.me!.status = tempStatus;
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Text(e.toString()),
