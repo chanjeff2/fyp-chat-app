@@ -1,9 +1,13 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:fyp_chat_app/dto/message_dto.dart';
+import 'package:fyp_chat_app/dto/events/fcm_event.dart';
+import 'package:fyp_chat_app/dto/events/invitation_dto.dart';
+import 'package:fyp_chat_app/dto/events/message_dto.dart';
 import 'package:fyp_chat_app/models/received_plain_message.dart';
 import 'package:fyp_chat_app/models/user_state.dart';
+import 'package:fyp_chat_app/network/group_chat_api.dart';
 import 'package:fyp_chat_app/signal/signal_client.dart';
+import 'package:fyp_chat_app/storage/chatroom_store.dart';
 
 import '../models/message.dart' as message_model;
 
@@ -41,10 +45,19 @@ class FCMHandler {
 
   static Future<ReceivedPlainMessage?> _handleMessage(
       RemoteMessage remoteMessage) async {
-    final messageDto = MessageDto.fromJson(remoteMessage.data);
-    final message = message_model.Message.fromDto(messageDto);
-    final plainMessage = await SignalClient().processMessage(message);
-    return plainMessage;
+    final event = FCMEvent.fromJson(remoteMessage.data);
+    switch (event.type) {
+      case EventType.textMessage:
+        final messageDto = event as MessageDto;
+        final message = message_model.Message.fromDto(messageDto);
+        final plainMessage = await SignalClient().processMessage(message);
+        return plainMessage;
+      case EventType.invitation:
+        final dto = event as InvitationDto;
+        final chatroom = await GroupChatApi().getGroup(dto.chatroomId);
+        await ChatroomStore().save(chatroom);
+        break;
+    }
   }
 
   static void _showNotification(ReceivedPlainMessage message) {

@@ -1,5 +1,6 @@
 import 'package:fyp_chat_app/dto/create_group_dto.dart';
 import 'package:fyp_chat_app/dto/group_dto.dart';
+import 'package:fyp_chat_app/dto/send_invitation_dto.dart';
 import 'package:fyp_chat_app/models/group_chat.dart';
 
 import 'api.dart';
@@ -36,5 +37,16 @@ class GroupChatApi extends Api {
   Future<List<GroupChat>> getMyGroups() async {
     final List<dynamic> json = await get("", useAuth: true);
     return json.map((e) => GroupChat.fromDto(GroupDto.fromJson(e))).toList();
+  }
+
+  Future<void> inviteMember(
+    String groupId,
+    SendInvitationDto sendInvitationDto,
+  ) async {
+    final json = await post(
+      "/$groupId/invite",
+      body: sendInvitationDto.toJson(),
+      useAuth: true,
+    );
   }
 }
