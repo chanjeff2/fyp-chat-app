@@ -1,3 +1,4 @@
+import 'package:fyp_chat_app/dto/group_member_dto.dart';
 import 'package:fyp_chat_app/entities/group_member_entity.dart';
 import 'package:fyp_chat_app/models/group_member.dart';
 import 'package:fyp_chat_app/storage/contact_store.dart';
@@ -50,7 +51,18 @@ class GroupMemberStore {
     return GroupMember(id: entity.id, user: user, role: entity.role);
   }
 
-  Future<bool> remove(String id) async {
+  Future<bool> remove(String chatroomId, String userId) async {
+    final db = await DiskStorage().db;
+    final count = await db.delete(
+      table,
+      where:
+          '${GroupMemberEntity.columnChatroomId} = ? AND ${GroupMemberEntity.columnUserId} = ?',
+      whereArgs: [chatroomId, userId],
+    );
+    return count > 0;
+  }
+
+  Future<bool> removeById(String id) async {
     final db = await DiskStorage().db;
     final count = await db.delete(
       table,

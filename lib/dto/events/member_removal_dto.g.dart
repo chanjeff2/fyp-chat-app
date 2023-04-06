@@ -1,26 +1,33 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'invitation_dto.dart';
+part of 'member_removal_dto.dart';
 
 // **************************************************************************
 // JsonSerializableGenerator
 // **************************************************************************
 
-InvitationDto _$InvitationDtoFromJson(Map<String, dynamic> json) {
+MemberRemovalDto _$MemberRemovalDtoFromJson(Map<String, dynamic> json) {
   $checkKeys(
     json,
-    requiredKeys: const ['senderUserId', 'chatroomId', 'sentAt'],
+    requiredKeys: const [
+      'senderUserId',
+      'chatroomId',
+      'sentAt',
+      'recipientUserId'
+    ],
   );
-  return InvitationDto(
+  return MemberRemovalDto(
     senderUserId: json['senderUserId'] as String,
+    recipientUserId: json['recipientUserId'] as String,
     chatroomId: json['chatroomId'] as String,
     sentAt: json['sentAt'] as String,
   );
 }
 
-Map<String, dynamic> _$InvitationDtoToJson(InvitationDto instance) =>
+Map<String, dynamic> _$MemberRemovalDtoToJson(MemberRemovalDto instance) =>
     <String, dynamic>{
       'senderUserId': instance.senderUserId,
       'chatroomId': instance.chatroomId,
       'sentAt': instance.sentAt,
+      'recipientUserId': instance.recipientUserId,
     };

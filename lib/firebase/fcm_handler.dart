@@ -1,13 +1,17 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:fyp_chat_app/dto/events/permission_update_dto.dart';
 import 'package:fyp_chat_app/dto/events/fcm_event.dart';
-import 'package:fyp_chat_app/dto/events/invitation_dto.dart';
+import 'package:fyp_chat_app/dto/events/member_invitation_dto.dart';
+import 'package:fyp_chat_app/dto/events/member_removal_dto.dart';
 import 'package:fyp_chat_app/dto/events/message_dto.dart';
 import 'package:fyp_chat_app/models/received_plain_message.dart';
 import 'package:fyp_chat_app/models/user_state.dart';
 import 'package:fyp_chat_app/network/group_chat_api.dart';
 import 'package:fyp_chat_app/signal/signal_client.dart';
+import 'package:fyp_chat_app/storage/account_store.dart';
 import 'package:fyp_chat_app/storage/chatroom_store.dart';
+import 'package:fyp_chat_app/storage/group_member_store.dart';
 
 import '../models/message.dart' as message_model;
 
@@ -52,10 +56,37 @@ class FCMHandler {
         final message = message_model.Message.fromDto(messageDto);
         final plainMessage = await SignalClient().processMessage(message);
         return plainMessage;
-      case EventType.invitation:
-        final dto = event as InvitationDto;
-        final chatroom = await GroupChatApi().getGroup(dto.chatroomId);
-        await ChatroomStore().save(chatroom);
+      case EventType.memberInvitation:
+        final dto = event as MemberInvitationDto;
+        if (await ChatroomStore().contains(dto.chatroomId)) {
+          // already in chatroom, add new member
+          final newMember = await GroupChatApi()
+              .getGroupMember(dto.chatroomId, dto.recipientUserId);
+          await GroupMemberStore().save(dto.chatroomId, newMember);
+        } else {
+          // not yet in chatroom
+          final chatroom = await GroupChatApi().getGroup(dto.chatroomId);
+          await ChatroomStore().save(chatroom);
+        }
+        break;
+      case EventType.memberRemoval:
+        // ofc you are in the chatroom
+        final dto = event as MemberRemovalDto;
+        final me = await AccountStore().getAccount();
+        if (me != null && me.userId == dto.recipientUserId) {
+          // me got kicked
+          await ChatroomStore().remove(dto.chatroomId);
+        } else {
+          // someone else got kicked
+          await GroupMemberStore().remove(dto.chatroomId, dto.recipientUserId);
+        }
+        break;
+      case EventType.permissionUpdate:
+        final dto = event as PermissionUpdateDto;
+        // already in chatroom, update member
+        final updatedMember = await GroupChatApi()
+            .getGroupMember(dto.chatroomId, dto.recipientUserId);
+        await GroupMemberStore().save(dto.chatroomId, updatedMember);
         break;
     }
   }
