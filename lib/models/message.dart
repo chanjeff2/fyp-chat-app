@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:fyp_chat_app/extensions/signal_lib_extension.dart';
 
-import '../dto/message_dto.dart';
+import '../dto/events/message_dto.dart';
 
 class Message {
   final String senderUserId;

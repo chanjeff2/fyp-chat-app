@@ -66,7 +66,9 @@ class _SelectContactState extends State<SelectContact> {
                         // TODO: support join group
                         // enter group name
                         Navigator.of(context).push(MaterialPageRoute(
-                            builder: (context) => const CreateGroupScreen()));
+                          builder: (context) => CreateGroupScreen(
+                              onNewChatroom: widget.onNewChatroom),
+                        ));
                         // final name = await inputDialog(
                         //   "Add Group",
                         //   "Please enter the Group name",

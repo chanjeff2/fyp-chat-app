@@ -1,17 +1,13 @@
+import 'package:fyp_chat_app/dto/events/chatroom_event.dart';
+import 'package:fyp_chat_app/dto/events/fcm_event.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'message_dto.g.dart';
 
 @JsonSerializable()
-class MessageDto {
-  @JsonKey(required: true)
-  final String senderUserId;
-
+class MessageDto extends ChatroomEvent {
   @JsonKey(required: true)
   final String senderDeviceId;
-
-  @JsonKey(required: true)
-  final String chatroomId;
 
   @JsonKey(required: true)
   final String cipherTextType;
@@ -19,17 +15,19 @@ class MessageDto {
   @JsonKey(required: true)
   final String content;
 
-  @JsonKey(required: true)
-  final String sentAt; // iso string
-
   MessageDto({
-    required this.senderUserId,
+    required String senderUserId,
+    required String chatroomId,
+    required String sentAt,
     required this.senderDeviceId,
-    required this.chatroomId,
     required this.cipherTextType,
     required this.content,
-    required this.sentAt,
-  });
+  }) : super(
+          type: EventType.textMessage,
+          senderUserId: senderUserId,
+          chatroomId: chatroomId,
+          sentAt: sentAt,
+        );
 
   Map<String, dynamic> toJson() => _$MessageDtoToJson(this);
 
