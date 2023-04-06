@@ -13,6 +13,7 @@ import 'package:fyp_chat_app/screens/home/select_contact.dart';
 import 'package:fyp_chat_app/screens/settings/settings_screen.dart';
 import 'package:fyp_chat_app/storage/chatroom_store.dart';
 import 'package:fyp_chat_app/storage/credential_store.dart';
+import 'package:fyp_chat_app/storage/message_store.dart';
 import 'package:provider/provider.dart';
 import 'package:fyp_chat_app/storage/disk_storage.dart';
 import 'package:fyp_chat_app/storage/secure_storage.dart';
@@ -31,6 +32,9 @@ class _HomeScreenState extends State<HomeScreen> {
   late final Future<bool> _loadChatroomFuture;
   late final StreamSubscription<ReceivedPlainMessage>
       _messageStreamSubscription;
+  Offset _tapPosition = Offset.zero;
+  List<Chatroom> chatroomListForDeleteToGestureDetector = [];
+  int chatroomListForDeleteToGestureDetectorID = 0;
 
   @override
   void initState() {
@@ -58,6 +62,14 @@ class _HomeScreenState extends State<HomeScreen> {
       _chatroomMap.addEntries(chatroomList.map((e) => MapEntry(e.id, e)));
     });
     return true;
+  }
+
+  void _getTapPosition(TapDownDetails tapPosition) {
+    final RenderBox referenceBox = context.findRenderObject() as RenderBox;
+    setState(() {
+      _tapPosition = referenceBox.globalToLocal(tapPosition.globalPosition);
+      print(_tapPosition);
+    });
   }
 
   @override
@@ -99,22 +111,29 @@ class _HomeScreenState extends State<HomeScreen> {
             final chatroomList = _chatroomMap.values.toList();
             chatroomList.sort((a, b) => a.compareByLastActivityTime(b) * -1);
             return ListView.builder(
-              itemBuilder: (_, i) => HomeContact(
-                chatroom: chatroomList[i],
-                onClick: () {
-                  switch (chatroomList[i].type) {
-                    case ChatroomType.oneToOne:
-                      Navigator.of(context).push(MaterialPageRoute(
-                          builder: (context) =>
-                              ChatRoomScreen(chatroom: chatroomList[i])));
-                      break;
-                    case ChatroomType.group:
-                      Navigator.of(context).push(MaterialPageRoute(
-                          builder: (context) =>
-                              ChatRoomScreenGroup(chatroom: chatroomList[i])));
-                      break;
-                  }
+              itemBuilder: (_, i) => GestureDetector(
+                onTapDown: (position) => {_getTapPosition(position)},
+                onLongPress: () {
+                  chatroomListForDeleteToGestureDetector = chatroomList;
+                  chatroomListForDeleteToGestureDetectorID = i;
+                  _showContextMenu(context);
                 },
+                child: HomeContact(
+                    chatroom: chatroomList[i],
+                    onClick: () {
+                      switch (chatroomList[i].type) {
+                        case ChatroomType.oneToOne:
+                          Navigator.of(context).push(MaterialPageRoute(
+                              builder: (context) =>
+                                  ChatRoomScreen(chatroom: chatroomList[i])));
+                          break;
+                        case ChatroomType.group:
+                          Navigator.of(context).push(MaterialPageRoute(
+                              builder: (context) => ChatRoomScreenGroup(
+                                  chatroom: chatroomList[i])));
+                          break;
+                      }
+                    }),
               ),
               itemCount: chatroomList.length,
             );
@@ -207,5 +226,44 @@ class _HomeScreenState extends State<HomeScreen> {
         userState.clearState();
         break;
     }
+  }
+
+  _showContextMenu(context) async {
+    final RenderObject? overlay =
+        Overlay.of(context)?.context.findRenderObject();
+    final result = await showMenu(
+        context: context,
+        position: RelativeRect.fromRect(
+            Rect.fromLTWH(_tapPosition.dx, _tapPosition.dy, 100, 100),
+            Rect.fromLTWH(0, 0, overlay!.paintBounds.size.width,
+                overlay!.paintBounds.size.height)),
+        items: [
+          PopupMenuItem(
+            child: const Text('Delete chatroom'),
+            onTap: () async {
+              String chatroomId = chatroomListForDeleteToGestureDetector[
+                      chatroomListForDeleteToGestureDetectorID]
+                  .id;
+              if (_chatroomMap[chatroomId]?.type == ChatroomType.oneToOne) {
+                //one to one chatroom deletion
+                bool status = await ChatroomStore().remove(chatroomId);
+                if (status) {
+                  await MessageStore().removeAllMessageByChatroomId(chatroomId);
+                  setState(() {
+                    _chatroomMap.remove(chatroomId);
+                  });
+                } else {
+                  throw Exception('Chatroom already has been deleted');
+                }
+              } else if (_chatroomMap[chatroomId]?.type == ChatroomType.group) {
+                //havent handle group deletion
+
+              } else {
+                throw Exception('Chatroom type not found');
+              }
+            },
+            value: "Delete chatroom",
+          ),
+        ]);
   }
 }
