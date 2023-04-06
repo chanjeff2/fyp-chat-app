@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
-import 'package:fyp_chat_app/dto/account_dto.dart';
+import 'package:fyp_chat_app/models/account.dart';
 import 'package:fyp_chat_app/models/chatroom.dart';
 import 'package:fyp_chat_app/models/received_plain_message.dart';
 import 'package:fyp_chat_app/network/account_api.dart';
@@ -10,11 +10,11 @@ import 'package:fyp_chat_app/network/auth_api.dart';
 import 'package:fyp_chat_app/storage/credential_store.dart';
 
 class UserState extends ChangeNotifier {
-  AccountDto? _me;
+  Account? _me;
   bool _isAccessTokenAvailable = false;
   bool isInitialized = false;
 
-  AccountDto? get me => _me;
+  Account? get me => _me;
   bool get isLoggedIn => isInitialized && _isAccessTokenAvailable && me != null;
 
   Chatroom? chatroom;
@@ -49,8 +49,8 @@ class UserState extends ChangeNotifier {
     notifyListeners();
   }
 
-  void setMe(AccountDto? accountDto) {
-    _me = accountDto;
+  void setMe(Account? account) {
+    _me = account;
     notifyListeners();
   }
 

@@ -29,8 +29,6 @@ $columnStatus TEXT
   @JsonKey(name: columnStatus)
   final String? status;
 
-  String get name => displayName ?? username;
-
   UserEntity({
     required this.userId,
     required this.username,
