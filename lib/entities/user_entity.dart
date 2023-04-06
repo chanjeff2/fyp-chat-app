@@ -9,7 +9,7 @@ class UserEntity {
   static const String createTableCommandFields = """
 $columnUserId TEXT PRIMARY KEY NOT NULL, 
 $columnUsername TEXT UNIQUE NOT NULL, 
-$columnDisplayName TEXT
+$columnDisplayName TEXT,
 $columnStatus TEXT
 """;
 
@@ -26,7 +26,7 @@ $columnStatus TEXT
   final String? displayName;
 
   static const columnStatus = "status";
-  @JsonKey(name: columnDisplayName)
+  @JsonKey(name: columnStatus)
   final String? status;
 
   String get name => displayName ?? username;
