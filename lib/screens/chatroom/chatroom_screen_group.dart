@@ -56,7 +56,9 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
         .messageStream
         .listen((receivedMessage) {
       setState(() {
-        _messages.insert(0, receivedMessage.message);
+        if (receivedMessage.chatroom.id == widget.chatroom.id) {
+          _messages.insert(0, receivedMessage.message);
+        }
       });
     });
   }
@@ -80,8 +82,11 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
       _isLastPage = true;
     }
     final userIds = messages.map((e) => e.senderUserId).toSet();
-    final users = { for (var e in userIds) e : await ContactStore().getContactById(e)};
-    final names = users.map((key, value) => MapEntry(key, value?.name ?? "Unknown User"));
+    final users = {
+      for (var e in userIds) e: await ContactStore().getContactById(e)
+    };
+    final names =
+        users.map((key, value) => MapEntry(key, value?.name ?? "Unknown User"));
 
     setState(() {
       _messages.addAll(messages);
@@ -235,20 +240,24 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
                   .toList(),
               showUserNames: true,
               nameBuilder: (userId) => UserName(
-                author: types.User(id: userId, firstName: _names[userId] ?? "Unknown User")
-              ),
-              bubbleBuilder: (Widget child, {
-                  required message,
-                  required nextMessageInGroup,
-                }) => Bubble(
-                  child: child,
-                  nip: (userState.me!.userId != message.author.id)
-                        ? BubbleNip.leftBottom : BubbleNip.rightBottom,
-                  color: (userState.me!.userId != message.author.id)
-                        ? const Color(0xfff5f5f7) : Theme.of(context).primaryColor,
-                  showNip: !nextMessageInGroup,
-                  padding: const BubbleEdges.all(0),
-                  elevation: 1,
+                  author: types.User(
+                      id: userId, firstName: _names[userId] ?? "Unknown User")),
+              bubbleBuilder: (
+                Widget child, {
+                required message,
+                required nextMessageInGroup,
+              }) =>
+                  Bubble(
+                child: child,
+                nip: (userState.me!.userId != message.author.id)
+                    ? BubbleNip.leftBottom
+                    : BubbleNip.rightBottom,
+                color: (userState.me!.userId != message.author.id)
+                    ? const Color(0xfff5f5f7)
+                    : Theme.of(context).primaryColor,
+                showNip: !nextMessageInGroup,
+                padding: const BubbleEdges.all(0),
+                elevation: 1,
               ),
               onSendPressed: (partialText) {
                 _sendMessage(partialText.text);
