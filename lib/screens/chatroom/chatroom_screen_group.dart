@@ -10,10 +10,12 @@ import 'package:fyp_chat_app/models/received_plain_message.dart';
 import 'package:fyp_chat_app/models/user_state.dart';
 import 'package:fyp_chat_app/screens/chatroom/contact_info.dart';
 import 'package:fyp_chat_app/signal/signal_client.dart';
+import 'package:fyp_chat_app/storage/contact_store.dart';
 import 'package:fyp_chat_app/storage/message_store.dart';
 import 'package:provider/provider.dart';
 
 import 'package:flutter_chat_ui/flutter_chat_ui.dart';
+import 'package:bubble/bubble.dart';
 import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
 
 class ChatRoomScreenGroup extends StatefulWidget {
@@ -35,6 +37,7 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
   bool _emojiBoardShown = false;
   late final Future<bool> _messageHistoryFuture;
   final List<PlainMessage> _messages = [];
+  final Map<String, String> _names = {};
   int _page = 0; // pagination
   bool _isLastPage = false;
   static const _pageSize = 100;
@@ -76,8 +79,13 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
     if (messages.length < _pageSize) {
       _isLastPage = true;
     }
+    final userIds = messages.map((e) => e.senderUserId).toSet();
+    final users = { for (var e in userIds) e : await ContactStore().getContactById(e)};
+    final names = users.map((key, value) => MapEntry(key, value?.name ?? "Unknown User"));
+
     setState(() {
       _messages.addAll(messages);
+      _names.addAll(names);
     });
     return true;
   }
@@ -123,7 +131,7 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
                 Expanded(
                   child: CircleAvatar(
                     // child: profilePicture ? null : Icon(Icons.person, size: 48),
-                    child: Icon(Icons.person, size: 20, color: Colors.white),
+                    child: Icon(Icons.group, size: 20, color: Colors.white),
                     radius: 32,
                     backgroundColor: Colors.blueGrey,
                   ),
@@ -221,10 +229,27 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
                       id: e.id.toString(),
                       author: types.User(id: e.senderUserId),
                       text: e.content,
-                      createdAt: e.sentAt.microsecondsSinceEpoch,
+                      createdAt: e.sentAt.millisecondsSinceEpoch,
                     ),
                   )
                   .toList(),
+              showUserNames: true,
+              nameBuilder: (userId) => UserName(
+                author: types.User(id: userId, firstName: _names[userId] ?? "Unknown User")
+              ),
+              bubbleBuilder: (Widget child, {
+                  required message,
+                  required nextMessageInGroup,
+                }) => Bubble(
+                  child: child,
+                  nip: (userState.me!.userId != message.author.id)
+                        ? BubbleNip.leftBottom : BubbleNip.rightBottom,
+                  color: (userState.me!.userId != message.author.id)
+                        ? const Color(0xfff5f5f7) : Theme.of(context).primaryColor,
+                  showNip: !nextMessageInGroup,
+                  padding: const BubbleEdges.all(0),
+                  elevation: 1,
+              ),
               onSendPressed: (partialText) {
                 _sendMessage(partialText.text);
               },

@@ -13,6 +13,7 @@ import 'package:fyp_chat_app/storage/message_store.dart';
 import 'package:provider/provider.dart';
 
 import 'package:flutter_chat_ui/flutter_chat_ui.dart';
+import 'package:bubble/bubble.dart';
 import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
 
 class ChatRoomScreen extends StatefulWidget {
@@ -218,10 +219,23 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                       id: e.id.toString(),
                       author: types.User(id: e.senderUserId),
                       text: e.content,
-                      createdAt: e.sentAt.microsecondsSinceEpoch,
+                      createdAt: e.sentAt.millisecondsSinceEpoch,
                     ),
                   )
                   .toList(),
+              bubbleBuilder: (Widget child, {
+                  required message,
+                  required nextMessageInGroup,
+                }) => Bubble(
+                  child: child,
+                  nip: (userState.me!.userId != message.author.id)
+                        ? BubbleNip.leftBottom : BubbleNip.rightBottom,
+                  color: (userState.me!.userId != message.author.id)
+                        ? const Color(0xfff5f5f7) : Theme.of(context).primaryColor,
+                  showNip: !nextMessageInGroup,
+                  padding: const BubbleEdges.all(0),
+                  elevation: 1,
+              ),
               onSendPressed: (partialText) {
                 _sendMessage(partialText.text);
               },
