@@ -93,6 +93,7 @@ class _CreateGroupScreen extends State<CreateGroupScreen> {
               child: CircularProgressIndicator(),
             );
           }
+          //list of contact
           return ListView.builder(
             itemBuilder: (context, index) {
               return InkWell(
@@ -137,7 +138,6 @@ class _CreateGroupScreen extends State<CreateGroupScreen> {
               .where((element) => isChecked[filterList.indexOf(element)])
               .map(((e) => e.id))
               .toList();
-          print(outputArray);
           final name = await inputDialog(
             "Add Group",
             "Please enter the Group name",
@@ -145,6 +145,7 @@ class _CreateGroupScreen extends State<CreateGroupScreen> {
           if (name == null || name.isEmpty) return;
           // create group on server
           late final GroupChat group;
+          //create group
           try {
             group =
                 await GroupChatApi().createGroup(CreateGroupDto(name: name));
@@ -157,9 +158,15 @@ class _CreateGroupScreen extends State<CreateGroupScreen> {
           Navigator.of(context).pop();
           Navigator.of(context).pop();
           widget.onNewChatroom?.call(group);
+          //print(group.id);
+          //invite member
           try {
             outputArray.forEach((element) {
-              GroupChatApi().inviteMember(group.id, SendInvitationDto(target: element, sentAt: DateTime.now().toIso8601String()));
+              GroupChatApi().inviteMember(
+                  group.id,
+                  SendInvitationDto(
+                      target: element,
+                      sentAt: DateTime.now().toIso8601String()));
             });
           } on ApiException catch (e) {
             ScaffoldMessenger.of(context)

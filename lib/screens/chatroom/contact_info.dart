@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:fyp_chat_app/models/group_chat.dart';
+import 'package:fyp_chat_app/models/group_member.dart';
 import 'package:fyp_chat_app/models/user_state.dart';
+import 'package:fyp_chat_app/network/group_chat_api.dart';
+import 'package:fyp_chat_app/storage/group_member_store.dart';
 import 'package:provider/provider.dart';
 import 'package:fyp_chat_app/models/chatroom.dart';
 
@@ -75,7 +78,7 @@ class ContactInfo extends StatelessWidget {
                 chatroom.type == ChatroomType.group
                     ? chatroom.name +
                         " participants: " +
-                        (chatroom as GroupChat).members.length.toString()
+                        ((chatroom as GroupChat).members.length + 1).toString()
                     : chatroom.name,
                 textAlign: TextAlign.center,
                 style: const TextStyle(
@@ -318,7 +321,7 @@ class ContactInfo extends StatelessWidget {
                 ],
               ),
               const Divider(thickness: 2, indent: 8, endIndent: 8),
-              // Common Group / Group members
+              // Group members
               (chatroom.type == ChatroomType.group)
                   ? Row(
                       children: const [
@@ -346,14 +349,12 @@ class ContactInfo extends StatelessWidget {
                     ),
               const SizedBox(height: 8),
               (chatroom.type == ChatroomType.group)
-                  ? const SizedBox(height: 0)
-                  : ListView.builder(
+                  ?
+                  //Group List View
+                  ListView.builder(
                       // +1 for add members / create group with the user
                       shrinkWrap: true,
-                      itemCount: ((chatroom.type == ChatroomType.group)
-                              ? _members.length
-                              : _common_group.length) +
-                          1,
+                      itemCount: (chatroom as GroupChat).members.length + 2,
                       itemBuilder: (context, index) {
                         // Add member / add to group
                         if (index == 0) {
@@ -371,17 +372,72 @@ class ContactInfo extends StatelessWidget {
                                     backgroundColor: Colors.blueGrey,
                                   ),
                                   const SizedBox(width: 16),
-                                  Text(
-                                      isGroup
-                                          ? "Add members..."
-                                          : "Add to a group",
+                                  Text("Add members...",
                                       style: const TextStyle(fontSize: 16))
                                 ],
                               ),
                             ),
                           );
                         }
-                        // Group members / Common groups
+                       
+                        // Group members
+                        return InkWell(
+                          onTap: () {/* direct to respective chat */},
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            child: Row(
+                              children: [
+                                const SizedBox(width: 16),
+                                CircleAvatar(
+                                  radius: 24,
+                                  child: Icon(Icons.person,
+                                      size: 28, color: Colors.white),
+                                  backgroundColor: Colors.blueGrey,
+                                ),
+                                const SizedBox(width: 16),
+                                Text(
+                                    // isGroup ? _members[index].name : _common_group[index].name,
+                                    (chatroom as GroupChat)
+                                        .members[index - 1]
+                                        .user
+                                        .username,
+                                    style: const TextStyle(fontSize: 16))
+                              ],
+                            ),
+                          ),
+                        );
+                      })
+                  :
+                  // oneToOne Chatroom List View
+                  ListView.builder(
+                      // +1 for add members / create group with the user
+                      shrinkWrap: true,
+                      itemCount: _common_group.length + 1,
+                      itemBuilder: (context, index) {
+                        // Add member / add to group
+                        if (index == 0) {
+                          return InkWell(
+                            onTap: () {/* isGroup ? addMember : addGroup */},
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 8),
+                              child: Row(
+                                children: [
+                                  const SizedBox(width: 16),
+                                  const CircleAvatar(
+                                    radius: 24,
+                                    child: Icon(Icons.add,
+                                        size: 24, color: Colors.white),
+                                    backgroundColor: Colors.blueGrey,
+                                  ),
+                                  const SizedBox(width: 16),
+                                  Text("Add to a group",
+                                      style: const TextStyle(fontSize: 16))
+                                ],
+                              ),
+                            ),
+                          );
+                        }
+                        // Common groups
                         return InkWell(
                           onTap: () {/* direct to respective chat */},
                           child: Padding(
