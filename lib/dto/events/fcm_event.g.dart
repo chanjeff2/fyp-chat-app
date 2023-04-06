@@ -7,6 +7,8 @@ part of 'fcm_event.dart';
 // **************************************************************************
 
 const _$EventTypeEnumMap = {
-  EventType.invitation: 'invitation',
   EventType.textMessage: 'text-message',
+  EventType.memberInvitation: 'member-invitation',
+  EventType.memberRemoval: 'member-removal',
+  EventType.permissionUpdate: 'permission-update',
 };
