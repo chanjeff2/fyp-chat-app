@@ -81,12 +81,9 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
     if (messages.length < _pageSize) {
       _isLastPage = true;
     }
-    final userIds = messages.map((e) => e.senderUserId).toSet();
-    final users = {
-      for (var e in userIds) e: await ContactStore().getContactById(e)
-    };
-    final names =
-        users.map((key, value) => MapEntry(key, value?.name ?? "Unknown User"));
+    GroupChat room = _state.chatroom as GroupChat;
+    final members = room.members;
+    final names = <String, String>{for (var v in members) v.user.userId : v.user.name};
 
     setState(() {
       _messages.addAll(messages);
