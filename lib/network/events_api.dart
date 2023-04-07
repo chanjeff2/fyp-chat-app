@@ -20,9 +20,19 @@ class EventsApi extends Api {
   }
 
   //send block request
-  Future<bool> sendBlockRequest(String userId, String chatroomId) async {
+  Future<bool> sendBlockRequest(String chatroomId) async {
     try {
-      await post("/block/$userId/$chatroomId", useAuth: true);
+      await post("/block/$chatroomId", useAuth: true);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  //send Unblock request
+  Future<bool> sendUnblockRequest(String chatroomId) async {
+    try {
+      await post("/block/$chatroomId", useAuth: true);
       return true;
     } catch (e) {
       return false;

@@ -9,6 +9,7 @@ class User {
   final String? status;
 
   String get name => displayName ?? username;
+  String get id => userId;
 
   User({
     required this.userId,
