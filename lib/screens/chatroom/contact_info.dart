@@ -3,6 +3,7 @@ import 'package:fyp_chat_app/models/group_chat.dart';
 import 'package:fyp_chat_app/models/group_member.dart';
 import 'package:fyp_chat_app/models/user_state.dart';
 import 'package:fyp_chat_app/network/group_chat_api.dart';
+import 'package:fyp_chat_app/screens/home/create_group_screen.dart';
 import 'package:fyp_chat_app/storage/group_member_store.dart';
 import 'package:provider/provider.dart';
 import 'package:fyp_chat_app/models/chatroom.dart';
@@ -153,7 +154,12 @@ class ContactInfo extends StatelessWidget {
                       ? Column(children: [
                           InkWell(
                             onTap: () {
-                              print("Add");
+                              Navigator.of(context).push(MaterialPageRoute(
+                                builder: (context) => CreateGroupScreen(
+                                  isCreateGroup: false,
+                                  group: chatroom as GroupChat,
+                                ),
+                              ));
                             },
                             child: Ink(
                               padding: const EdgeInsets.all(12),
@@ -359,7 +365,14 @@ class ContactInfo extends StatelessWidget {
                         // Add member / add to group
                         if (index == 0) {
                           return InkWell(
-                            onTap: () {/* isGroup ? addMember : addGroup */},
+                            onTap: () {
+                              Navigator.of(context).push(MaterialPageRoute(
+                                builder: (context) => CreateGroupScreen(
+                                  isCreateGroup: false,
+                                  group: chatroom as GroupChat,
+                                ),
+                              ));
+                            },
                             child: Padding(
                               padding: const EdgeInsets.symmetric(vertical: 8),
                               child: Row(
@@ -379,7 +392,7 @@ class ContactInfo extends StatelessWidget {
                             ),
                           );
                         }
-                       
+
                         // Group members
                         return InkWell(
                           onTap: () {/* direct to respective chat */},

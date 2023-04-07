@@ -67,26 +67,8 @@ class _SelectContactState extends State<SelectContact> {
                         // enter group name
                         Navigator.of(context).push(MaterialPageRoute(
                           builder: (context) => CreateGroupScreen(
-                              onNewChatroom: widget.onNewChatroom),
+                              onNewChatroom: widget.onNewChatroom, isCreateGroup: true,),
                         ));
-                        // final name = await inputDialog(
-                        //   "Add Group",
-                        //   "Please enter the Group name",
-                        // );
-                        // if (name == null || name.isEmpty) return;
-                        // // create group on server
-                        // late final GroupChat group;
-                        // try {
-                        //   group = await GroupChatApi()
-                        //       .createGroup(CreateGroupDto(name: name));
-                        // } on ApiException catch (e) {
-                        //   ScaffoldMessenger.of(context).showSnackBar(
-                        //       SnackBar(content: Text("error: ${e.message}")));
-                        // }
-                        // await ChatroomStore().save(group);
-                        // // callback and return to home
-                        // Navigator.of(context).pop();
-                        // widget.onNewChatroom?.call(group);
                       },
                       child: const DefaultOption(
                         icon: Icons.group_add,
@@ -134,6 +116,8 @@ class _SelectContactState extends State<SelectContact> {
                     );
 
                   case 2:
+
+                  case 3:
                     return const Padding(
                       padding:
                           EdgeInsets.symmetric(horizontal: 15, vertical: 10),

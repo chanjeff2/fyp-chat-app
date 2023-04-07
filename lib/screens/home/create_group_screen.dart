@@ -1,15 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_chat_ui/flutter_chat_ui.dart';
-import 'package:fyp_chat_app/components/contact_option.dart';
 import 'package:fyp_chat_app/components/palette.dart';
 import 'package:fyp_chat_app/dto/create_group_dto.dart';
 import 'package:fyp_chat_app/dto/send_invitation_dto.dart';
 import 'package:fyp_chat_app/models/chatroom.dart';
-import 'package:fyp_chat_app/models/one_to_one_chat.dart';
+import 'package:fyp_chat_app/models/group_member.dart';
 import 'package:fyp_chat_app/network/api.dart';
 import 'package:fyp_chat_app/network/group_chat_api.dart';
 import 'package:fyp_chat_app/storage/chatroom_store.dart';
-import 'package:intl/intl.dart';
 
 import '../../models/group_chat.dart';
 
@@ -17,9 +14,12 @@ class CreateGroupScreen extends StatefulWidget {
   const CreateGroupScreen({
     Key? key,
     this.onNewChatroom,
+    required this.isCreateGroup,
+    this.group,
   }) : super(key: key);
   final void Function(Chatroom)? onNewChatroom;
-
+  final bool isCreateGroup;
+  final GroupChat? group;
   @override
   State<CreateGroupScreen> createState() => _CreateGroupScreen();
 }
@@ -30,6 +30,7 @@ class _CreateGroupScreen extends State<CreateGroupScreen> {
   List<bool> isChecked = [];
   List<Chatroom> outputArray = [];
   List<Chatroom> filterList = [];
+  late final GroupChat group;
   late TextEditingController addContactController;
 
   @override
@@ -37,6 +38,10 @@ class _CreateGroupScreen extends State<CreateGroupScreen> {
     super.initState();
     _loadChatroomFuture = _loadChatroom();
     addContactController = TextEditingController();
+    //assgin the group already created
+    if (widget.isCreateGroup == false) {
+      group = widget.group!;
+    }
   }
 
   @override
@@ -54,10 +59,26 @@ class _CreateGroupScreen extends State<CreateGroupScreen> {
     listOfRooms.sort((a, b) => a.compareByLastActivityTime(b) * -1);
     filterList =
         listOfRooms.where((i) => i.type == ChatroomType.oneToOne).toList();
+    // further filter when that user is already in group
+    if (widget.isCreateGroup == false) {
+      filterList = filterList
+          // TODO: debug
+          .where((element) => !(alreadyInGroup(element, group.members)))
+          .toList();
+    }
     setState(() {
       isChecked = List.filled(filterList.length, false);
     });
     return true;
+  }
+
+  bool alreadyInGroup(Chatroom target, List<GroupMember> memberList) {
+    for (var i in memberList) {
+      if (i.user.userId == target.id) {
+        return true;
+      }
+    }
+    return false;
   }
 
   Future<String?> inputDialog(String title, String hint) => showDialog<String>(
@@ -79,6 +100,22 @@ class _CreateGroupScreen extends State<CreateGroupScreen> {
           ],
         ),
       );
+
+  void inviteMemberToGroup(List<Chatroom> members, String groupId) {
+    try {
+      for (var element in members) {
+        GroupChatApi().inviteMember(
+            groupId,
+            SendInvitationDto(
+                target: element.id, sentAt: DateTime.now().toIso8601String()));
+        print(element.name);
+        //group.members.add((element as OneToOneChat).target);
+      }
+    } on ApiException catch (e) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text("error: ${e.message}")));
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -138,41 +175,33 @@ class _CreateGroupScreen extends State<CreateGroupScreen> {
           outputArray = filterList
               .where((element) => isChecked[filterList.indexOf(element)])
               .toList();
-          final name = await inputDialog(
-            "Add Group",
-            "Please enter the Group name",
-          );
-          if (name == null || name.isEmpty) return;
-          // create group on server
-          late final GroupChat group;
-          //create group
-          try {
-            group =
-                await GroupChatApi().createGroup(CreateGroupDto(name: name));
-          } on ApiException catch (e) {
-            ScaffoldMessenger.of(context)
-                .showSnackBar(SnackBar(content: Text("error: ${e.message}")));
-          }
-          await ChatroomStore().save(group);
-          // callback and return to home
-          Navigator.of(context).pop();
-          Navigator.of(context).pop();
-          widget.onNewChatroom?.call(group);
-          //print(outputArray);
-          //invite member
-          try {
-            for (var element in outputArray) {
-              GroupChatApi().inviteMember(
-                  group.id,
-                  SendInvitationDto(
-                      target: element.id,
-                      sentAt: DateTime.now().toIso8601String()));
-              //group.members.add((element as OneToOneChat).target);
+          if (widget.isCreateGroup) {
+            final name = await inputDialog(
+              "Add Group",
+              "Please enter the Group name",
+            );
+            if (name == null || name.isEmpty) return;
+            //create group
+            try {
+              group =
+                  await GroupChatApi().createGroup(CreateGroupDto(name: name));
+            } on ApiException catch (e) {
+              ScaffoldMessenger.of(context)
+                  .showSnackBar(SnackBar(content: Text("error: ${e.message}")));
             }
-          } on ApiException catch (e) {
-            ScaffoldMessenger.of(context)
-                .showSnackBar(SnackBar(content: Text("error: ${e.message}")));
+            await ChatroomStore().save(group);
+            // callback and return to home
+            Navigator.of(context).pop();
+            Navigator.of(context).pop();
+            widget.onNewChatroom?.call(group);
+            //print(outputArray);
+            //invite member
+          } else {
+            Navigator.of(context).pop();
+            Navigator.of(context).pop();
           }
+          // TODO : debug
+          inviteMemberToGroup(outputArray, group.id);
         },
         tooltip: 'Increment',
         child: const Icon(Icons.add),
