@@ -17,11 +17,13 @@ class OneToOneChat extends Chatroom {
     PlainMessage? latestMessage,
     required int unread,
     required DateTime createdAt,
+    required int blocked,
   }) : super(
           id: target.userId,
           latestMessage: latestMessage,
           unread: unread,
           createdAt: createdAt,
+          blocked: blocked,
         );
 
   @override
@@ -29,5 +31,6 @@ class OneToOneChat extends Chatroom {
         id: id,
         type: type.index,
         createdAt: createdAt.toIso8601String(),
+        blocked: blocked,
       );
 }

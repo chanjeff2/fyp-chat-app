@@ -18,4 +18,14 @@ class EventsApi extends Api {
     final json = await post("/message", body: dto.toJson(), useAuth: true);
     return SendMessageResponseDto.fromJson(json);
   }
+
+  //send block request
+  Future<bool> sendBlockRequest(String userId, String chatroomId) async {
+    try {
+      await post("/block/$userId/$chatroomId", useAuth: true);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
 }

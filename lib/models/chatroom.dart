@@ -18,12 +18,14 @@ abstract class Chatroom {
   final PlainMessage? latestMessage;
   final int unread;
   final DateTime createdAt; // exist if read from db
+  final int blocked;
 
   Chatroom({
     required this.id,
     this.latestMessage,
     required this.unread,
     required this.createdAt,
+    this.blocked = 0,
   });
 
   /// Compares the last activity time of this Chatroom object to [other],
@@ -63,6 +65,7 @@ abstract class Chatroom {
           latestMessage: latestMessage,
           unread: await unreadFuture,
           createdAt: DateTime.parse(e.createdAt),
+          blocked: e.blocked,
         );
       case ChatroomType.group:
         final members = await GroupMemberStore().getByChatroomId(e.id);
@@ -80,6 +83,7 @@ abstract class Chatroom {
           latestMessage: latestMessage,
           unread: unread,
           createdAt: DateTime.parse(e.createdAt),
+          blocked: e.blocked,
         );
     }
   }
