@@ -5,6 +5,7 @@ import 'package:fyp_chat_app/components/palette.dart';
 import 'package:fyp_chat_app/dto/create_group_dto.dart';
 import 'package:fyp_chat_app/dto/send_invitation_dto.dart';
 import 'package:fyp_chat_app/models/chatroom.dart';
+import 'package:fyp_chat_app/models/one_to_one_chat.dart';
 import 'package:fyp_chat_app/network/api.dart';
 import 'package:fyp_chat_app/network/group_chat_api.dart';
 import 'package:fyp_chat_app/storage/chatroom_store.dart';
@@ -27,7 +28,7 @@ class _CreateGroupScreen extends State<CreateGroupScreen> {
   final Map<String, Chatroom> _chatroomMap = {};
   late final Future<bool> _loadChatroomFuture;
   List<bool> isChecked = [];
-  List<String> outputArray = [];
+  List<Chatroom> outputArray = [];
   List<Chatroom> filterList = [];
   late TextEditingController addContactController;
 
@@ -136,7 +137,6 @@ class _CreateGroupScreen extends State<CreateGroupScreen> {
         onPressed: () async {
           outputArray = filterList
               .where((element) => isChecked[filterList.indexOf(element)])
-              .map(((e) => e.id))
               .toList();
           final name = await inputDialog(
             "Add Group",
@@ -158,15 +158,16 @@ class _CreateGroupScreen extends State<CreateGroupScreen> {
           Navigator.of(context).pop();
           Navigator.of(context).pop();
           widget.onNewChatroom?.call(group);
-          //print(group.id);
+          //print(outputArray);
           //invite member
           try {
             for (var element in outputArray) {
               GroupChatApi().inviteMember(
                   group.id,
                   SendInvitationDto(
-                      target: element,
+                      target: element.id,
                       sentAt: DateTime.now().toIso8601String()));
+              //group.members.add((element as OneToOneChat).target);
             }
           } on ApiException catch (e) {
             ScaffoldMessenger.of(context)

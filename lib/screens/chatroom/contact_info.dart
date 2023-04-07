@@ -78,7 +78,7 @@ class ContactInfo extends StatelessWidget {
                 chatroom.type == ChatroomType.group
                     ? chatroom.name +
                         " participants: " +
-                        ((chatroom as GroupChat).members.length + 1).toString()
+                        ((chatroom as GroupChat).members.length).toString()
                     : chatroom.name,
                 textAlign: TextAlign.center,
                 style: const TextStyle(
@@ -354,7 +354,7 @@ class ContactInfo extends StatelessWidget {
                   ListView.builder(
                       // +1 for add members / create group with the user
                       shrinkWrap: true,
-                      itemCount: (chatroom as GroupChat).members.length + 2,
+                      itemCount: (chatroom as GroupChat).members.length + 1,
                       itemBuilder: (context, index) {
                         // Add member / add to group
                         if (index == 0) {
