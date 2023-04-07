@@ -20,11 +20,13 @@ class GroupChat extends Chatroom {
     PlainMessage? latestMessage,
     required int unread,
     required DateTime createdAt,
+    required int blocked,
   }) : super(
           id: id,
           latestMessage: latestMessage,
           unread: unread,
           createdAt: createdAt,
+          blocked: blocked,
         );
 
   @override
@@ -33,6 +35,7 @@ class GroupChat extends Chatroom {
         type: type.index,
         name: name,
         createdAt: createdAt.toIso8601String(),
+        blocked: blocked,
       );
 
   GroupChat.fromDto(GroupDto dto)
