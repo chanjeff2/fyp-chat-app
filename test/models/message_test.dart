@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:fyp_chat_app/dto/message_dto.dart';
+import 'package:fyp_chat_app/dto/events/message_dto.dart';
 import 'package:fyp_chat_app/dto/send_message_dto.dart';
 import 'package:fyp_chat_app/models/message.dart';
 import 'package:fyp_chat_app/models/message_to_server.dart';

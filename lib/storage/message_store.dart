@@ -57,6 +57,16 @@ class MessageStore {
     return count > 0;
   }
 
+  Future<bool> removeAllMessageByChatroomId(String chatroomId) async {
+    final db = await DiskStorage().db;
+    final count = await db.delete(
+      table,
+      where: '${PlainMessageEntity.columnChatroomId} = ?',
+      whereArgs: [chatroomId],
+    );
+    return count > 0;
+  }
+
   Future<bool> removeContact(int userId) async {
     final db = await DiskStorage().db;
     final count = await db.delete(

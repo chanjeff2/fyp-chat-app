@@ -10,8 +10,10 @@ class UserDto {
   @JsonKey(required: true)
   String username;
 
+  @JsonKey()
   String? displayName;
 
+  @JsonKey()
   String? status;
 
   UserDto({

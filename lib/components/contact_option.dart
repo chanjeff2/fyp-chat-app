@@ -82,7 +82,7 @@ class HomeContact extends StatelessWidget {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              Spacer(),
+              const Spacer(),
               if (chatroom.latestMessage != null)
                 Text(
                   DateFormat.Hm()

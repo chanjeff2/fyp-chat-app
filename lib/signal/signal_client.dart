@@ -1,9 +1,9 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:fyp_chat_app/dto/account_dto.dart';
 import 'package:fyp_chat_app/dto/update_keys_dto.dart';
 import 'package:fyp_chat_app/extensions/signal_lib_extension.dart';
+import 'package:fyp_chat_app/models/account.dart';
 import 'package:fyp_chat_app/models/chatroom.dart';
 import 'package:fyp_chat_app/models/group_chat.dart';
 import 'package:fyp_chat_app/models/key_bundle.dart';
@@ -226,7 +226,7 @@ class SignalClient {
   }
 
   Future<PlainMessage> sendMessageToChatroom(
-    AccountDto me, // pass me to speed up process
+    Account me, // pass me to speed up process
     Chatroom chatroom,
     String content,
   ) async {

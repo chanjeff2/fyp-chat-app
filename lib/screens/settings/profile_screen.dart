@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:fyp_chat_app/models/account.dart';
 import 'package:fyp_chat_app/models/user_state.dart';
-import 'package:fyp_chat_app/network/api.dart';
 import 'package:provider/provider.dart';
 
 import '../../network/account_api.dart';
@@ -117,17 +117,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           "Please enter your Display Name(Enter nothing input your username by default)",
                           displayNameController,
                         );
-                        String? tempDisplayName = userState.me!.displayName;
                         try {
                           if (name == null || name.isEmpty) {
                             return;
                           }
                           //send post request to server to update display name
-                          userState.me!.displayName = name;
-                          userState.setMe(
-                              await AccountApi().updateProfile(userState.me!));
+                          userState.setMe(await AccountApi().updateProfile(
+                              Account(
+                                      userId: userState.me!.userId,
+                                      username: userState.me!.username,
+                                      displayName: name,
+                                      status: userState.me!.status)
+                                  .toDto()));
                         } catch (e) {
-                          userState.me!.displayName = tempDisplayName;
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Text(e.toString()),
@@ -160,17 +162,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           "Please enter your Status",
                           statusController,
                         );
-                        String? tempStatus = userState.me!.status;
                         try {
                           if (status == null || status.isEmpty) {
                             return;
                           }
                           //send post request to server to update display name
-                          userState.me!.status = status;
-                          userState.setMe(
-                              await AccountApi().updateProfile(userState.me!));
+                          userState.setMe(await AccountApi().updateProfile(
+                              Account(
+                                      userId: userState.me!.userId,
+                                      username: userState.me!.username,
+                                      displayName: userState.me!.displayName,
+                                      status: status)
+                                  .toDto()));
                         } catch (e) {
-                          userState.me!.status = tempStatus;
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Text(e.toString()),
@@ -191,7 +195,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                         subtitle: Text(
                           userState.me!.status.toString(),
-                          style: TextStyle(fontSize: 18),
+                          style: const TextStyle(fontSize: 18),
                         ),
                         trailing: Icon(Icons.edit,
                             color: Theme.of(context).primaryColor),

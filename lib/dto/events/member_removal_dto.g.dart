@@ -1,39 +1,33 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'message_dto.dart';
+part of 'member_removal_dto.dart';
 
 // **************************************************************************
 // JsonSerializableGenerator
 // **************************************************************************
 
-MessageDto _$MessageDtoFromJson(Map<String, dynamic> json) {
+MemberRemovalDto _$MemberRemovalDtoFromJson(Map<String, dynamic> json) {
   $checkKeys(
     json,
     requiredKeys: const [
       'senderUserId',
-      'senderDeviceId',
       'chatroomId',
-      'cipherTextType',
-      'content',
-      'sentAt'
+      'sentAt',
+      'recipientUserId'
     ],
   );
-  return MessageDto(
+  return MemberRemovalDto(
     senderUserId: json['senderUserId'] as String,
-    senderDeviceId: json['senderDeviceId'] as String,
+    recipientUserId: json['recipientUserId'] as String,
     chatroomId: json['chatroomId'] as String,
-    cipherTextType: json['cipherTextType'] as String,
-    content: json['content'] as String,
     sentAt: json['sentAt'] as String,
   );
 }
 
-Map<String, dynamic> _$MessageDtoToJson(MessageDto instance) =>
+Map<String, dynamic> _$MemberRemovalDtoToJson(MemberRemovalDto instance) =>
     <String, dynamic>{
       'senderUserId': instance.senderUserId,
-      'senderDeviceId': instance.senderDeviceId,
       'chatroomId': instance.chatroomId,
-      'cipherTextType': instance.cipherTextType,
-      'content': instance.content,
       'sentAt': instance.sentAt,
+      'recipientUserId': instance.recipientUserId,
     };
