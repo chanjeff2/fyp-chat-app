@@ -517,7 +517,6 @@ class ContactInfo extends StatelessWidget {
                                         latestMessage: chatroom.latestMessage,
                                         unread: chatroom.unread,
                                         createdAt: chatroom.createdAt,
-                                        blocked: 1,
                                       ));
                                     } else if (chatroom.type ==
                                         ChatroomType.oneToOne) {
@@ -527,7 +526,6 @@ class ContactInfo extends StatelessWidget {
                                         latestMessage: chatroom.latestMessage,
                                         unread: chatroom.unread,
                                         createdAt: chatroom.createdAt,
-                                        blocked: 1,
                                       ));
                                     }
                                   }
@@ -568,7 +566,6 @@ class ContactInfo extends StatelessWidget {
                                         latestMessage: chatroom.latestMessage,
                                         unread: chatroom.unread,
                                         createdAt: chatroom.createdAt,
-                                        blocked: 0,
                                       ));
                                     } else if (chatroom.type ==
                                         ChatroomType.oneToOne) {
@@ -578,7 +575,6 @@ class ContactInfo extends StatelessWidget {
                                         latestMessage: chatroom.latestMessage,
                                         unread: chatroom.unread,
                                         createdAt: chatroom.createdAt,
-                                        blocked: 0,
                                       ));
                                     }
                                   }

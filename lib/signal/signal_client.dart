@@ -343,7 +343,6 @@ class SignalClient {
         unread: 1,
         latestMessage: plainMessage,
         createdAt: DateTime.now(),
-        blocked: 0,
       );
       await ChatroomStore().save(chatroom);
     }

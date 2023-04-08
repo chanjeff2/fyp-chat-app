@@ -116,7 +116,6 @@ class _SelectContactState extends State<SelectContact> {
                             target: addUser,
                             unread: 0,
                             createdAt: DateTime.now(),
-                            blocked: 0,
                           );
                           await ChatroomStore().save(chatroom);
                           // callback and return to home

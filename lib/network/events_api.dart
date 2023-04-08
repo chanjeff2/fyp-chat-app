@@ -32,10 +32,21 @@ class EventsApi extends Api {
   //send Unblock request
   Future<bool> sendUnblockRequest(String chatroomId) async {
     try {
-      await post("/block/$chatroomId", useAuth: true);
+      await post("/unblock/$chatroomId", useAuth: true);
       return true;
     } catch (e) {
       return false;
+    }
+  }
+
+  //send Unblock request
+  Future<List<String>> getBlockedListRequest(String userId) async {
+    //userid is the user who ask for the block list
+    try {
+      final json = await get("/blocklist/$userId", useAuth: true);
+      return json.map((e) => e).toList();
+    } catch (e) {
+      rethrow;
     }
   }
 }

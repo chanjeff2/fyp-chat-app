@@ -43,7 +43,7 @@ $columnBlocked INTEGER NOT NULL
 
   /// exist after created in db
   @JsonKey(required: true, name: columnBlocked)
-  final int blocked;
+  int blocked = 0;
 
   ChatroomEntity({
     required this.id,
