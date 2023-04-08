@@ -32,7 +32,6 @@ class _RegisterOrLoginScreenState extends State<RegisterOrLoginScreen> {
   bool _isConfirmPasswordVisible = false;
   bool _isRegister = false;
   bool _isLoading = false;
-  List<String> blocklist = ["z1"];
   String get username => _usernameController.text;
   String get password => _passwordController.text;
 
