@@ -4,9 +4,11 @@ import 'package:fyp_chat_app/models/access_token.dart';
 import 'package:fyp_chat_app/models/user_state.dart';
 import 'package:fyp_chat_app/network/account_api.dart';
 import 'package:fyp_chat_app/network/api.dart';
+import 'package:fyp_chat_app/network/block_api.dart';
 import 'package:fyp_chat_app/network/group_chat_api.dart';
 import 'package:fyp_chat_app/screens/register_or_login/loading_screen.dart';
 import 'package:fyp_chat_app/signal/signal_client.dart';
+import 'package:fyp_chat_app/storage/block_store.dart';
 import 'package:fyp_chat_app/storage/chatroom_store.dart';
 import 'package:provider/provider.dart';
 
@@ -30,7 +32,6 @@ class _RegisterOrLoginScreenState extends State<RegisterOrLoginScreen> {
   bool _isConfirmPasswordVisible = false;
   bool _isRegister = false;
   bool _isLoading = false;
-
   String get username => _usernameController.text;
   String get password => _passwordController.text;
 
@@ -159,6 +160,9 @@ class _RegisterOrLoginScreenState extends State<RegisterOrLoginScreen> {
                             );
                             // start restore chatroom
                             restoreFuture = restoreGroupChat();
+                            // fetch blocklist of chatroom
+                            //await BlockStore().storeBlockedByBlockList(
+                            //   await BlockApi().getBlockedListRequest());
                           }
                           // init signal stuffs
                           await SignalClient().initialize();

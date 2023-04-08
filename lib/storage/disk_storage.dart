@@ -1,3 +1,4 @@
+import 'package:fyp_chat_app/entities/blocklist_entity.dart';
 import 'package:fyp_chat_app/entities/chatroom_entity.dart';
 import 'package:fyp_chat_app/entities/group_member_entity.dart';
 import 'package:fyp_chat_app/entities/plain_message_entity.dart';
@@ -14,6 +15,7 @@ import 'package:fyp_chat_app/storage/disk_session_store.dart';
 import 'package:fyp_chat_app/storage/disk_signed_pre_key_store.dart';
 import 'package:fyp_chat_app/storage/group_member_store.dart';
 import 'package:fyp_chat_app/storage/message_store.dart';
+import 'package:fyp_chat_app/storage/block_store.dart';
 import 'package:fyp_chat_app/storage/secure_storage.dart';
 import 'package:sqflite_sqlcipher/sqflite.dart';
 import 'package:path/path.dart';
@@ -73,6 +75,9 @@ class DiskStorage {
         );
         db.execute(
           "CREATE TABLE ${GroupMemberStore.table}(${GroupMemberEntity.createTableCommandFields});",
+        );
+        db.execute(
+          "CREATE TABLE ${BlockStore.table}(${BlocklistEntity.createTableCommandFields});",
         );
       },
     );

@@ -3,29 +3,34 @@ import 'package:flutter/material.dart';
 import 'package:fyp_chat_app/models/account.dart';
 import 'package:fyp_chat_app/models/group_chat.dart';
 import 'package:fyp_chat_app/models/group_member.dart';
+import 'package:fyp_chat_app/models/one_to_one_chat.dart';
 import 'package:fyp_chat_app/models/user_state.dart';
+import 'package:fyp_chat_app/network/block_api.dart';
 import 'package:fyp_chat_app/network/group_chat_api.dart';
 import 'package:fyp_chat_app/screens/chatroom/chatroom_screen.dart';
 import 'package:fyp_chat_app/screens/home/create_group_screen.dart';
 import 'package:fyp_chat_app/storage/account_store.dart';
 import 'package:fyp_chat_app/storage/chatroom_store.dart';
 import 'package:fyp_chat_app/storage/group_member_store.dart';
+import 'package:fyp_chat_app/storage/block_store.dart';
 import 'package:provider/provider.dart';
 import 'package:fyp_chat_app/models/chatroom.dart';
+import 'package:fyp_chat_app/network/events_api.dart';
 
 class ContactInfo extends StatelessWidget {
   const ContactInfo({
     Key? key,
     required this.chatroom,
+    required this.blockedFuture,
   }) : super(key: key);
 
   final Chatroom chatroom;
+  final Future<bool> blockedFuture;
 
   // Change the data type of the lists below if necessary
   static List<int> _media = [1, 2, 3, 4, 5, 6, 7, 8, 9];
   static List<int> _common_group = [1, 2, 3];
   static List<int> _members = [1, 2, 3];
-  static bool isGroup = false;
 
   // Placeholder lists, can remove later
   static List<Color> _colors = [Colors.amber, Colors.red, Colors.green];
@@ -37,11 +42,13 @@ class ContactInfo extends StatelessWidget {
   ];
   //static List<Chatroom> commonGroupChat = checkCommonGroupChat();
 
-  static Future<bool> checkSelfAccount(Chatroom chatroom, int index, UserState myAcc) async {
+  static Future<bool> checkSelfAccount(
+      Chatroom chatroom, int index, UserState myAcc) async {
     if (myAcc.me == null) {
       return true;
     }
-    if ((chatroom as GroupChat).members[index - 1].user.userId == myAcc.me!.userId) {
+    if ((chatroom as GroupChat).members[index - 1].user.userId ==
+        myAcc.me!.userId) {
       return true;
     }
     return false;
@@ -215,7 +222,9 @@ class ContactInfo extends StatelessWidget {
               GestureDetector(
                 child: ListTile(
                   title: Text(
-                    isGroup ? "Group description" : "Status",
+                    (chatroom.type == ChatroomType.group)
+                        ? "Group description"
+                        : "Status",
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w500,
@@ -420,8 +429,9 @@ class ContactInfo extends StatelessWidget {
                         return InkWell(
                           onTap: () async {
                             /* direct to OneToOne chat */
-                            
-                            if (!(await checkSelfAccount(chatroom, index, userState))) {
+
+                            if (!(await checkSelfAccount(
+                                chatroom, index, userState))) {
                               Chatroom? pmChatroom = await ChatroomStore().get(
                                   (chatroom as GroupChat)
                                       .members[index - 1]
@@ -499,7 +509,6 @@ class ContactInfo extends StatelessWidget {
                         return InkWell(
                           onTap: () {
                             /* direct to group chat */
-
                           },
                           child: Padding(
                             padding: const EdgeInsets.symmetric(vertical: 8),
@@ -515,7 +524,7 @@ class ContactInfo extends StatelessWidget {
                                 const SizedBox(width: 16),
                                 Text(
                                     // isGroup ? _members[index].name : _common_group[index].name,
-                                    isGroup
+                                    (chatroom.type == ChatroomType.group)
                                         ? "Add members..."
                                         : _groupnames[index - 1],
                                     style: const TextStyle(fontSize: 16))
@@ -526,7 +535,7 @@ class ContactInfo extends StatelessWidget {
                       }),
               const Divider(thickness: 2, indent: 8, endIndent: 8),
               // Block / Leave group
-              if (isGroup) ...[
+              if ((chatroom.type == ChatroomType.group)) ...[
                 InkWell(
                   onTap: () {/* confirm => process leave group */},
                   child: const ListTile(
@@ -540,14 +549,137 @@ class ContactInfo extends StatelessWidget {
                 ),
               ],
               InkWell(
-                onTap: () {/* block user */},
-                child: ListTile(
-                  leading: const Icon(Icons.block, size: 24, color: Colors.red),
-                  title: Text(
-                    "Block${isGroup ? ' Group' : ''}",
-                    style: const TextStyle(color: Colors.red, fontSize: 18),
-                  ),
-                ),
+                onTap: () {
+                  showDialog(
+                    context: context,
+                    builder: (context) => FutureBuilder<bool>(
+                        builder: (context, snapshot) {
+                          if (snapshot.hasData && snapshot.data == false) {
+                            return AlertDialog(
+                              //Blocking button
+                              title: (chatroom.type == ChatroomType.group)
+                                  ? const Text("Block group?")
+                                  : const Text("Block user?"),
+                              content: (chatroom.type == ChatroomType.group)
+                                  ? const Text(
+                                      "You will no longer be able to receive messages from this group.")
+                                  : const Text(
+                                      "You will no longer be able to receive messages from this user."),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context),
+                                  child: const Text("Cancel"),
+                                ),
+                                TextButton(
+                                  onPressed: () async {
+                                    bool status = await BlockApi()
+                                        .sendBlockRequest(chatroom.id);
+                                    if (status) {
+                                      //update blocked chatroom in blockstore
+                                      await BlockStore()
+                                          .storeBlocked(chatroom.id);
+                                    }
+                                    print('gg');
+                                    Navigator.pop(context);
+                                    Navigator.pop(context);
+                                  },
+                                  child: const Text("Block"),
+                                ),
+                              ],
+                            );
+                          } else if (snapshot.hasData &&
+                              snapshot.data == true) {
+                            return AlertDialog(
+                              //Unblock button
+                              title: (chatroom.type == ChatroomType.group)
+                                  ? const Text("Unblock group?")
+                                  : const Text("Unblock user?"),
+                              content: (chatroom.type == ChatroomType.group)
+                                  ? const Text(
+                                      "You will be able to receive messages from this group.")
+                                  : const Text(
+                                      "You will be able to receive messages from this user."),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context),
+                                  child: const Text("Cancel"),
+                                ),
+                                TextButton(
+                                  onPressed: () async {
+                                    bool status = await BlockApi()
+                                        .sendUnblockRequest(chatroom.id);
+                                    if (status) {
+                                      //update chatroom in chatroomstore
+                                      await BlockStore()
+                                          .removeBlocked(chatroom.id);
+                                    }
+                                    Navigator.pop(context);
+                                    Navigator.pop(context);
+                                  },
+                                  child: const Text("Unblock"),
+                                ),
+                              ],
+                            );
+                          } else {
+                            return AlertDialog(
+                              //Blocking button
+                              title: (chatroom.type == ChatroomType.group)
+                                  ? const Text("Block group?")
+                                  : const Text("Block user?"),
+                              content: (chatroom.type == ChatroomType.group)
+                                  ? const Text(
+                                      "You will no longer be able to receive messages from this group.")
+                                  : const Text(
+                                      "You will no longer be able to receive messages from this user."),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context),
+                                  child: const Text("Cancel"),
+                                ),
+                                TextButton(
+                                  onPressed: () async {
+                                    //nothing use becoz the blocking status is still loading
+                                  },
+                                  child: const Text("Block"),
+                                ),
+                              ],
+                            );
+                          }
+                        },
+                        future: blockedFuture),
+                  );
+                },
+                child: FutureBuilder<bool>(
+                    builder: (context, snapshot) {
+                      if (snapshot.hasData) {
+                        return ListTile(
+                          leading: const Icon(Icons.block,
+                              size: 24, color: Colors.red),
+                          title: (snapshot.hasData && snapshot.data == false)
+                              ? Text(
+                                  "Block${(chatroom.type == ChatroomType.group) ? ' Group' : ''}",
+                                  style: const TextStyle(
+                                      color: Colors.red, fontSize: 18),
+                                )
+                              : Text(
+                                  "Unblock${(chatroom.type == ChatroomType.group) ? ' Group' : ''}",
+                                  style: const TextStyle(
+                                      color: Colors.red, fontSize: 18),
+                                ),
+                        );
+                      } else {
+                        //just template becoz the blocking status is still loading
+                        return ListTile(
+                            leading: const Icon(Icons.block,
+                                size: 24, color: Colors.red),
+                            title: Text(
+                              "Block${(chatroom.type == ChatroomType.group) ? ' Group' : ''}",
+                              style: const TextStyle(
+                                  color: Colors.red, fontSize: 18),
+                            ));
+                      }
+                    },
+                    future: blockedFuture),
               ),
               const SizedBox(height: 20),
             ],
