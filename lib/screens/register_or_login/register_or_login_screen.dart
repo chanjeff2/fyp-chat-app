@@ -125,7 +125,7 @@ class _RegisterOrLoginScreenState extends State<RegisterOrLoginScreen> {
                           )),
                       validator: (username) {
                         if (username?.isEmpty ?? true) {
-                          return "username cannot be empty";
+                          return "confirm password cannot be empty";
                         }
                         return null;
                       },
