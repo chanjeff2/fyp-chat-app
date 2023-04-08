@@ -51,6 +51,24 @@ class GroupMemberStore {
     return GroupMember(id: entity.id, user: user, role: entity.role);
   }
 
+  Future<GroupMember?> getbyUserID(String id) async {
+    final db = await DiskStorage().db;
+    final result = await db.query(
+      table,
+      where: '${GroupMemberEntity.columnUserId} = ?',
+      whereArgs: [id],
+    );
+    if (result.isEmpty) {
+      return null;
+    }
+    final entity = GroupMemberEntity.fromJson(result[0]);
+    final user = await ContactStore().getContactById(entity.userId);
+    if (user == null) {
+      return null;
+    }
+    return GroupMember(id: entity.id, user: user, role: entity.role);
+  }
+
   Future<bool> remove(String chatroomId, String userId) async {
     final db = await DiskStorage().db;
     final count = await db.delete(

@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:fyp_chat_app/components/palette.dart';
 import 'package:fyp_chat_app/dto/create_group_dto.dart';
+import 'package:fyp_chat_app/dto/group_member_dto.dart';
 import 'package:fyp_chat_app/dto/send_invitation_dto.dart';
 import 'package:fyp_chat_app/models/chatroom.dart';
 import 'package:fyp_chat_app/models/group_member.dart';
+import 'package:fyp_chat_app/models/one_to_one_chat.dart';
+import 'package:fyp_chat_app/models/user.dart';
 import 'package:fyp_chat_app/network/api.dart';
 import 'package:fyp_chat_app/network/group_chat_api.dart';
 import 'package:fyp_chat_app/storage/chatroom_store.dart';
+import 'package:fyp_chat_app/storage/group_member_store.dart';
 
 import '../../models/group_chat.dart';
 
@@ -101,7 +105,8 @@ class _CreateGroupScreen extends State<CreateGroupScreen> {
         ),
       );
 
-  void inviteMemberToGroup(List<Chatroom> members, String groupId) {
+  Future<void> inviteMemberToGroup(
+      List<Chatroom> members, String groupId) async {
     try {
       for (var element in members) {
         GroupChatApi().inviteMember(
@@ -109,7 +114,15 @@ class _CreateGroupScreen extends State<CreateGroupScreen> {
             SendInvitationDto(
                 target: element.id, sentAt: DateTime.now().toIso8601String()));
         print(element.name);
-        //group.members.add((element as OneToOneChat).target);
+        //store the member added
+        GroupMemberStore().save(
+            groupId,
+            GroupMember(
+                user: (element as OneToOneChat).target, role: Role.member));
+        //read the member stored and add the member to group member list
+        GroupMember? storedMember =
+            await GroupMemberStore().getbyUserID(element.target.userId);
+        group.members.add(storedMember!);
       }
     } on ApiException catch (e) {
       ScaffoldMessenger.of(context)

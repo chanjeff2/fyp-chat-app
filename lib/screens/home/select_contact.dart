@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:fyp_chat_app/components/default_option.dart';
 import 'package:fyp_chat_app/components/contact_option.dart';
-import 'package:fyp_chat_app/dto/create_group_dto.dart';
 import 'package:fyp_chat_app/models/chatroom.dart';
-import 'package:fyp_chat_app/models/group_chat.dart';
 import 'package:fyp_chat_app/models/one_to_one_chat.dart';
 import 'package:fyp_chat_app/models/user.dart';
 import 'package:fyp_chat_app/network/api.dart';
-import 'package:fyp_chat_app/network/group_chat_api.dart';
 import 'package:fyp_chat_app/network/users_api.dart';
 import 'package:fyp_chat_app/screens/home/create_group_screen.dart';
 import 'package:fyp_chat_app/storage/chatroom_store.dart';
@@ -63,11 +60,11 @@ class _SelectContactState extends State<SelectContact> {
                   case 0:
                     return InkWell(
                       onTap: () async {
-                        // TODO: support join group
-                        // enter group name
                         Navigator.of(context).push(MaterialPageRoute(
                           builder: (context) => CreateGroupScreen(
-                              onNewChatroom: widget.onNewChatroom, isCreateGroup: true,),
+                            onNewChatroom: widget.onNewChatroom,
+                            isCreateGroup: true,
+                          ),
                         ));
                       },
                       child: const DefaultOption(
@@ -77,6 +74,7 @@ class _SelectContactState extends State<SelectContact> {
                     );
 
                   case 1:
+                    // add content
                     return InkWell(
                       onTap: () async {
                         //Pop up screen for add content
@@ -116,6 +114,33 @@ class _SelectContactState extends State<SelectContact> {
                     );
 
                   case 2:
+                    //TODO: add to course group
+                    return InkWell(
+                      onTap: () async {
+                        final course = await inputDialog(
+                          "Join a course group",
+                          "Please enter course code",
+                        );
+                        if (course == null || course.isEmpty) return;
+                        //late final GroupChat group;
+                        try {
+                          //TODO: send join request to server
+                          // group = await GroupChatApi()
+                          //     .createGroup(CreateGroupDto(name: name));
+                        } on ApiException catch (e) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text("error: ${e.message}")));
+                        }
+                        // await ChatroomStore().save(group);
+                        // callback and return to home
+                        Navigator.of(context).pop();
+                        // widget.onNewChatroom?.call(group);
+                      },
+                      child: const DefaultOption(
+                        icon: Icons.group_add,
+                        name: "Join a course group",
+                      ),
+                    );
 
                   case 3:
                     return const Padding(

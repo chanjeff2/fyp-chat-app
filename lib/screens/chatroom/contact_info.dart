@@ -410,10 +410,15 @@ class ContactInfo extends StatelessWidget {
                                 const SizedBox(width: 16),
                                 Text(
                                     // isGroup ? _members[index].name : _common_group[index].name,
+                                    ((chatroom as GroupChat)
+                                        .members[index - 1]
+                                        .user.displayName == null) ?
                                     (chatroom as GroupChat)
                                         .members[index - 1]
                                         .user
-                                        .username,
+                                        .username : (chatroom as GroupChat)
+                                        .members[index - 1]
+                                        .user.displayName!,
                                     style: const TextStyle(fontSize: 16))
                               ],
                             ),
