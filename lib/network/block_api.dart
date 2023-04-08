@@ -39,7 +39,7 @@ class BlockApi extends Api {
     //userid is the user who ask for the block list
     try {
       final json = await get("", useAuth: true);
-      return (json as List<String>).map((e) => e).toList();
+      return json.map((e) => (e as String)).toList();
     } catch (e) {
       rethrow;
     }
