@@ -1,10 +1,13 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:fyp_chat_app/models/account.dart';
 import 'package:fyp_chat_app/models/group_chat.dart';
 import 'package:fyp_chat_app/models/group_member.dart';
 import 'package:fyp_chat_app/models/user_state.dart';
 import 'package:fyp_chat_app/network/group_chat_api.dart';
 import 'package:fyp_chat_app/screens/chatroom/chatroom_screen.dart';
 import 'package:fyp_chat_app/screens/home/create_group_screen.dart';
+import 'package:fyp_chat_app/storage/account_store.dart';
 import 'package:fyp_chat_app/storage/chatroom_store.dart';
 import 'package:fyp_chat_app/storage/group_member_store.dart';
 import 'package:provider/provider.dart';
@@ -32,6 +35,24 @@ class ContactInfo extends StatelessWidget {
     "Team Rocket",
     "Dragon's Back Hikers"
   ];
+  //static List<Chatroom> commonGroupChat = checkCommonGroupChat();
+
+  static Future<bool> checkSelfAccount(Chatroom chatroom, int index, UserState myAcc) async {
+    if (myAcc.me == null) {
+      return true;
+    }
+    if ((chatroom as GroupChat).members[index - 1].user.userId == myAcc.me!.userId) {
+      return true;
+    }
+    return false;
+  }
+
+  // static Future<List<Chatroom>> checkCommonGroupChat()  {
+  //   if (isGroup == false){
+  //     return [];
+  //   }
+  //   List<Chatroom> grouplist = ChatroomStore().getAllChatroom();
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -360,11 +381,11 @@ class ContactInfo extends StatelessWidget {
                   ?
                   //Group List View
                   ListView.builder(
-                      // +1 for add members / create group with the user
+                      // +1 for add members
                       shrinkWrap: true,
                       itemCount: (chatroom as GroupChat).members.length + 1,
                       itemBuilder: (context, index) {
-                        // Add member / add to group
+                        // Add member
                         if (index == 0) {
                           return InkWell(
                             onTap: () {
@@ -399,14 +420,17 @@ class ContactInfo extends StatelessWidget {
                         return InkWell(
                           onTap: () async {
                             /* direct to OneToOne chat */
-                            Chatroom? pmChatroom = await ChatroomStore().get(
-                                (chatroom as GroupChat)
-                                    .members[index - 1]
-                                    .user
-                                    .userId);
-                            Navigator.of(context).push(MaterialPageRoute(
-                                builder: (context) =>
-                                    ChatRoomScreen(chatroom: pmChatroom!)));
+                            
+                            if (!(await checkSelfAccount(chatroom, index, userState))) {
+                              Chatroom? pmChatroom = await ChatroomStore().get(
+                                  (chatroom as GroupChat)
+                                      .members[index - 1]
+                                      .user
+                                      .userId);
+                              Navigator.of(context).push(MaterialPageRoute(
+                                  builder: (context) =>
+                                      ChatRoomScreen(chatroom: pmChatroom!)));
+                            }
                           },
                           child: Padding(
                             padding: const EdgeInsets.symmetric(vertical: 8),
@@ -473,7 +497,10 @@ class ContactInfo extends StatelessWidget {
                         }
                         // Common groups
                         return InkWell(
-                          onTap: () {/* direct to respective chat */},
+                          onTap: () {
+                            /* direct to group chat */
+
+                          },
                           child: Padding(
                             padding: const EdgeInsets.symmetric(vertical: 8),
                             child: Row(
