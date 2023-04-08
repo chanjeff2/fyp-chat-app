@@ -3,7 +3,9 @@ import 'package:fyp_chat_app/models/group_chat.dart';
 import 'package:fyp_chat_app/models/group_member.dart';
 import 'package:fyp_chat_app/models/user_state.dart';
 import 'package:fyp_chat_app/network/group_chat_api.dart';
+import 'package:fyp_chat_app/screens/chatroom/chatroom_screen.dart';
 import 'package:fyp_chat_app/screens/home/create_group_screen.dart';
+import 'package:fyp_chat_app/storage/chatroom_store.dart';
 import 'package:fyp_chat_app/storage/group_member_store.dart';
 import 'package:provider/provider.dart';
 import 'package:fyp_chat_app/models/chatroom.dart';
@@ -395,7 +397,17 @@ class ContactInfo extends StatelessWidget {
 
                         // Group members
                         return InkWell(
-                          onTap: () {/* direct to respective chat */},
+                          onTap: () async {
+                            /* direct to OneToOne chat */
+                            Chatroom? pmChatroom = await ChatroomStore().get(
+                                (chatroom as GroupChat)
+                                    .members[index - 1]
+                                    .user
+                                    .userId);
+                            Navigator.of(context).push(MaterialPageRoute(
+                                builder: (context) =>
+                                    ChatRoomScreen(chatroom: pmChatroom!)));
+                          },
                           child: Padding(
                             padding: const EdgeInsets.symmetric(vertical: 8),
                             child: Row(
@@ -411,14 +423,18 @@ class ContactInfo extends StatelessWidget {
                                 Text(
                                     // isGroup ? _members[index].name : _common_group[index].name,
                                     ((chatroom as GroupChat)
-                                        .members[index - 1]
-                                        .user.displayName == null) ?
-                                    (chatroom as GroupChat)
-                                        .members[index - 1]
-                                        .user
-                                        .username : (chatroom as GroupChat)
-                                        .members[index - 1]
-                                        .user.displayName!,
+                                                .members[index - 1]
+                                                .user
+                                                .displayName ==
+                                            null)
+                                        ? (chatroom as GroupChat)
+                                            .members[index - 1]
+                                            .user
+                                            .username
+                                        : (chatroom as GroupChat)
+                                            .members[index - 1]
+                                            .user
+                                            .displayName!,
                                     style: const TextStyle(fontSize: 16))
                               ],
                             ),
