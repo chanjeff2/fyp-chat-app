@@ -6,6 +6,7 @@ import 'package:fyp_chat_app/models/user_state.dart';
 import 'package:fyp_chat_app/network/group_chat_api.dart';
 import 'package:fyp_chat_app/storage/chatroom_store.dart';
 import 'package:fyp_chat_app/storage/group_member_store.dart';
+import 'package:fyp_chat_app/storage/block_store.dart';
 import 'package:provider/provider.dart';
 import 'package:fyp_chat_app/models/chatroom.dart';
 import 'package:fyp_chat_app/network/events_api.dart';
@@ -14,9 +15,11 @@ class ContactInfo extends StatelessWidget {
   const ContactInfo({
     Key? key,
     required this.chatroom,
+    required this.blocked,
   }) : super(key: key);
 
   final Chatroom chatroom;
+  final bool blocked;
 
   // Change the data type of the lists below if necessary
   static List<int> _media = [1, 2, 3, 4, 5, 6, 7, 8, 9];
@@ -486,7 +489,7 @@ class ContactInfo extends StatelessWidget {
                 onTap: () {
                   showDialog(
                     context: context,
-                    builder: (context) => (chatroom.blocked == 0)
+                    builder: (context) => (!blocked)
                         ? AlertDialog(
                             //Blocking button
                             title: (chatroom.type == ChatroomType.group)
@@ -507,27 +510,9 @@ class ContactInfo extends StatelessWidget {
                                   bool status = await EventsApi()
                                       .sendBlockRequest(chatroom.id);
                                   if (status) {
-                                    //update chatroom in chatroomstore
-                                    if (chatroom.type == ChatroomType.group) {
-                                      await ChatroomStore().save(GroupChat(
-                                        id: chatroom.id,
-                                        name: (chatroom as GroupChat).name,
-                                        members:
-                                            (chatroom as GroupChat).members,
-                                        latestMessage: chatroom.latestMessage,
-                                        unread: chatroom.unread,
-                                        createdAt: chatroom.createdAt,
-                                      ));
-                                    } else if (chatroom.type ==
-                                        ChatroomType.oneToOne) {
-                                      await ChatroomStore().save(OneToOneChat(
-                                        target:
-                                            (chatroom as OneToOneChat).target,
-                                        latestMessage: chatroom.latestMessage,
-                                        unread: chatroom.unread,
-                                        createdAt: chatroom.createdAt,
-                                      ));
-                                    }
+                                    //update blocked chatroom in blockstore
+                                    await BlockStore()
+                                        .storeBlocked(chatroom.id);
                                   }
                                   Navigator.pop(context);
                                   Navigator.pop(context);
@@ -557,26 +542,8 @@ class ContactInfo extends StatelessWidget {
                                       .sendUnblockRequest(chatroom.id);
                                   if (status) {
                                     //update chatroom in chatroomstore
-                                    if (chatroom.type == ChatroomType.group) {
-                                      await ChatroomStore().save(GroupChat(
-                                        id: chatroom.id,
-                                        name: (chatroom as GroupChat).name,
-                                        members:
-                                            (chatroom as GroupChat).members,
-                                        latestMessage: chatroom.latestMessage,
-                                        unread: chatroom.unread,
-                                        createdAt: chatroom.createdAt,
-                                      ));
-                                    } else if (chatroom.type ==
-                                        ChatroomType.oneToOne) {
-                                      await ChatroomStore().save(OneToOneChat(
-                                        target:
-                                            (chatroom as OneToOneChat).target,
-                                        latestMessage: chatroom.latestMessage,
-                                        unread: chatroom.unread,
-                                        createdAt: chatroom.createdAt,
-                                      ));
-                                    }
+                                    await BlockStore()
+                                        .removeBlocked(chatroom.id);
                                   }
                                   Navigator.pop(context);
                                   Navigator.pop(context);
@@ -589,7 +556,7 @@ class ContactInfo extends StatelessWidget {
                 },
                 child: ListTile(
                   leading: const Icon(Icons.block, size: 24, color: Colors.red),
-                  title: (chatroom.blocked == 0)
+                  title: (!blocked)
                       ? Text(
                           "Block${(chatroom.type == ChatroomType.group) ? ' Group' : ''}",
                           style:

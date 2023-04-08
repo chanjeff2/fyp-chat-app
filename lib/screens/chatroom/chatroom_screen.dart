@@ -10,6 +10,7 @@ import 'package:fyp_chat_app/models/user_state.dart';
 import 'package:fyp_chat_app/screens/chatroom/contact_info.dart';
 import 'package:fyp_chat_app/signal/signal_client.dart';
 import 'package:fyp_chat_app/storage/message_store.dart';
+import 'package:fyp_chat_app/storage/block_store.dart';
 import 'package:provider/provider.dart';
 
 import 'package:flutter_chat_ui/flutter_chat_ui.dart';
@@ -40,11 +41,14 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
   static const _pageSize = 100;
   late StreamSubscription<ReceivedPlainMessage> _messageSubscription;
   late final UserState _state;
+  late final bool blocked;
 
   @override
-  void initState() {
+  void initState() async {
     super.initState();
     _messageHistoryFuture = _loadMessageHistory();
+    //check chatroom blocked
+    blocked = await BlockStore().contain(widget.chatroom.id);
     // set chatting with
     _state = Provider.of<UserState>(context, listen: false);
     _state.chatroom = widget.chatroom;
@@ -138,6 +142,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
               onTap: () => Navigator.of(context).push(MaterialPageRoute(
                   builder: (context) => ContactInfo(
                         chatroom: widget.chatroom,
+                        blocked: blocked,
                       ))),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -223,18 +228,22 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                     ),
                   )
                   .toList(),
-              bubbleBuilder: (Widget child, {
-                  required message,
-                  required nextMessageInGroup,
-                }) => Bubble(
-                  child: child,
-                  nip: (userState.me!.userId != message.author.id)
-                        ? BubbleNip.leftBottom : BubbleNip.rightBottom,
-                  color: (userState.me!.userId != message.author.id)
-                        ? const Color(0xfff5f5f7) : Theme.of(context).primaryColor,
-                  showNip: !nextMessageInGroup,
-                  padding: const BubbleEdges.all(0),
-                  elevation: 1,
+              bubbleBuilder: (
+                Widget child, {
+                required message,
+                required nextMessageInGroup,
+              }) =>
+                  Bubble(
+                child: child,
+                nip: (userState.me!.userId != message.author.id)
+                    ? BubbleNip.leftBottom
+                    : BubbleNip.rightBottom,
+                color: (userState.me!.userId != message.author.id)
+                    ? const Color(0xfff5f5f7)
+                    : Theme.of(context).primaryColor,
+                showNip: !nextMessageInGroup,
+                padding: const BubbleEdges.all(0),
+                elevation: 1,
               ),
               onSendPressed: (partialText) {
                 _sendMessage(partialText.text);
