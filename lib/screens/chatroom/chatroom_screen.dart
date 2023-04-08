@@ -190,13 +190,6 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                     itemBuilder: (innerContext) {
                       return [
                         PopupMenuItem(
-                          value: 101,
-                          child: const Text("Block User"),
-                          onTap: () {
-                            Navigator.of(innerContext).pop();
-                          },
-                        ),
-                        PopupMenuItem(
                           value: 102,
                           child: const Text("Report User"),
                           onTap: () {
