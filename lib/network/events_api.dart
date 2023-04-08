@@ -18,35 +18,4 @@ class EventsApi extends Api {
     final json = await post("/message", body: dto.toJson(), useAuth: true);
     return SendMessageResponseDto.fromJson(json);
   }
-
-  //send block request
-  Future<bool> sendBlockRequest(String chatroomId) async {
-    try {
-      await post("/block/$chatroomId", useAuth: true);
-      return true;
-    } catch (e) {
-      return false;
-    }
-  }
-
-  //send Unblock request
-  Future<bool> sendUnblockRequest(String chatroomId) async {
-    try {
-      await post("/unblock/$chatroomId", useAuth: true);
-      return true;
-    } catch (e) {
-      return false;
-    }
-  }
-
-  //send Unblock request
-  Future<List<String>> getBlockedListRequest(String userId) async {
-    //userid is the user who ask for the block list
-    try {
-      final json = await get("/blocklist/$userId", useAuth: true);
-      return json.map((e) => e).toList();
-    } catch (e) {
-      rethrow;
-    }
-  }
 }

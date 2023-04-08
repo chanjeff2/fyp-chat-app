@@ -12,7 +12,6 @@ $columnId TEXT PRIMARY KEY NOT NULL,
 $columnType INTEGER NOT NULL,
 $columnName TEXT,
 $columnCreatedAt TEXT NOT NULL
-$columnBlocked INTEGER NOT NULL
 """;
 
   static const columnId = "id";
@@ -39,18 +38,11 @@ $columnBlocked INTEGER NOT NULL
   @JsonKey(required: true, name: columnCreatedAt)
   final String createdAt;
 
-  static const columnBlocked = "blocked";
-
-  /// exist after created in db
-  @JsonKey(required: true, name: columnBlocked)
-  int blocked = 0;
-
   ChatroomEntity({
     required this.id,
     required this.type,
     this.name,
     required this.createdAt,
-    required this.blocked,
   });
 
   Map<String, dynamic> toJson() => _$ChatroomEntityToJson(this);

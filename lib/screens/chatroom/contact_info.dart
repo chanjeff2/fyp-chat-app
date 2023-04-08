@@ -3,6 +3,7 @@ import 'package:fyp_chat_app/models/group_chat.dart';
 import 'package:fyp_chat_app/models/group_member.dart';
 import 'package:fyp_chat_app/models/one_to_one_chat.dart';
 import 'package:fyp_chat_app/models/user_state.dart';
+import 'package:fyp_chat_app/network/block_api.dart';
 import 'package:fyp_chat_app/network/group_chat_api.dart';
 import 'package:fyp_chat_app/storage/chatroom_store.dart';
 import 'package:fyp_chat_app/storage/group_member_store.dart';
@@ -507,7 +508,7 @@ class ContactInfo extends StatelessWidget {
                               ),
                               TextButton(
                                 onPressed: () async {
-                                  bool status = await EventsApi()
+                                  bool status = await BlockApi()
                                       .sendBlockRequest(chatroom.id);
                                   if (status) {
                                     //update blocked chatroom in blockstore
@@ -538,7 +539,7 @@ class ContactInfo extends StatelessWidget {
                               ),
                               TextButton(
                                 onPressed: () async {
-                                  bool status = await EventsApi()
+                                  bool status = await BlockApi()
                                       .sendUnblockRequest(chatroom.id);
                                   if (status) {
                                     //update chatroom in chatroomstore

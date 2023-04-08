@@ -83,7 +83,9 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
     }
     GroupChat room = _state.chatroom as GroupChat;
     final members = room.members;
-    final names = <String, String>{for (var v in members) v.user.userId : v.user.name};
+    final names = <String, String>{
+      for (var v in members) v.user.userId: v.user.name
+    };
 
     setState(() {
       _messages.addAll(messages);
@@ -147,7 +149,7 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
             child: InkWell(
               onTap: () => Navigator.of(context).push(MaterialPageRoute(
                   builder: (context) =>
-                      ContactInfo(chatroom: widget.chatroom))),
+                      ContactInfo(chatroom: widget.chatroom, blocked: false))),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
