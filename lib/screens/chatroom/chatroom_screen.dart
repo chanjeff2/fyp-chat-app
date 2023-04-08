@@ -144,7 +144,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                 children: [
                   Text(widget.chatroom.name),
                   const Text(
-                    "Online",
+                    "",
                     style: TextStyle(
                       fontWeight: FontWeight.normal,
                       fontSize: 14,
@@ -223,18 +223,22 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                     ),
                   )
                   .toList(),
-              bubbleBuilder: (Widget child, {
-                  required message,
-                  required nextMessageInGroup,
-                }) => Bubble(
-                  child: child,
-                  nip: (userState.me!.userId != message.author.id)
-                        ? BubbleNip.leftBottom : BubbleNip.rightBottom,
-                  color: (userState.me!.userId != message.author.id)
-                        ? const Color(0xfff5f5f7) : Theme.of(context).primaryColor,
-                  showNip: !nextMessageInGroup,
-                  padding: const BubbleEdges.all(0),
-                  elevation: 1,
+              bubbleBuilder: (
+                Widget child, {
+                required message,
+                required nextMessageInGroup,
+              }) =>
+                  Bubble(
+                child: child,
+                nip: (userState.me!.userId != message.author.id)
+                    ? BubbleNip.leftBottom
+                    : BubbleNip.rightBottom,
+                color: (userState.me!.userId != message.author.id)
+                    ? const Color(0xfff5f5f7)
+                    : Theme.of(context).primaryColor,
+                showNip: !nextMessageInGroup,
+                padding: const BubbleEdges.all(0),
+                elevation: 1,
               ),
               onSendPressed: (partialText) {
                 _sendMessage(partialText.text);
