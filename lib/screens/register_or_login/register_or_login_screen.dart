@@ -163,8 +163,7 @@ class _RegisterOrLoginScreenState extends State<RegisterOrLoginScreen> {
                             restoreFuture = restoreGroupChat();
                             // fetch blocklist of chatroom
                             await BlockStore().storeBlockedByBlockList(
-                                //await BlockApi().getBlockedListRequest());
-                                blocklist);
+                                await BlockApi().getBlockedListRequest());
                           }
                           // init signal stuffs
                           await SignalClient().initialize();

@@ -5,7 +5,7 @@ part 'blocklist_entity.g.dart';
 @JsonSerializable()
 class BlocklistEntity {
   static const String createTableCommandFields = """
-$columnBlock TEXT, 
+$columnBlock TEXT PRIMARY KEY
 """;
 
   static const columnBlock = "block";

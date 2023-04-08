@@ -12,6 +12,7 @@ import 'package:fyp_chat_app/screens/chatroom/contact_info.dart';
 import 'package:fyp_chat_app/signal/signal_client.dart';
 import 'package:fyp_chat_app/storage/contact_store.dart';
 import 'package:fyp_chat_app/storage/message_store.dart';
+import 'package:fyp_chat_app/storage/block_store.dart';
 import 'package:provider/provider.dart';
 
 import 'package:flutter_chat_ui/flutter_chat_ui.dart';
@@ -43,11 +44,13 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
   static const _pageSize = 100;
   late StreamSubscription<ReceivedPlainMessage> _messageSubscription;
   late final UserState _state;
-
+  late final Future<bool> blockedFuture;
   @override
   void initState() {
     super.initState();
     _messageHistoryFuture = _loadMessageHistory();
+    // check chatroom is blocked or not
+    blockedFuture = BlockStore().contain(widget.chatroom.id);
     // set chatting with
     _state = Provider.of<UserState>(context, listen: false);
     _state.chatroom = widget.chatroom;
@@ -148,8 +151,9 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
             width: MediaQuery.of(context).size.width,
             child: InkWell(
               onTap: () => Navigator.of(context).push(MaterialPageRoute(
-                  builder: (context) =>
-                      ContactInfo(chatroom: widget.chatroom, blocked: false))),
+                  builder: (context) => ContactInfo(
+                      chatroom: widget.chatroom,
+                      blockedFuture: blockedFuture))),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [

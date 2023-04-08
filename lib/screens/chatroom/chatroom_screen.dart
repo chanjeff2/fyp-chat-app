@@ -41,14 +41,14 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
   static const _pageSize = 100;
   late StreamSubscription<ReceivedPlainMessage> _messageSubscription;
   late final UserState _state;
-  late final bool blocked;
+  late final Future<bool> blockedFuture;
 
   @override
-  void initState() async {
+  void initState() {
     super.initState();
     _messageHistoryFuture = _loadMessageHistory();
     //check chatroom blocked
-    blocked = await BlockStore().contain(widget.chatroom.id);
+    blockedFuture = BlockStore().contain(widget.chatroom.id);
     // set chatting with
     _state = Provider.of<UserState>(context, listen: false);
     _state.chatroom = widget.chatroom;
@@ -142,7 +142,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
               onTap: () => Navigator.of(context).push(MaterialPageRoute(
                   builder: (context) => ContactInfo(
                         chatroom: widget.chatroom,
-                        blocked: blocked,
+                        blockedFuture: blockedFuture,
                       ))),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -267,89 +267,84 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                             borderRadius: BorderRadius.circular(16.0),
                           ),
                           child: Scrollbar(
-                            controller: _scrollController,
-                            child: (!blocked)
-                                ? TextField(
-                                    textAlignVertical: TextAlignVertical.center,
-                                    keyboardType: TextInputType.multiline,
-                                    controller:
-                                        (!blocked) ? _messageController : null,
-                                    style: const TextStyle(color: Colors.black),
-                                    cursorColor: Theme.of(context).primaryColor,
-                                    decoration: InputDecoration(
-                                      contentPadding: EdgeInsets.zero,
-                                      isCollapsed: true,
-                                      filled: true,
-                                      fillColor: Colors.white70,
-                                      hintText: 'Message',
-                                      hintStyle: TextStyle(
-                                          color: Colors.grey.shade600),
-                                      border: InputBorder.none,
-                                      prefixIcon: IconButton(
-                                        icon: _emojiBoardShown
-                                            ? Icon(
-                                                Icons.keyboard,
-                                                color: Colors.grey.shade600,
-                                              )
-                                            : Icon(
-                                                Icons.emoji_emotions_outlined,
+                              controller: _scrollController,
+                              child: TextField(
+                                textAlignVertical: TextAlignVertical.center,
+                                keyboardType: TextInputType.multiline,
+                                controller: _messageController,
+                                style: const TextStyle(color: Colors.black),
+                                cursorColor: Theme.of(context).primaryColor,
+                                decoration: InputDecoration(
+                                  contentPadding: EdgeInsets.zero,
+                                  isCollapsed: true,
+                                  filled: true,
+                                  fillColor: Colors.white70,
+                                  hintText: 'Message',
+                                  hintStyle:
+                                      TextStyle(color: Colors.grey.shade600),
+                                  border: InputBorder.none,
+                                  prefixIcon: IconButton(
+                                    icon: _emojiBoardShown
+                                        ? Icon(
+                                            Icons.keyboard,
+                                            color: Colors.grey.shade600,
+                                          )
+                                        : Icon(
+                                            Icons.emoji_emotions_outlined,
+                                            color: Colors.grey.shade600,
+                                          ),
+                                    onPressed: () {
+                                      FocusManager.instance.primaryFocus
+                                          ?.unfocus();
+                                      setState(() {
+                                        _emojiBoardShown = !_emojiBoardShown;
+                                      });
+                                    },
+                                  ),
+                                  suffixIcon: (_textMessage)
+                                      ? null
+                                      : Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            IconButton(
+                                              icon: Icon(
+                                                Icons.attach_file,
                                                 color: Colors.grey.shade600,
                                               ),
-                                        onPressed: () {
-                                          FocusManager.instance.primaryFocus
-                                              ?.unfocus();
-                                          setState(() {
-                                            _emojiBoardShown =
-                                                !_emojiBoardShown;
-                                          });
-                                        },
-                                      ),
-                                      suffixIcon: (_textMessage)
-                                          ? null
-                                          : Row(
-                                              mainAxisSize: MainAxisSize.min,
-                                              children: [
-                                                IconButton(
-                                                  icon: Icon(
-                                                    Icons.attach_file,
-                                                    color: Colors.grey.shade600,
-                                                  ),
-                                                  onPressed: () {
-                                                    print("attachment");
-                                                  },
-                                                ),
-                                                IconButton(
-                                                  icon: Icon(
-                                                    Icons.camera_alt,
-                                                    color: Colors.grey.shade600,
-                                                  ),
-                                                  onPressed: () {
-                                                    print("camera");
-                                                    // Navigator.push(
-                                                    //     context,
-                                                    //     MaterialPageRoute(
-                                                    //         builder: (builder) =>
-                                                    //             CameraApp()));
-                                                  },
-                                                ),
-                                              ],
+                                              onPressed: () {
+                                                print("attachment");
+                                              },
                                             ),
-                                    ),
-                                    onChanged: (text) {
-                                      setState(() {
-                                        _textMessage = text.trim().isNotEmpty;
-                                      });
-                                    },
-                                    onTap: () {
-                                      setState(() {
-                                        _emojiBoardShown = false;
-                                      });
-                                    },
-                                    minLines: 1,
-                                    maxLines: 5,
-                                  )
-                                : const SizedBox(width: 0),
-                          ),
+                                            IconButton(
+                                              icon: Icon(
+                                                Icons.camera_alt,
+                                                color: Colors.grey.shade600,
+                                              ),
+                                              onPressed: () {
+                                                print("camera");
+                                                // Navigator.push(
+                                                //     context,
+                                                //     MaterialPageRoute(
+                                                //         builder: (builder) =>
+                                                //             CameraApp()));
+                                              },
+                                            ),
+                                          ],
+                                        ),
+                                ),
+                                onChanged: (text) {
+                                  setState(() {
+                                    _textMessage = text.trim().isNotEmpty;
+                                  });
+                                },
+                                onTap: () {
+                                  setState(() {
+                                    _emojiBoardShown = false;
+                                  });
+                                },
+                                minLines: 1,
+                                maxLines: 5,
+                              )),
                         ),
                       ),
                       const SizedBox(width: 8),
