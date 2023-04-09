@@ -1,21 +1,15 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:fyp_chat_app/models/account.dart';
 import 'package:fyp_chat_app/models/group_chat.dart';
 import 'package:fyp_chat_app/models/group_member.dart';
 import 'package:fyp_chat_app/models/one_to_one_chat.dart';
 import 'package:fyp_chat_app/models/user_state.dart';
 import 'package:fyp_chat_app/network/block_api.dart';
-import 'package:fyp_chat_app/network/group_chat_api.dart';
 import 'package:fyp_chat_app/screens/chatroom/chatroom_screen.dart';
 import 'package:fyp_chat_app/screens/home/create_group_screen.dart';
-import 'package:fyp_chat_app/storage/account_store.dart';
 import 'package:fyp_chat_app/storage/chatroom_store.dart';
-import 'package:fyp_chat_app/storage/group_member_store.dart';
 import 'package:fyp_chat_app/storage/block_store.dart';
 import 'package:provider/provider.dart';
 import 'package:fyp_chat_app/models/chatroom.dart';
-import 'package:fyp_chat_app/network/events_api.dart';
 
 class ContactInfo extends StatelessWidget {
   const ContactInfo({
@@ -29,18 +23,6 @@ class ContactInfo extends StatelessWidget {
 
   // Change the data type of the lists below if necessary
   static List<int> _media = [1, 2, 3, 4, 5, 6, 7, 8, 9];
-  static List<int> _common_group = [1, 2, 3];
-  static List<int> _members = [1, 2, 3];
-
-  // Placeholder lists, can remove later
-  static List<Color> _colors = [Colors.amber, Colors.red, Colors.green];
-  static List<IconData> _icons = [Icons.edit, Icons.rocket, Icons.forest];
-  static List<String> _groupnames = [
-    "UST COMP study group",
-    "Team Rocket",
-    "Dragon's Back Hikers"
-  ];
-  //static List<Chatroom> commonGroupChat = checkCommonGroupChat();
 
   static Future<bool> checkSelfAccount(
       Chatroom chatroom, int index, UserState myAcc) async {
@@ -50,6 +32,28 @@ class ContactInfo extends StatelessWidget {
     if ((chatroom as GroupChat).members[index - 1].user.userId ==
         myAcc.me!.userId) {
       return true;
+    }
+    return false;
+  }
+
+  static Future<List<Chatroom>> checkCommonGroupChat(Chatroom chatroom) async {
+    if (chatroom.type == ChatroomType.group) {
+      return [];
+    }
+    List<Chatroom> grouplist = await ChatroomStore().getAllChatroom();
+    return grouplist
+        .where((element) => element.type == ChatroomType.group)
+        .where((element) => checkIfInGroup(
+            (chatroom as OneToOneChat).target.userId,
+            (element as GroupChat).members))
+        .toList();
+  }
+
+  static bool checkIfInGroup(String id, List<GroupMember> memberList) {
+    for (var element in memberList) {
+      if (id == element.user.userId) {
+        return true;
+      }
     }
     return false;
   }
@@ -377,7 +381,7 @@ class ContactInfo extends StatelessWidget {
                       children: const [
                         SizedBox(width: 16),
                         Text(
-                          "No groups in common", // isGroup ? "$participants members" : "$groups groups in common",
+                          "Groups in common", // isGroup ? "$participants members" : "$groups groups in common",
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w500,
@@ -408,17 +412,17 @@ class ContactInfo extends StatelessWidget {
                             child: Padding(
                               padding: const EdgeInsets.symmetric(vertical: 8),
                               child: Row(
-                                children: [
-                                  const SizedBox(width: 16),
-                                  const CircleAvatar(
+                                children: const [
+                                  SizedBox(width: 16),
+                                  CircleAvatar(
                                     radius: 24,
                                     child: Icon(Icons.add,
                                         size: 24, color: Colors.white),
                                     backgroundColor: Colors.blueGrey,
                                   ),
-                                  const SizedBox(width: 16),
+                                  SizedBox(width: 16),
                                   Text("Add members...",
-                                      style: const TextStyle(fontSize: 16))
+                                      style: TextStyle(fontSize: 16))
                                 ],
                               ),
                             ),
@@ -447,7 +451,7 @@ class ContactInfo extends StatelessWidget {
                             child: Row(
                               children: [
                                 const SizedBox(width: 16),
-                                CircleAvatar(
+                                const CircleAvatar(
                                   radius: 24,
                                   child: Icon(Icons.person,
                                       size: 28, color: Colors.white),
@@ -477,62 +481,80 @@ class ContactInfo extends StatelessWidget {
                       })
                   :
                   // oneToOne Chatroom List View
-                  ListView.builder(
-                      // +1 for add members / create group with the user
-                      shrinkWrap: true,
-                      itemCount: _common_group.length + 1,
-                      itemBuilder: (context, index) {
-                        // Add member / add to group
-                        if (index == 0) {
-                          return InkWell(
-                            onTap: () {/* isGroup ? addMember : addGroup */},
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 8),
-                              child: Row(
-                                children: [
-                                  const SizedBox(width: 16),
-                                  const CircleAvatar(
-                                    radius: 24,
-                                    child: Icon(Icons.add,
-                                        size: 24, color: Colors.white),
-                                    backgroundColor: Colors.blueGrey,
+                  // TODO: Debug common group list
+                  FutureBuilder(
+                      future: checkCommonGroupChat(chatroom),
+                      builder: (context, snapshot) {
+                        if (!snapshot.hasData) {
+                          return const Center(
+                              child: CircularProgressIndicator());
+                        } else {
+                          return ListView.builder(
+                              // +1 for add members / create group with the user
+                              shrinkWrap: true,
+                              itemCount:
+                                  (snapshot.data as List<Chatroom>).length +
+                                      1,
+                              itemBuilder: (context, index) {
+                                // Add member / add to group
+                                if (index == 0) {
+                                  return InkWell(
+                                    onTap: () {
+                                      /* isGroup ? addMember : addGroup */
+                                    },
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 8),
+                                      child: Row(
+                                        children: const [
+                                          SizedBox(width: 16),
+                                          CircleAvatar(
+                                            radius: 24,
+                                            child: Icon(Icons.add,
+                                                size: 24,
+                                                color: Colors.white),
+                                            backgroundColor: Colors.blueGrey,
+                                          ),
+                                          SizedBox(width: 16),
+                                          Text("Add to a group",
+                                              style: TextStyle(fontSize: 16))
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                }
+                                // Common groups
+                                return InkWell(
+                                  onTap: () {
+                                    
+                                  },
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 8),
+                                    child: Row(
+                                      children: [
+                                        const SizedBox(width: 16),
+                                        const CircleAvatar(
+                                          radius: 24,
+                                          child: Icon(Icons.group),
+                                          backgroundColor: Colors.blueGrey,
+                                        ),
+                                        const SizedBox(width: 16),
+                                        Text(
+                                            // isGroup ? _members[index].name : _common_group[index].name,
+                                            (snapshot.data as List<Chatroom>)[
+                                                    index - 1]
+                                                .name,
+                                            style:
+                                                const TextStyle(fontSize: 16))
+                                      ],
+                                    ),
                                   ),
-                                  const SizedBox(width: 16),
-                                  Text("Add to a group",
-                                      style: const TextStyle(fontSize: 16))
-                                ],
-                              ),
-                            ),
-                          );
+                                );
+                              });
                         }
-                        // Common groups
-                        return InkWell(
-                          onTap: () {
-                            /* direct to group chat */
-                          },
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 8),
-                            child: Row(
-                              children: [
-                                const SizedBox(width: 16),
-                                CircleAvatar(
-                                  radius: 24,
-                                  child: Icon(_icons[index - 1],
-                                      size: 24, color: Colors.white),
-                                  backgroundColor: _colors[index - 1],
-                                ),
-                                const SizedBox(width: 16),
-                                Text(
-                                    // isGroup ? _members[index].name : _common_group[index].name,
-                                    (chatroom.type == ChatroomType.group)
-                                        ? "Add members..."
-                                        : _groupnames[index - 1],
-                                    style: const TextStyle(fontSize: 16))
-                              ],
-                            ),
-                          ),
-                        );
                       }),
+
               const Divider(thickness: 2, indent: 8, endIndent: 8),
               // Block / Leave group
               if ((chatroom.type == ChatroomType.group)) ...[
