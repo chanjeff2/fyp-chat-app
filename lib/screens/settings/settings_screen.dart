@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fyp_chat_app/models/user_state.dart';
+import 'package:fyp_chat_app/screens/settings/chat_screen.dart';
+import 'package:fyp_chat_app/screens/settings/notification_screen.dart';
 import 'package:fyp_chat_app/screens/settings/profile_screen.dart';
 import 'package:provider/provider.dart';
 
@@ -85,13 +87,13 @@ class SettingsScreen extends StatelessWidget {
         }
       case chat:
         {
-          print("Chat");
-          break;
+          return Navigator.of(context).push(
+              MaterialPageRoute(builder: (context) => const ChatScreen()));
         }
       case notifications:
         {
-          print("Notifications");
-          break;
+          return Navigator.of(context).push(MaterialPageRoute(
+              builder: (context) => const NotificationScreen()));
         }
     }
   }
