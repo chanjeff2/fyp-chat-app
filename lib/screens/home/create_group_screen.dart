@@ -134,7 +134,7 @@ class _CreateGroupScreen extends State<CreateGroupScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Create Group"),
+        title: Text(widget.isCreateGroup ? "Create Group" : "Add new user"),
       ),
       body: FutureBuilder<bool>(
         future: _loadChatroomFuture,
