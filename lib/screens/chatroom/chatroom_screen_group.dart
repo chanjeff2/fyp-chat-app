@@ -19,6 +19,8 @@ import 'package:flutter_chat_ui/flutter_chat_ui.dart';
 import 'package:bubble/bubble.dart';
 import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
 
+import 'package:url_launcher/url_launcher.dart';
+
 class ChatRoomScreenGroup extends StatefulWidget {
   const ChatRoomScreenGroup({
     Key? key,
@@ -552,6 +554,7 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
                       )),
                 ),
               ]),
+              onMessageTap: _handleMessageTap,
             );
           },
         ),
@@ -579,6 +582,24 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
 
       case 3:
         break;
+    }
+  }
+
+  void _handleMessageTap(BuildContext _, types.Message message) async {
+    if (message is types.TextMessage) {
+      var path = message.text;
+
+      if (path.startsWith('http')) {
+        try {
+          // Update tapped file message to show loading spinner
+          final Uri _url = Uri.parse(path);
+          if (await canLaunchUrl(_url)) {
+            await launchUrl(_url);
+          } else {
+            throw Exception("cannot open the link");
+          }
+        } finally {}
+      }
     }
   }
 }
