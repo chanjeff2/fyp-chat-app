@@ -63,7 +63,7 @@ class _SelectContactState extends State<SelectContact> {
                         Navigator.of(context).push(MaterialPageRoute(
                           builder: (context) => CreateGroupScreen(
                             onNewChatroom: widget.onNewChatroom,
-                            isCreateGroup: true,
+                            isCreateGroup: true, fromContactInfo: false,
                           ),
                         ));
                       },

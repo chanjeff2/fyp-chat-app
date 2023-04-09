@@ -5,6 +5,7 @@ import 'package:fyp_chat_app/models/one_to_one_chat.dart';
 import 'package:fyp_chat_app/models/user_state.dart';
 import 'package:fyp_chat_app/network/block_api.dart';
 import 'package:fyp_chat_app/screens/chatroom/chatroom_screen.dart';
+import 'package:fyp_chat_app/screens/chatroom/chatroom_screen_group.dart';
 import 'package:fyp_chat_app/screens/home/create_group_screen.dart';
 import 'package:fyp_chat_app/storage/chatroom_store.dart';
 import 'package:fyp_chat_app/storage/block_store.dart';
@@ -191,6 +192,7 @@ class ContactInfo extends StatelessWidget {
                               Navigator.of(context).push(MaterialPageRoute(
                                 builder: (context) => CreateGroupScreen(
                                   isCreateGroup: false,
+                                  fromContactInfo: false,
                                   group: chatroom as GroupChat,
                                 ),
                               ));
@@ -405,6 +407,7 @@ class ContactInfo extends StatelessWidget {
                               Navigator.of(context).push(MaterialPageRoute(
                                 builder: (context) => CreateGroupScreen(
                                   isCreateGroup: false,
+                                  fromContactInfo: false,
                                   group: chatroom as GroupChat,
                                 ),
                               ));
@@ -481,7 +484,6 @@ class ContactInfo extends StatelessWidget {
                       })
                   :
                   // oneToOne Chatroom List View
-                  // TODO: Debug common group list
                   FutureBuilder(
                       future: checkCommonGroupChat(chatroom),
                       builder: (context, snapshot) {
@@ -493,8 +495,7 @@ class ContactInfo extends StatelessWidget {
                               // +1 for add members / create group with the user
                               shrinkWrap: true,
                               itemCount:
-                                  (snapshot.data as List<Chatroom>).length +
-                                      1,
+                                  (snapshot.data as List<Chatroom>).length + 1,
                               itemBuilder: (context, index) {
                                 // Add member / add to group
                                 if (index == 0) {
@@ -511,8 +512,7 @@ class ContactInfo extends StatelessWidget {
                                           CircleAvatar(
                                             radius: 24,
                                             child: Icon(Icons.add,
-                                                size: 24,
-                                                color: Colors.white),
+                                                size: 24, color: Colors.white),
                                             backgroundColor: Colors.blueGrey,
                                           ),
                                           SizedBox(width: 16),
@@ -526,11 +526,17 @@ class ContactInfo extends StatelessWidget {
                                 // Common groups
                                 return InkWell(
                                   onTap: () {
-                                    
+                                    Navigator.of(context).push(
+                                        MaterialPageRoute(
+                                            builder: (context) =>
+                                                ChatRoomScreenGroup(
+                                                    chatroom: (snapshot.data
+                                                            as List<Chatroom>)[
+                                                        index - 1])));
                                   },
                                   child: Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        vertical: 8),
+                                    padding:
+                                        const EdgeInsets.symmetric(vertical: 8),
                                     child: Row(
                                       children: [
                                         const SizedBox(width: 16),

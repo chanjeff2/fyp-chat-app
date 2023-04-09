@@ -21,10 +21,12 @@ class CreateGroupScreen extends StatefulWidget {
     Key? key,
     this.onNewChatroom,
     required this.isCreateGroup,
+    required this.fromContactInfo,
     this.group,
   }) : super(key: key);
   final void Function(Chatroom)? onNewChatroom;
   final bool isCreateGroup;
+  final bool fromContactInfo;
   final GroupChat? group;
   @override
   State<CreateGroupScreen> createState() => _CreateGroupScreen();
@@ -210,19 +212,17 @@ class _CreateGroupScreen extends State<CreateGroupScreen> {
             Navigator.of(context).pop();
             widget.onNewChatroom?.call(group);
             //print(outputArray);
-            //add yourself to group member list
-            Account? myAcc = UserState().me;
-            if (myAcc != null) {
-              GroupMemberStore().save(
-                  group.id,
-                  GroupMember(
-                      user: myAcc,
-                      role: Role.member));
-              //read the member stored and add the member to group member list
-              GroupMember? storedMember = await GroupMemberStore()
-                  .getbyUserID(myAcc.userId);
-              group.members.add(storedMember!);
-            }
+            //------------------ add yourself to group member list ---------------------------
+            // Account? myAcc = UserState().me;
+            // if (myAcc != null) {
+            //   GroupMemberStore()
+            //       .save(group.id, GroupMember(user: myAcc, role: Role.member));
+            //   //read the member stored and add the member to group member list
+            //   GroupMember? storedMember =
+            //       await GroupMemberStore().getbyUserID(myAcc.userId);
+            //   group.members.add(storedMember!);
+            // // ----------------- end of comment ---------------------------
+            // }
           } else {
             Navigator.of(context).pop();
             Navigator.of(context).pop();
