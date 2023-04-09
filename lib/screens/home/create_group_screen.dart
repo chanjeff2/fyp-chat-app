@@ -3,10 +3,12 @@ import 'package:fyp_chat_app/components/palette.dart';
 import 'package:fyp_chat_app/dto/create_group_dto.dart';
 import 'package:fyp_chat_app/dto/group_member_dto.dart';
 import 'package:fyp_chat_app/dto/send_invitation_dto.dart';
+import 'package:fyp_chat_app/models/account.dart';
 import 'package:fyp_chat_app/models/chatroom.dart';
 import 'package:fyp_chat_app/models/group_member.dart';
 import 'package:fyp_chat_app/models/one_to_one_chat.dart';
 import 'package:fyp_chat_app/models/user.dart';
+import 'package:fyp_chat_app/models/user_state.dart';
 import 'package:fyp_chat_app/network/api.dart';
 import 'package:fyp_chat_app/network/group_chat_api.dart';
 import 'package:fyp_chat_app/storage/chatroom_store.dart';
@@ -208,7 +210,19 @@ class _CreateGroupScreen extends State<CreateGroupScreen> {
             Navigator.of(context).pop();
             widget.onNewChatroom?.call(group);
             //print(outputArray);
-            //invite member
+            //add yourself to group member list
+            Account? myAcc = UserState().me;
+            if (myAcc != null) {
+              GroupMemberStore().save(
+                  group.id,
+                  GroupMember(
+                      user: myAcc,
+                      role: Role.member));
+              //read the member stored and add the member to group member list
+              GroupMember? storedMember = await GroupMemberStore()
+                  .getbyUserID(myAcc.userId);
+              group.members.add(storedMember!);
+            }
           } else {
             Navigator.of(context).pop();
             Navigator.of(context).pop();
