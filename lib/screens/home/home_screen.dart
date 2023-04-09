@@ -36,6 +36,9 @@ class _HomeScreenState extends State<HomeScreen> {
   List<Chatroom> chatroomListForDeleteToGestureDetector = [];
   int chatroomListForDeleteToGestureDetectorID = 0;
 
+  final TextEditingController _keywordController = TextEditingController();
+  bool _isSearching = false;
+
   @override
   void initState() {
     super.initState();
@@ -77,11 +80,46 @@ class _HomeScreenState extends State<HomeScreen> {
     return Consumer<UserState>(
       builder: (context, userState, child) => Scaffold(
         appBar: AppBar(
-          title: const Text("USTalk"),
-          actions: [
+          title: _isSearching 
+                ? TextField(
+                    enabled: true,
+                    textAlignVertical: TextAlignVertical.center,
+                    keyboardType: TextInputType.multiline,
+                    controller: _keywordController,
+                    style: const TextStyle(color: Colors.white),
+                    cursorColor: Colors.white,
+                    decoration: InputDecoration(
+                      contentPadding: EdgeInsets.zero,
+                      isCollapsed: true,
+                      filled: true,
+                      hintText: 'Search by chatroom name...',
+                      hintStyle: TextStyle(color: Colors.grey.shade200),
+                      border: InputBorder.none,
+                      prefixIcon: IconButton(
+                        icon: const Icon(
+                                Icons.arrow_back,
+                                color: Colors.white,
+                              ),
+                        onPressed: () {
+                          setState(() {
+                            _isSearching = false;
+                          });
+                        },
+                      ),
+                    ),
+                    maxLines: 1,
+                    onChanged: (text) {
+                    },
+                  )
+                : const Text("USTalk"),
+          actions: _isSearching
+          ? null
+          : [
             IconButton(
               onPressed: () {
-                print("Search - To be implemented");
+                setState(() {
+                  _isSearching = true;
+                });
               },
               icon: const Icon(Icons.search),
             ),
@@ -98,7 +136,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 _buildPopupMenuItem('Logout', Icons.logout, 1),
               ],
             ),
-          ],
+          ]
         ),
         body: FutureBuilder<bool>(
           future: _loadChatroomFuture,
