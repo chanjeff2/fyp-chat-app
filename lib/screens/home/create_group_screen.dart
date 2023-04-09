@@ -13,6 +13,7 @@ import 'package:fyp_chat_app/network/api.dart';
 import 'package:fyp_chat_app/network/group_chat_api.dart';
 import 'package:fyp_chat_app/storage/chatroom_store.dart';
 import 'package:fyp_chat_app/storage/group_member_store.dart';
+import 'package:provider/provider.dart';
 
 import '../../models/group_chat.dart';
 
@@ -117,7 +118,7 @@ class _CreateGroupScreen extends State<CreateGroupScreen> {
             groupId,
             SendInvitationDto(
                 target: element.id, sentAt: DateTime.now().toIso8601String()));
-        print(element.name);
+        //print(element.name);
         //store the member added
         GroupMemberStore().save(
             groupId,
@@ -136,103 +137,116 @@ class _CreateGroupScreen extends State<CreateGroupScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.isCreateGroup ? "Create Group" : "Add new user"),
-      ),
-      body: FutureBuilder<bool>(
-        future: _loadChatroomFuture,
-        builder: (_, snapshot) {
-          if (!snapshot.hasData) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
-          }
-          //list of contact
-          return ListView.builder(
-            itemBuilder: (context, index) {
-              return InkWell(
-                onTap: () {
-                  setState(() {
-                    isChecked[index] = !(isChecked[index]);
-                  });
+    return Consumer<UserState>(
+        builder: (context, userState, child) => Scaffold(
+              appBar: AppBar(
+                title: Text(
+                    widget.isCreateGroup ? "Create Group" : "Add new user"),
+              ),
+              body: FutureBuilder<bool>(
+                future: _loadChatroomFuture,
+                builder: (_, snapshot) {
+                  if (!snapshot.hasData) {
+                    return const Center(
+                      child: CircularProgressIndicator(),
+                    );
+                  }
+                  //list of contact
+                  return ListView.builder(
+                    itemBuilder: (context, index) {
+                      return InkWell(
+                        onTap: () {
+                          setState(() {
+                            isChecked[index] = !(isChecked[index]);
+                          });
+                        },
+                        child: ListTile(
+                          contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 8),
+                          tileColor: isChecked[index]
+                              ? Palette.ustGrey[500]
+                              : Colors.white,
+                          leading: const CircleAvatar(
+                            child: Icon(Icons.person,
+                                size: 28, color: Colors.white),
+                            radius: 28,
+                            backgroundColor: Colors.blueGrey,
+                          ),
+                          title: Text(
+                            filterList[index].name,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          subtitle: const Text(
+                            "Hi! I'm using USTalk.", // Status
+                            style: TextStyle(
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                    itemCount: filterList.length,
+                  );
                 },
-                child: ListTile(
-                  contentPadding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  tileColor:
-                      isChecked[index] ? Palette.ustGrey[500] : Colors.white,
-                  leading: const CircleAvatar(
-                    child: Icon(Icons.person, size: 28, color: Colors.white),
-                    radius: 28,
-                    backgroundColor: Colors.blueGrey,
-                  ),
-                  title: Text(
-                    filterList[index].name,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  subtitle: const Text(
-                    "Hi! I'm using USTalk.", // Status
-                    style: TextStyle(
-                      fontSize: 14,
-                    ),
-                  ),
-                ),
-              );
-            },
-            itemCount: filterList.length,
-          );
-        },
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          outputArray = filterList
-              .where((element) => isChecked[filterList.indexOf(element)])
-              .toList();
-          if (widget.isCreateGroup) {
-            final name = await inputDialog(
-              "Add Group",
-              "Please enter the Group name",
-            );
-            if (name == null || name.isEmpty) return;
-            //create group
-            try {
-              group =
-                  await GroupChatApi().createGroup(CreateGroupDto(name: name));
-            } on ApiException catch (e) {
-              ScaffoldMessenger.of(context)
-                  .showSnackBar(SnackBar(content: Text("error: ${e.message}")));
-            }
-            await ChatroomStore().save(group);
-            // callback and return to home
-            Navigator.of(context).pop();
-            Navigator.of(context).pop();
-            widget.onNewChatroom?.call(group);
-            //print(outputArray);
-            //------------------ add yourself to group member list ---------------------------
-            // Account? myAcc = UserState().me;
-            // if (myAcc != null) {
-            //   GroupMemberStore()
-            //       .save(group.id, GroupMember(user: myAcc, role: Role.member));
-            //   //read the member stored and add the member to group member list
-            //   GroupMember? storedMember =
-            //       await GroupMemberStore().getbyUserID(myAcc.userId);
-            //   group.members.add(storedMember!);
-            // // ----------------- end of comment ---------------------------
-            // }
-          } else {
-            Navigator.of(context).pop();
-            Navigator.of(context).pop();
-          }
-          // TODO : debug
-          inviteMemberToGroup(outputArray, group.id);
-        },
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ),
-    );
+              ),
+              floatingActionButton: FloatingActionButton(
+                onPressed: () async {
+                  outputArray = filterList
+                      .where(
+                          (element) => isChecked[filterList.indexOf(element)])
+                      .toList();
+                  if (widget.isCreateGroup) {
+                    final name = await inputDialog(
+                      "Add Group",
+                      "Please enter the Group name",
+                    );
+                    if (name == null || name.isEmpty) return;
+                    //create group
+                    try {
+                      group = await GroupChatApi()
+                          .createGroup(CreateGroupDto(name: name));
+                    } on ApiException catch (e) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text("error: ${e.message}")));
+                    }
+                    await ChatroomStore().save(group);
+                    // callback and return to home
+                    Navigator.of(context).pop();
+                    Navigator.of(context).pop();
+
+                    widget.onNewChatroom?.call(group);
+                    //------------------ add yourself to group member list ---------------------------
+                    // Account? myAcc = userState.me;
+                    // print(myAcc);
+                    // if (myAcc != null) {
+                    //   GroupMemberStore().save(
+                    //       group.id, GroupMember(user: (myAcc as User), role: Role.admin));
+                    //   //read the member stored and add the member to group member list
+                    //   // GroupMember? storedMember =
+                    //   //     await GroupMemberStore().getbyUserID(myAcc.userId);
+                    //   // print(storedMember);
+                    //   // group.members.add(storedMember!);
+                    //   List<GroupMember> yo =
+                    //       await GroupMemberStore().getByChatroomId(group.id);
+                    //   for (var i in yo) {
+                    //     print(i.user.name);
+                    //   }
+                    // }
+                    // ----------------- end of comment ---------------------------
+                    //print(outputArray);
+                  } else {
+                    Navigator.of(context).pop();
+                    Navigator.of(context).pop();
+                  }
+                  // TODO : debug
+                  inviteMemberToGroup(outputArray, group.id);
+                },
+                tooltip: 'Increment',
+                child: const Icon(Icons.add),
+              ),
+            ));
   }
 }

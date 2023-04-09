@@ -9,6 +9,7 @@ import 'package:fyp_chat_app/screens/chatroom/chatroom_screen_group.dart';
 import 'package:fyp_chat_app/screens/home/create_group_screen.dart';
 import 'package:fyp_chat_app/storage/chatroom_store.dart';
 import 'package:fyp_chat_app/storage/block_store.dart';
+import 'package:fyp_chat_app/storage/group_member_store.dart';
 import 'package:provider/provider.dart';
 import 'package:fyp_chat_app/models/chatroom.dart';
 
@@ -26,7 +27,7 @@ class ContactInfo extends StatelessWidget {
   static List<int> _media = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
   static Future<bool> checkSelfAccount(
-      Chatroom chatroom, int index, UserState myAcc) async {
+      GroupMember chatroom, int index, UserState myAcc) async {
     if (myAcc.me == null) {
       return true;
     }
@@ -236,9 +237,11 @@ class ContactInfo extends StatelessWidget {
                       fontWeight: FontWeight.w500,
                     ),
                   ),
-                  subtitle: const Text(
-                    "Hi! I'm using USTalk.",
-                    style: TextStyle(
+                  subtitle: Text(
+                    (chatroom.type == ChatroomType.group)
+                        ? "This is a new USTalk group!"
+                        : "Hi! I'm using USTalk.",
+                    style: const TextStyle(
                       fontSize: 16,
                     ),
                   ),
@@ -395,92 +398,117 @@ class ContactInfo extends StatelessWidget {
               (chatroom.type == ChatroomType.group)
                   ?
                   //Group List View
-                  ListView.builder(
-                      // +1 for add members
-                      shrinkWrap: true,
-                      itemCount: (chatroom as GroupChat).members.length + 1,
-                      itemBuilder: (context, index) {
-                        // Add member
-                        if (index == 0) {
-                          return InkWell(
-                            onTap: () {
-                              Navigator.of(context).push(MaterialPageRoute(
-                                builder: (context) => CreateGroupScreen(
-                                  isCreateGroup: false,
-                                  fromContactInfo: false,
-                                  group: chatroom as GroupChat,
-                                ),
-                              ));
-                            },
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 8),
-                              child: Row(
-                                children: const [
-                                  SizedBox(width: 16),
-                                  CircleAvatar(
-                                    radius: 24,
-                                    child: Icon(Icons.add,
-                                        size: 24, color: Colors.white),
-                                    backgroundColor: Colors.blueGrey,
+                  FutureBuilder(
+                      future: GroupMemberStore().getByChatroomId(chatroom.id),
+                      builder: (context, snapshot) {
+                        if (!snapshot.hasData) {
+                          return const Center(
+                              child: CircularProgressIndicator());
+                        } else {
+                          return ListView.builder(
+                              // +1 for add members
+                              shrinkWrap: true,
+                              itemCount:
+                                  (snapshot.data as List<GroupMember>).length +
+                                      1,
+                              itemBuilder: (context, index) {
+                                // Add member
+                                if (index == 0) {
+                                  return InkWell(
+                                    onTap: () {
+                                      // for (var i in (snapshot.data
+                                      //     as List<GroupMember>)) {
+                                      //   print(i.user.name);
+                                      // }
+                                      Navigator.of(context)
+                                          .push(MaterialPageRoute(
+                                        builder: (context) => CreateGroupScreen(
+                                          isCreateGroup: false,
+                                          fromContactInfo: false,
+                                          group: chatroom as GroupChat,
+                                        ),
+                                      ));
+                                    },
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 8),
+                                      child: Row(
+                                        children: const [
+                                          SizedBox(width: 16),
+                                          CircleAvatar(
+                                            radius: 24,
+                                            child: Icon(Icons.add,
+                                                size: 24, color: Colors.white),
+                                            backgroundColor: Colors.blueGrey,
+                                          ),
+                                          SizedBox(width: 16),
+                                          Text("Add members...",
+                                              style: TextStyle(fontSize: 16))
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                }
+
+                                // Group members
+                                return InkWell(
+                                  onTap: () async {
+                                    /* direct to OneToOne chat */
+                                    if (!(await checkSelfAccount(
+                                        (snapshot.data
+                                            as List<GroupMember>)[index - 1],
+                                        index,
+                                        userState))) {
+                                      Chatroom? pmChatroom =
+                                          await ChatroomStore().get(
+                                              (snapshot.data as List<
+                                                      GroupMember>)[index - 1]
+                                                  .user
+                                                  .userId);
+                                      Navigator.of(context).push(
+                                          MaterialPageRoute(
+                                              builder: (context) =>
+                                                  ChatRoomScreen(
+                                                      chatroom: pmChatroom!)));
+                                    }
+                                  },
+                                  child: Padding(
+                                    padding:
+                                        const EdgeInsets.symmetric(vertical: 8),
+                                    child: Row(
+                                      children: [
+                                        const SizedBox(width: 16),
+                                        const CircleAvatar(
+                                          radius: 24,
+                                          child: Icon(Icons.person,
+                                              size: 28, color: Colors.white),
+                                          backgroundColor: Colors.blueGrey,
+                                        ),
+                                        const SizedBox(width: 16),
+                                        Text(
+                                            // isGroup ? _members[index].name : _common_group[index].name,
+                                            ((snapshot.data as List<
+                                                                GroupMember>)[
+                                                            index - 1]
+                                                        .user
+                                                        .displayName ==
+                                                    null)
+                                                ? (snapshot.data as List<
+                                                        GroupMember>)[index - 1]
+                                                    .user
+                                                    .username
+                                                : (snapshot.data as List<
+                                                        GroupMember>)[index - 1]
+                                                    .user
+                                                    .displayName!,
+                                            style:
+                                                const TextStyle(fontSize: 16))
+                                      ],
+                                    ),
                                   ),
-                                  SizedBox(width: 16),
-                                  Text("Add members...",
-                                      style: TextStyle(fontSize: 16))
-                                ],
-                              ),
-                            ),
-                          );
+                                );
+                              });
                         }
-
-                        // Group members
-                        return InkWell(
-                          onTap: () async {
-                            /* direct to OneToOne chat */
-
-                            if (!(await checkSelfAccount(
-                                chatroom, index, userState))) {
-                              Chatroom? pmChatroom = await ChatroomStore().get(
-                                  (chatroom as GroupChat)
-                                      .members[index - 1]
-                                      .user
-                                      .userId);
-                              Navigator.of(context).push(MaterialPageRoute(
-                                  builder: (context) =>
-                                      ChatRoomScreen(chatroom: pmChatroom!)));
-                            }
-                          },
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 8),
-                            child: Row(
-                              children: [
-                                const SizedBox(width: 16),
-                                const CircleAvatar(
-                                  radius: 24,
-                                  child: Icon(Icons.person,
-                                      size: 28, color: Colors.white),
-                                  backgroundColor: Colors.blueGrey,
-                                ),
-                                const SizedBox(width: 16),
-                                Text(
-                                    // isGroup ? _members[index].name : _common_group[index].name,
-                                    ((chatroom as GroupChat)
-                                                .members[index - 1]
-                                                .user
-                                                .displayName ==
-                                            null)
-                                        ? (chatroom as GroupChat)
-                                            .members[index - 1]
-                                            .user
-                                            .username
-                                        : (chatroom as GroupChat)
-                                            .members[index - 1]
-                                            .user
-                                            .displayName!,
-                                    style: const TextStyle(fontSize: 16))
-                              ],
-                            ),
-                          ),
-                        );
                       })
                   :
                   // oneToOne Chatroom List View
