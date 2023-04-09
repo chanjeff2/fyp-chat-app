@@ -99,10 +99,14 @@ class HomeContact extends StatelessWidget {
           subtitle: Row(
             children: [
               if (chatroom.latestMessage != null)
-                Text(
-                  chatroom.latestMessage!.content, // Latest message
-                  style: const TextStyle(
-                    fontSize: 14,
+                Expanded(
+                  child: Text(
+                    chatroom.latestMessage!.content, // Latest message
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 14,
+                    ),
                   ),
                 ),
               const Spacer(),
