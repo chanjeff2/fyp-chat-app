@@ -57,6 +57,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<bool> _loadChatroom() async {
+    _chatroomMap.clear();
     final chatroomList = await ChatroomStore().getAllChatroom();
     setState(() {
       _chatroomMap.addEntries(chatroomList.map((e) => MapEntry(e.id, e)));
@@ -123,14 +124,20 @@ class _HomeScreenState extends State<HomeScreen> {
                     onClick: () {
                       switch (chatroomList[i].type) {
                         case ChatroomType.oneToOne:
-                          Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) =>
-                                  ChatRoomScreen(chatroom: chatroomList[i])));
+                          Navigator.of(context)
+                              .push(MaterialPageRoute(
+                                  builder: (context) => ChatRoomScreen(
+                                      chatroom: chatroomList[i])))
+                              .then(
+                                  (value) => setState(() => {_loadChatroom()}));
                           break;
                         case ChatroomType.group:
-                          Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) => ChatRoomScreenGroup(
-                                  chatroom: chatroomList[i])));
+                          Navigator.of(context)
+                              .push(MaterialPageRoute(
+                                  builder: (context) => ChatRoomScreenGroup(
+                                      chatroom: chatroomList[i])))
+                              .then(
+                                  (value) => setState(() => {_loadChatroom()}));
                           break;
                       }
                     }),
@@ -148,13 +155,17 @@ class _HomeScreenState extends State<HomeScreen> {
                 });
                 switch (chatroom.type) {
                   case ChatroomType.oneToOne:
-                    Navigator.of(context).push(MaterialPageRoute(
-                        builder: (_) => ChatRoomScreen(chatroom: chatroom)));
+                    Navigator.of(context)
+                        .push(MaterialPageRoute(
+                            builder: (_) => ChatRoomScreen(chatroom: chatroom)))
+                        .then((value) => setState(() => {_loadChatroom()}));
                     break;
                   case ChatroomType.group:
-                    Navigator.of(context).push(MaterialPageRoute(
-                        builder: (_) =>
-                            ChatRoomScreenGroup(chatroom: chatroom)));
+                    Navigator.of(context)
+                        .push(MaterialPageRoute(
+                            builder: (_) =>
+                                ChatRoomScreenGroup(chatroom: chatroom)))
+                        .then((value) => setState(() => {_loadChatroom()}));
                     break;
                   default:
                     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -210,7 +221,9 @@ class _HomeScreenState extends State<HomeScreen> {
   _onMenuItemSelected(int value, UserState userState) async {
     switch (value) {
       case 0:
-        Navigator.of(context).push(_route(const SettingsScreen()));
+        Navigator.of(context)
+            .push(_route(const SettingsScreen()))
+            .then((value) => setState(() => {_loadChatroom()}));
         break;
       case 1:
         try {

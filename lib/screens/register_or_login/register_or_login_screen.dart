@@ -176,10 +176,12 @@ class _RegisterOrLoginScreenState extends State<RegisterOrLoginScreen> {
                             await restoreFuture;
                           }
                           // get account profile
-                          final account = await AccountApi().getMe();
-                          userState.setMe(account);
                           // add account to contact store
+
+                          final account = await AccountApi().getMe();
+
                           await ContactStore().storeContact(account);
+                          userState.setMe(account);
                         } on ApiException catch (e) {
                           ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(content: Text("error: ${e.message}")));
