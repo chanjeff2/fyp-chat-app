@@ -39,7 +39,17 @@ class BlockApi extends Api {
     //userid is the user who ask for the block list
     try {
       final json = await get("", useAuth: true);
-      return json.map((e) => (e as String)).toList();
+      return (json as List).cast<String>();
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  //get whether the target user is in low score/warning status
+  Future<bool> getWarningStatus(String targetuserId) async {
+    try {
+      final json = await get("/$targetuserId", useAuth: true);
+      return json;
     } catch (e) {
       rethrow;
     }

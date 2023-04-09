@@ -31,8 +31,7 @@ class ContactInfo extends StatelessWidget {
     if (myAcc.me == null) {
       return true;
     }
-    if ((chatroom as GroupChat).members[index - 1].user.userId ==
-        myAcc.me!.userId) {
+    if (chatroom.user.userId == myAcc.me!.userId) {
       return true;
     }
     return false;
@@ -408,6 +407,7 @@ class ContactInfo extends StatelessWidget {
                           return ListView.builder(
                               // +1 for add members
                               shrinkWrap: true,
+                              physics: NeverScrollableScrollPhysics(),
                               itemCount:
                                   (snapshot.data as List<GroupMember>).length +
                                       1,
@@ -522,6 +522,7 @@ class ContactInfo extends StatelessWidget {
                           return ListView.builder(
                               // +1 for add members / create group with the user
                               shrinkWrap: true,
+                              physics: NeverScrollableScrollPhysics(),
                               itemCount:
                                   (snapshot.data as List<Chatroom>).length + 1,
                               itemBuilder: (context, index) {
@@ -635,7 +636,7 @@ class ContactInfo extends StatelessWidget {
                                       await BlockStore()
                                           .storeBlocked(chatroom.id);
                                     }
-                                    print('gg');
+                                    Navigator.pop(context);
                                     Navigator.pop(context);
                                     Navigator.pop(context);
                                   },
@@ -669,6 +670,7 @@ class ContactInfo extends StatelessWidget {
                                       await BlockStore()
                                           .removeBlocked(chatroom.id);
                                     }
+                                    Navigator.pop(context);
                                     Navigator.pop(context);
                                     Navigator.pop(context);
                                   },

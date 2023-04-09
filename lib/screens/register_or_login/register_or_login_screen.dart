@@ -10,6 +10,7 @@ import 'package:fyp_chat_app/screens/register_or_login/loading_screen.dart';
 import 'package:fyp_chat_app/signal/signal_client.dart';
 import 'package:fyp_chat_app/storage/block_store.dart';
 import 'package:fyp_chat_app/storage/chatroom_store.dart';
+import 'package:fyp_chat_app/storage/contact_store.dart';
 import 'package:provider/provider.dart';
 
 import '../../dto/register_dto.dart';
@@ -177,6 +178,8 @@ class _RegisterOrLoginScreenState extends State<RegisterOrLoginScreen> {
                           // get account profile
                           final account = await AccountApi().getMe();
                           userState.setMe(account);
+                          // add account to contact store
+                          await ContactStore().storeContact(account);
                         } on ApiException catch (e) {
                           ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(content: Text("error: ${e.message}")));

@@ -162,12 +162,30 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
                   Text(widget.chatroom.name),
                   Text(
                     (widget.chatroom as GroupChat).members.isEmpty
-                        ? _state.me!.username
-                        : _state.me!.username +
-                            (widget.chatroom as GroupChat)
-                                .members[0]
-                                .toString() +
-                            ", ...",
+                        ? ((_state.me!.displayName == null)
+                            ? _state.me!.username
+                            : _state.me!.displayName!)
+                        : ((_state.me!.displayName == null)
+                                ? _state.me!.username
+                                : _state.me!.displayName!) +
+                            ', ' +
+                            (((widget.chatroom as GroupChat)
+                                        .members[0]
+                                        .user
+                                        .displayName ==
+                                    null)
+                                ? (widget.chatroom as GroupChat)
+                                        .members[0]
+                                        .user
+                                        .username
+                                        .toString() +
+                                    ", ..."
+                                : (widget.chatroom as GroupChat)
+                                        .members[0]
+                                        .user
+                                        .displayName!
+                                        .toString() +
+                                    ", ..."),
                     style: const TextStyle(fontSize: 12),
                   ),
                 ],
