@@ -31,144 +31,101 @@ class _NotificationScreenState extends State<NotificationScreen> {
     return Consumer<UserState>(
         builder: (context, userState, child) => Scaffold(
               appBar: AppBar(
-                title: const Text("Profile"),
+                title: const Text("Chat"),
               ),
               body: Column(
                 children: [
                   const SizedBox(height: 20),
-                  Center(
-                    child: Stack(
-                      alignment: AlignmentDirectional.topCenter,
-                      children: [
-                        const CircleAvatar(
-                          radius: 72,
-                          // child: profilePicture ? null : Icon(Icons.person, size: 48),
-                          // backgroundImage: profileImage,
-                          child:
-                              Icon(Icons.person, size: 72, color: Colors.white),
-                          backgroundColor: Colors.blueGrey,
-                        ),
-                        Positioned(
-                          bottom: 1,
-                          right: 1,
-                          child: GestureDetector(
-                            onTap: () {},
-                            child: Container(
-                              child: const Padding(
-                                padding: EdgeInsets.all(2.0),
-                                child:
-                                    Icon(Icons.camera_alt, color: Colors.black),
-                              ),
-                              decoration: BoxDecoration(
-                                  border: Border.all(
-                                    width: 6,
-                                    color: Colors.white,
-                                  ),
-                                  borderRadius: const BorderRadius.all(
-                                      Radius.circular(50)),
-                                  color: Colors.white,
-                                  boxShadow: [
-                                    BoxShadow(
-                                      offset: const Offset(2, 4),
-                                      color: Colors.black.withOpacity(
-                                        0.3,
-                                      ),
-                                      blurRadius: 3,
+                  InkWell(
+                      onTap: () {
+                        showDialog(
+                            context: context,
+                            builder: (context) {
+                              return AlertDialog(
+                                  title: Text("Mute All Notifications"),
+                                  content: Text(
+                                      "This action will mute notifications from all the chats. Are you sure to perform this action?"),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () => Navigator.pop(context),
+                                      child: const Text("Cancel"),
                                     ),
-                                  ]),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  // User name
-                  InkWell(
-                      child: ListTile(
-                    leading: const SizedBox(
-                      height: double.infinity,
-                      child: Icon(Icons.person, color: Colors.black, size: 30),
-                    ),
-                    title: const Text(
-                      "User Name",
-                      style:
-                          TextStyle(fontWeight: FontWeight.w500, fontSize: 16),
-                    ),
-                    subtitle: Text(
-                      userState.me!.username,
-                      style: const TextStyle(fontSize: 18),
-                    ),
-                  )),
-                  const Divider(thickness: 2, indent: 62),
-                  // Display name
-                  InkWell(
-                      onTap: () async {},
-                      child: ListTile(
-                        leading: const SizedBox(
+                                    TextButton(
+                                      onPressed: () async {
+                                        Navigator.pop(context);
+                                      },
+                                      child: const Text("Mute"),
+                                    ),
+                                  ]);
+                            });
+                      },
+                      child: const ListTile(
+                        leading: SizedBox(
                           height: double.infinity,
-                        ),
-                        title: const Text(
-                          "Display Name",
-                          style: TextStyle(
-                              fontWeight: FontWeight.w500, fontSize: 16),
-                        ),
-                        subtitle: Text(
-                          (userState.me!.displayName ?? userState.me!.username),
-                          style: const TextStyle(fontSize: 18),
-                        ),
-                        trailing: Icon(Icons.edit,
-                            color: Theme.of(context).primaryColor),
-                      )),
-                  const Divider(thickness: 2, indent: 62),
-                  // Status
-                  InkWell(
-                      onTap: () async {},
-                      child: ListTile(
-                        leading: const SizedBox(
-                          height: double.infinity,
-                          child: Icon(Icons.info_outline,
+                          child: Icon(Icons.notifications_off_outlined,
                               color: Colors.black, size: 30),
                         ),
-                        title: const Text(
-                          "Status",
+                        title: Text(
+                          "Mute All Notifications",
                           style: TextStyle(
-                              fontWeight: FontWeight.w500, fontSize: 16),
+                              fontWeight: FontWeight.w500, fontSize: 18),
                         ),
                         subtitle: Text(
-                          userState.me!.status.toString(),
-                          style: const TextStyle(fontSize: 18),
+                          "Mute notifications from all your groups and chats",
+                          style: TextStyle(fontSize: 16),
                         ),
-                        trailing: Icon(Icons.edit,
-                            color: Theme.of(context).primaryColor),
                       )),
+                  const Divider(
+                    thickness: 2,
+                    indent: 10,
+                    endIndent: 10,
+                  ),
+                  InkWell(
+                      onTap: () {
+                        showDialog(
+                            context: context,
+                            builder: (context) {
+                              return AlertDialog(
+                                  title: Text("Enable All Notifications"),
+                                  content: Text(
+                                      "This action will enable back to recieve notifications from all the chats. Are you sure to perform this action?"),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () => Navigator.pop(context),
+                                      child: const Text("Cancel"),
+                                    ),
+                                    TextButton(
+                                      onPressed: () async {
+                                        Navigator.pop(context);
+                                      },
+                                      child: const Text("Enable"),
+                                    ),
+                                  ]);
+                            });
+                      },
+                      child: const ListTile(
+                        leading: SizedBox(
+                          height: double.infinity,
+                          child: Icon(Icons.notifications_active_outlined,
+                              color: Colors.black, size: 30),
+                        ),
+                        title: Text(
+                          "Enable All Notifications",
+                          style: TextStyle(
+                              fontWeight: FontWeight.w500, fontSize: 18),
+                        ),
+                        subtitle: Text(
+                          "Enable notifications from all your groups and chats",
+                          style: TextStyle(fontSize: 16),
+                        ),
+                      )),
+                  const Divider(
+                    thickness: 2,
+                    indent: 10,
+                    endIndent: 10,
+                  ),
                 ],
               ),
             ));
-  }
-
-  Future<String?> inputDialog(
-          String title, String hint, TextEditingController controller) =>
-      showDialog<String>(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: Text(title),
-          content: TextField(
-            autofocus: true,
-            decoration: InputDecoration(hintText: hint),
-            controller: controller,
-          ),
-          actions: [
-            TextButton(
-                onPressed: () {
-                  submitDialog(controller);
-                },
-                child: const Text('Submit'))
-          ],
-        ),
-      );
-  void submitDialog(TextEditingController controller) {
-    Navigator.of(context).pop(controller.text);
-    controller.clear();
   }
 }

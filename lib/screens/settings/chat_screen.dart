@@ -45,7 +45,7 @@ class _ChatScreenState extends State<ChatScreen> {
                               return AlertDialog(
                                   title: Text("Delete all chatrooms"),
                                   content: Text(
-                                      "This action will delete all messages history and chatroom in your storage, Are you sure to perform this action?"),
+                                      "This action will delete all messages history and chatroom in your storage. Are you sure to perform this action?"),
                                   actions: [
                                     TextButton(
                                       onPressed: () => Navigator.pop(context),
