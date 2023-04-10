@@ -248,7 +248,7 @@ class SignalClient {
           chatroom.target.userId,
           me.userId, // chatroom id w.r.t. recipient, i.e. my user id
           content,
-          sentAt,
+          sentAt.toUtc(),
         );
         break;
       case ChatroomType.group:
@@ -259,7 +259,7 @@ class SignalClient {
               e.user.userId,
               chatroom.id,
               content,
-              sentAt,
+              sentAt.toUtc(),
             )));
         break;
     }
@@ -330,7 +330,7 @@ class SignalClient {
       senderUserId: sender.userId,
       chatroomId: message.chatroomId, // TODO: update to chatroom id
       content: plaintext,
-      sentAt: message.sentAt,
+      sentAt: message.sentAt.toLocal(),
     );
 
     // save message to disk
@@ -354,7 +354,8 @@ class SignalClient {
       // In theory, if the chatroom is group chat, sender ID != chatroom ID (chance -> 0)
       if (sender.userId != message.chatroomId) {
         // If possible, develop another way to get group chat without re-instantiate a new GroupChat
-        final obtainedChatroom = await GroupChatApi().getGroup(message.chatroomId);
+        final obtainedChatroom =
+            await GroupChatApi().getGroup(message.chatroomId);
         final groupChatroom = GroupChat(
           id: obtainedChatroom.id,
           members: obtainedChatroom.members,
