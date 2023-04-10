@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fyp_chat_app/dto/group_member_dto.dart';
 import 'package:fyp_chat_app/models/group_chat.dart';
 import 'package:fyp_chat_app/models/group_member.dart';
 import 'package:fyp_chat_app/models/one_to_one_chat.dart';
@@ -13,7 +14,7 @@ import 'package:fyp_chat_app/storage/group_member_store.dart';
 import 'package:provider/provider.dart';
 import 'package:fyp_chat_app/models/chatroom.dart';
 
-class ContactInfo extends StatelessWidget {
+class ContactInfo extends StatefulWidget {
   const ContactInfo({
     Key? key,
     required this.chatroom,
@@ -23,10 +24,18 @@ class ContactInfo extends StatelessWidget {
   final Chatroom chatroom;
   final Future<bool> blockedFuture;
 
-  // Change the data type of the lists below if necessary
-  static List<int> _media = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+  @override
+  State<ContactInfo> createState() => _ContactInfoState();
+}
 
-  static Future<bool> checkSelfAccount(
+class _ContactInfoState extends State<ContactInfo> {
+  // Change the data type of the lists below if necessary
+  List<int> _media = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+  Offset _tapPosition = Offset.zero;
+  List<GroupMember> participantListForDeleteToGestureDetector = [];
+  int participantForDeleteToGestureDetectorID = 0;
+
+  Future<bool> checkSelfAccount(
       GroupMember chatroom, int index, UserState myAcc) async {
     if (myAcc.me == null) {
       return true;
@@ -37,7 +46,7 @@ class ContactInfo extends StatelessWidget {
     return false;
   }
 
-  static Future<List<Chatroom>> checkCommonGroupChat(Chatroom chatroom) async {
+  Future<List<Chatroom>> checkCommonGroupChat(Chatroom chatroom) async {
     if (chatroom.type == ChatroomType.group) {
       return [];
     }
@@ -50,7 +59,7 @@ class ContactInfo extends StatelessWidget {
         .toList();
   }
 
-  static bool checkIfInGroup(String id, List<GroupMember> memberList) {
+  bool checkIfInGroup(String id, List<GroupMember> memberList) {
     for (var element in memberList) {
       if (id == element.user.userId) {
         return true;
@@ -59,12 +68,23 @@ class ContactInfo extends StatelessWidget {
     return false;
   }
 
-  // static Future<List<Chatroom>> checkCommonGroupChat()  {
-  //   if (isGroup == false){
-  //     return [];
-  //   }
-  //   List<Chatroom> grouplist = ChatroomStore().getAllChatroom();
-  // }
+  void _getTapPosition(TapDownDetails tapPosition) {
+    final RenderBox referenceBox = context.findRenderObject() as RenderBox;
+    setState(() {
+      _tapPosition = referenceBox.globalToLocal(tapPosition.globalPosition);
+      print(_tapPosition);
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -85,7 +105,7 @@ class ContactInfo extends StatelessWidget {
                 backgroundColor: Colors.blueGrey,
               ),
               const SizedBox(width: 12),
-              Text(chatroom.name),
+              Text(widget.chatroom.name),
             ],
           ),
         ),
@@ -104,18 +124,19 @@ class ContactInfo extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 14),
-              Text(chatroom.name,
+              Text(widget.chatroom.name,
                   textAlign: TextAlign.center,
                   style: const TextStyle(
                     fontSize: 28,
                   )),
               Text(
                 // isGroup ? "Group - $participants participants" : "Known as $user.username"
-                chatroom.type == ChatroomType.group
-                    ? chatroom.name +
+                widget.chatroom.type == ChatroomType.group
+                    ? widget.chatroom.name +
                         " participants: " +
-                        ((chatroom as GroupChat).members.length).toString()
-                    : chatroom.name,
+                        ((widget.chatroom as GroupChat).members.length)
+                            .toString()
+                    : widget.chatroom.name,
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                   fontSize: 24,
@@ -182,10 +203,10 @@ class ContactInfo extends StatelessWidget {
                       ),
                     ),
                   ]),
-                  (chatroom.type == ChatroomType.group)
+                  (widget.chatroom.type == ChatroomType.group)
                       ? const SizedBox(width: 32)
                       : const SizedBox(width: 0),
-                  (chatroom.type == ChatroomType.group)
+                  (widget.chatroom.type == ChatroomType.group)
                       ? Column(children: [
                           InkWell(
                             onTap: () {
@@ -193,7 +214,7 @@ class ContactInfo extends StatelessWidget {
                                 builder: (context) => CreateGroupScreen(
                                   isCreateGroup: false,
                                   fromContactInfo: false,
-                                  group: chatroom as GroupChat,
+                                  group: widget.chatroom as GroupChat,
                                 ),
                               ));
                             },
@@ -228,7 +249,7 @@ class ContactInfo extends StatelessWidget {
               GestureDetector(
                 child: ListTile(
                   title: Text(
-                    (chatroom.type == ChatroomType.group)
+                    (widget.chatroom.type == ChatroomType.group)
                         ? "Group description"
                         : "Status",
                     style: const TextStyle(
@@ -237,7 +258,7 @@ class ContactInfo extends StatelessWidget {
                     ),
                   ),
                   subtitle: Text(
-                    (chatroom.type == ChatroomType.group)
+                    (widget.chatroom.type == ChatroomType.group)
                         ? "This is a new USTalk group!"
                         : "Hi! I'm using USTalk.",
                     style: const TextStyle(
@@ -287,7 +308,7 @@ class ContactInfo extends StatelessWidget {
                           fontSize: 16,
                         ),
                       ),
-                      subtitle: (chatroom.type == ChatroomType.group)
+                      subtitle: (widget.chatroom.type == ChatroomType.group)
                           ? Text(
                               "All messages are end-to-end encrypted.Tap to see your key.",
                               style: TextStyle(
@@ -368,7 +389,7 @@ class ContactInfo extends StatelessWidget {
               ),
               const Divider(thickness: 2, indent: 8, endIndent: 8),
               // Group members
-              (chatroom.type == ChatroomType.group)
+              (widget.chatroom.type == ChatroomType.group)
                   ? Row(
                       children: const [
                         SizedBox(width: 16),
@@ -394,11 +415,12 @@ class ContactInfo extends StatelessWidget {
                       ],
                     ),
               const SizedBox(height: 8),
-              (chatroom.type == ChatroomType.group)
+              (widget.chatroom.type == ChatroomType.group)
                   ?
                   //Group List View
                   FutureBuilder(
-                      future: GroupMemberStore().getByChatroomId(chatroom.id),
+                      future: GroupMemberStore()
+                          .getByChatroomId(widget.chatroom.id),
                       builder: (context, snapshot) {
                         if (!snapshot.hasData) {
                           return const Center(
@@ -425,7 +447,7 @@ class ContactInfo extends StatelessWidget {
                                         builder: (context) => CreateGroupScreen(
                                           isCreateGroup: false,
                                           fromContactInfo: false,
-                                          group: chatroom as GroupChat,
+                                          group: widget.chatroom as GroupChat,
                                         ),
                                       ));
                                     },
@@ -452,6 +474,11 @@ class ContactInfo extends StatelessWidget {
 
                                 // Group members
                                 return InkWell(
+                                  onTapDown: (position) =>
+                                      {_getTapPosition(position)},
+                                  onLongPress: () async {
+                                    await _showContextMenu(context, userState);
+                                  },
                                   onTap: () async {
                                     /* direct to OneToOne chat */
                                     if (!(await checkSelfAccount(
@@ -465,6 +492,18 @@ class ContactInfo extends StatelessWidget {
                                                       GroupMember>)[index - 1]
                                                   .user
                                                   .userId);
+                                      if (pmChatroom == null) {
+                                        // havent have chatroom in the chatroom store but have contact in contact store
+                                        // store chatroom in chatroom store
+                                        pmChatroom = OneToOneChat(
+                                          target: (snapshot.data as List<
+                                                  GroupMember>)[index - 1]
+                                              .user,
+                                          unread: 0,
+                                          createdAt: DateTime.now(),
+                                        );
+                                        await ChatroomStore().save(pmChatroom);
+                                      }
                                       Navigator.of(context).push(
                                           MaterialPageRoute(
                                               builder: (context) =>
@@ -513,7 +552,7 @@ class ContactInfo extends StatelessWidget {
                   :
                   // oneToOne Chatroom List View
                   FutureBuilder(
-                      future: checkCommonGroupChat(chatroom),
+                      future: checkCommonGroupChat(widget.chatroom),
                       builder: (context, snapshot) {
                         if (!snapshot.hasData) {
                           return const Center(
@@ -592,7 +631,7 @@ class ContactInfo extends StatelessWidget {
 
               const Divider(thickness: 2, indent: 8, endIndent: 8),
               // Block / Leave group
-              if ((chatroom.type == ChatroomType.group)) ...[
+              if ((widget.chatroom.type == ChatroomType.group)) ...[
                 InkWell(
                   onTap: () {/* confirm => process leave group */},
                   child: const ListTile(
@@ -614,10 +653,12 @@ class ContactInfo extends StatelessWidget {
                           if (snapshot.hasData && snapshot.data == false) {
                             return AlertDialog(
                               //Blocking button
-                              title: (chatroom.type == ChatroomType.group)
-                                  ? const Text("Block group?")
-                                  : const Text("Block user?"),
-                              content: (chatroom.type == ChatroomType.group)
+                              title:
+                                  (widget.chatroom.type == ChatroomType.group)
+                                      ? const Text("Block group?")
+                                      : const Text("Block user?"),
+                              content: (widget.chatroom.type ==
+                                      ChatroomType.group)
                                   ? const Text(
                                       "You will no longer be able to receive messages from this group.")
                                   : const Text(
@@ -630,11 +671,11 @@ class ContactInfo extends StatelessWidget {
                                 TextButton(
                                   onPressed: () async {
                                     bool status = await BlockApi()
-                                        .sendBlockRequest(chatroom.id);
+                                        .sendBlockRequest(widget.chatroom.id);
                                     if (status) {
                                       //update blocked chatroom in blockstore
                                       await BlockStore()
-                                          .storeBlocked(chatroom.id);
+                                          .storeBlocked(widget.chatroom.id);
                                     }
                                     Navigator.pop(context);
                                     Navigator.pop(context);
@@ -648,10 +689,12 @@ class ContactInfo extends StatelessWidget {
                               snapshot.data == true) {
                             return AlertDialog(
                               //Unblock button
-                              title: (chatroom.type == ChatroomType.group)
-                                  ? const Text("Unblock group?")
-                                  : const Text("Unblock user?"),
-                              content: (chatroom.type == ChatroomType.group)
+                              title:
+                                  (widget.chatroom.type == ChatroomType.group)
+                                      ? const Text("Unblock group?")
+                                      : const Text("Unblock user?"),
+                              content: (widget.chatroom.type ==
+                                      ChatroomType.group)
                                   ? const Text(
                                       "You will be able to receive messages from this group.")
                                   : const Text(
@@ -664,11 +707,11 @@ class ContactInfo extends StatelessWidget {
                                 TextButton(
                                   onPressed: () async {
                                     bool status = await BlockApi()
-                                        .sendUnblockRequest(chatroom.id);
+                                        .sendUnblockRequest(widget.chatroom.id);
                                     if (status) {
                                       //update chatroom in chatroomstore
                                       await BlockStore()
-                                          .removeBlocked(chatroom.id);
+                                          .removeBlocked(widget.chatroom.id);
                                     }
                                     Navigator.pop(context);
                                     Navigator.pop(context);
@@ -681,10 +724,12 @@ class ContactInfo extends StatelessWidget {
                           } else {
                             return AlertDialog(
                               //Blocking button
-                              title: (chatroom.type == ChatroomType.group)
-                                  ? const Text("Block group?")
-                                  : const Text("Block user?"),
-                              content: (chatroom.type == ChatroomType.group)
+                              title:
+                                  (widget.chatroom.type == ChatroomType.group)
+                                      ? const Text("Block group?")
+                                      : const Text("Block user?"),
+                              content: (widget.chatroom.type ==
+                                      ChatroomType.group)
                                   ? const Text(
                                       "You will no longer be able to receive messages from this group.")
                                   : const Text(
@@ -704,7 +749,7 @@ class ContactInfo extends StatelessWidget {
                             );
                           }
                         },
-                        future: blockedFuture),
+                        future: widget.blockedFuture),
                   );
                 },
                 child: FutureBuilder<bool>(
@@ -715,12 +760,12 @@ class ContactInfo extends StatelessWidget {
                               size: 24, color: Colors.red),
                           title: (snapshot.hasData && snapshot.data == false)
                               ? Text(
-                                  "Block${(chatroom.type == ChatroomType.group) ? ' Group' : ''}",
+                                  "Block${(widget.chatroom.type == ChatroomType.group) ? ' Group' : ''}",
                                   style: const TextStyle(
                                       color: Colors.red, fontSize: 18),
                                 )
                               : Text(
-                                  "Unblock${(chatroom.type == ChatroomType.group) ? ' Group' : ''}",
+                                  "Unblock${(widget.chatroom.type == ChatroomType.group) ? ' Group' : ''}",
                                   style: const TextStyle(
                                       color: Colors.red, fontSize: 18),
                                 ),
@@ -731,13 +776,13 @@ class ContactInfo extends StatelessWidget {
                             leading: const Icon(Icons.block,
                                 size: 24, color: Colors.red),
                             title: Text(
-                              "Block${(chatroom.type == ChatroomType.group) ? ' Group' : ''}",
+                              "Block${(widget.chatroom.type == ChatroomType.group) ? ' Group' : ''}",
                               style: const TextStyle(
                                   color: Colors.red, fontSize: 18),
                             ));
                       }
                     },
-                    future: blockedFuture),
+                    future: widget.blockedFuture),
               ),
               const SizedBox(height: 20),
             ],
@@ -745,5 +790,49 @@ class ContactInfo extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  _showContextMenu(BuildContext context, UserState userstate) async {
+    final RenderObject? overlay =
+        Overlay.of(context)?.context.findRenderObject();
+    final result = await showMenu(
+        context: context,
+        position: RelativeRect.fromRect(
+            Rect.fromLTWH(_tapPosition.dx, _tapPosition.dy, 100, 100),
+            Rect.fromLTWH(0, 0, overlay!.paintBounds.size.width,
+                overlay.paintBounds.size.height)),
+        items: ((widget.chatroom as GroupChat)
+                    .members
+                    .firstWhere(
+                        (member) => member.user.userId == userstate.me?.userId)
+                    .role ==
+                Role.admin)
+            ? [
+                //admin visbile menu
+                PopupMenuItem(
+                  child: const Text('Promote admin'),
+                  onTap: () async {
+                    Future.delayed(const Duration(seconds: 0), () async {});
+                  },
+                  value: "Add admin",
+                ),
+                PopupMenuItem(
+                  child: const Text('Demote admin'),
+                  onTap: () async {
+                    Future.delayed(const Duration(seconds: 0), () async {});
+                  },
+                  value: "Remove admin",
+                ),
+                PopupMenuItem(
+                  child: const Text('Remove member'),
+                  onTap: () async {
+                    Future.delayed(const Duration(seconds: 0), () async {});
+                  },
+                  value: "Remove member",
+                ),
+              ]
+            : [
+                //normal group member visible menu
+              ]);
   }
 }
