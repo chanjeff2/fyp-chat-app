@@ -29,6 +29,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   var appBarHeight = AppBar().preferredSize.height;
   final Map<String, Chatroom> _chatroomMap = {};
+  final Map<String, Chatroom> _filteredChatroomMap = {};
   late final Future<bool> _loadChatroomFuture;
   late final StreamSubscription<ReceivedPlainMessage>
       _messageStreamSubscription;
@@ -49,6 +50,7 @@ class _HomeScreenState extends State<HomeScreen> {
       setState(() {
         // update contact on receive new message
         _chatroomMap[receivedMessage.chatroom.id] = receivedMessage.chatroom;
+        _filteredChatroomMap[receivedMessage.chatroom.id] = receivedMessage.chatroom;
       });
     });
   }
@@ -102,6 +104,9 @@ class _HomeScreenState extends State<HomeScreen> {
                               ),
                         onPressed: () {
                           setState(() {
+                            _keywordController.text = "";
+                            _filteredChatroomMap.clear();
+                            _filteredChatroomMap.addAll(_chatroomMap);
                             _isSearching = false;
                           });
                         },
@@ -109,6 +114,14 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     maxLines: 1,
                     onChanged: (text) {
+                      setState(() {
+                        _filteredChatroomMap.clear();
+                        _filteredChatroomMap.addAll(_chatroomMap);
+                        _filteredChatroomMap.removeWhere((key, value) =>
+                                                          !(value.name.toLowerCase())
+                                                          .contains(text.toLowerCase())
+                                                        );
+                      });
                     },
                   )
                 : const Text("USTalk"),
@@ -146,7 +159,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: CircularProgressIndicator(),
               );
             }
-            final chatroomList = _chatroomMap.values.toList();
+            final chatroomList = _filteredChatroomMap.values.toList();
             chatroomList.sort((a, b) => a.compareByLastActivityTime(b) * -1);
             return ListView.builder(
               itemBuilder: (_, i) => GestureDetector(
