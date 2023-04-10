@@ -895,12 +895,17 @@ class _ContactInfoState extends State<ContactInfo> {
     );
     Widget continueButton = TextButton(
       child: const Text("Leave Group"),
-      onPressed: () {
+      onPressed: () async {
         /* TODO: Leave Group Action */
         Navigator.pop(context, 'Leave Group');
+        bool leaveGroupSuccess = await GroupChatApi().leaveGroup(widget.chatroom.id);
         //return to home screen (delete if unnecessary)
-        Navigator.of(context).pop();
-        Navigator.of(context).pop();
+        if (leaveGroupSuccess){
+          Navigator.of(context).pop();
+          Navigator.of(context).pop();
+        } else {
+
+        } 
       },
     );
     AlertDialog leaveGroupDialog = AlertDialog(
@@ -909,6 +914,27 @@ class _ContactInfoState extends State<ContactInfo> {
       actions: [
         cancelButton,
         continueButton,
+      ],
+    );
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return leaveGroupDialog;
+      },
+    );
+  }
+  _leaveGroupFailedAlert(BuildContext context) {
+    Widget okButton = TextButton(
+      child: const Text("OK"),
+      onPressed: () async {
+        Navigator.pop(context);
+      },
+    );
+    AlertDialog leaveGroupDialog = AlertDialog(
+      title: const Text("Leave group failed"),
+      content: const Text("Please try again.\nIf this window keeps prompt out, please contact the developers"),
+      actions: [
+        okButton,
       ],
     );
     showDialog(
