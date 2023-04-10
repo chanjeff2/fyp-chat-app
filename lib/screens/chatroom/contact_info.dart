@@ -476,11 +476,18 @@ class _ContactInfoState extends State<ContactInfo> {
                                   onTapDown: (position) =>
                                       {_getTapPosition(position)},
                                   onLongPress: () async {
-                                    await _showContextMenu(
-                                        context,
-                                        userState,
-                                        (snapshot.data
-                                            as List<GroupMember>)[index - 1]);
+                                    if ((widget.chatroom as GroupChat)
+                                            .members
+                                            .firstWhere((member) =>
+                                                member.user.userId ==
+                                                userState.me?.userId)
+                                            .role ==
+                                        Role.admin) {
+                                      await _showContextMenu(
+                                          context,
+                                          (snapshot.data
+                                              as List<GroupMember>)[index - 1]);
+                                    }
                                   },
                                   onTap: () async {
                                     /* direct to OneToOne chat */
@@ -795,8 +802,8 @@ class _ContactInfoState extends State<ContactInfo> {
     );
   }
 
-  _showContextMenu(BuildContext context, UserState userstate,
-      GroupMember memberSelectedForTheAction) async {
+  _showContextMenu(
+      BuildContext context, GroupMember memberSelectedForTheAction) async {
     final RenderObject? overlay =
         Overlay.of(context)?.context.findRenderObject();
     final result = await showMenu(
@@ -805,47 +812,38 @@ class _ContactInfoState extends State<ContactInfo> {
             Rect.fromLTWH(_tapPosition.dx, _tapPosition.dy, 100, 100),
             Rect.fromLTWH(0, 0, overlay!.paintBounds.size.width,
                 overlay.paintBounds.size.height)),
-        items: ((widget.chatroom as GroupChat)
-                    .members
-                    .firstWhere(
-                        (member) => member.user.userId == userstate.me?.userId)
-                    .role ==
-                Role.admin)
-            ? [
-                //admin visbile menu
-                PopupMenuItem(
-                  child: const Text('Promote admin'),
-                  onTap: () async {
-                    Future.delayed(const Duration(seconds: 0), () async {
-                      GroupChatApi().addAdmin(widget.chatroom.id,
-                          memberSelectedForTheAction.user.userId);
-                    });
-                  },
-                  value: "Add admin",
-                ),
-                PopupMenuItem(
-                  child: const Text('Demote admin'),
-                  onTap: () async {
-                    Future.delayed(const Duration(seconds: 0), () async {
-                      GroupChatApi().removeAdmin(widget.chatroom.id,
-                          memberSelectedForTheAction.user.userId);
-                    });
-                  },
-                  value: "Remove admin",
-                ),
-                PopupMenuItem(
-                  child: const Text('Remove member'),
-                  onTap: () async {
-                    Future.delayed(const Duration(seconds: 0), () async {
-                      GroupChatApi().kickMember(widget.chatroom.id,
-                          memberSelectedForTheAction.user.userId);
-                    });
-                  },
-                  value: "Remove member",
-                ),
-              ]
-            : [
-                //normal group member visible menu
-              ]);
+        items: [
+          //admin visbile menu
+          PopupMenuItem(
+            child: const Text('Promote admin'),
+            onTap: () async {
+              Future.delayed(const Duration(seconds: 0), () async {
+                GroupChatApi().addAdmin(
+                    widget.chatroom.id, memberSelectedForTheAction.user.userId);
+              });
+            },
+            value: "Add admin",
+          ),
+          PopupMenuItem(
+            child: const Text('Demote admin'),
+            onTap: () async {
+              Future.delayed(const Duration(seconds: 0), () async {
+                GroupChatApi().removeAdmin(
+                    widget.chatroom.id, memberSelectedForTheAction.user.userId);
+              });
+            },
+            value: "Remove admin",
+          ),
+          PopupMenuItem(
+            child: const Text('Remove member'),
+            onTap: () async {
+              Future.delayed(const Duration(seconds: 0), () async {
+                GroupChatApi().kickMember(
+                    widget.chatroom.id, memberSelectedForTheAction.user.userId);
+              });
+            },
+            value: "Remove member",
+          ),
+        ]);
   }
 }
