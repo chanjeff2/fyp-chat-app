@@ -17,6 +17,7 @@ import 'package:fyp_chat_app/models/signed_pre_key.dart';
 import 'package:fyp_chat_app/models/user.dart';
 import 'package:fyp_chat_app/network/devices_api.dart';
 import 'package:fyp_chat_app/network/events_api.dart';
+import 'package:fyp_chat_app/network/group_chat_api.dart';
 import 'package:fyp_chat_app/network/keys_api.dart';
 import 'package:fyp_chat_app/network/users_api.dart';
 import 'package:fyp_chat_app/signal/device_helper.dart';
@@ -337,6 +338,7 @@ class SignalClient {
     plainMessage.id = messageId;
 
     // TODO: support group chat
+    /*
     if (!(await ChatroomStore().contains(sender.userId))) {
       final chatroom = OneToOneChat(
         target: sender,
@@ -347,6 +349,32 @@ class SignalClient {
       await ChatroomStore().save(chatroom);
     }
     final chatroom = await ChatroomStore().get(sender.userId);
+    */
+    if (!(await ChatroomStore().contains(message.chatroomId))) {
+      // In theory, if the chatroom is group chat, sender ID != chatroom ID (chance -> 0)
+      if (sender.userId != message.chatroomId) {
+        // If possible, develop another way to get group chat without re-instantiate a new GroupChat
+        final obtainedChatroom = await GroupChatApi().getGroup(message.chatroomId);
+        final groupChatroom = GroupChat(
+          id: obtainedChatroom.id,
+          members: obtainedChatroom.members,
+          name: obtainedChatroom.name,
+          unread: 1,
+          latestMessage: plainMessage,
+          createdAt: obtainedChatroom.createdAt,
+        );
+        await ChatroomStore().save(groupChatroom);
+      } else {
+        final oneToOneChatroom = OneToOneChat(
+          target: sender,
+          latestMessage: plainMessage,
+          unread: 1,
+          createdAt: DateTime.now(),
+        );
+        await ChatroomStore().save(oneToOneChatroom);
+      }
+    }
+    final chatroom = await ChatroomStore().get(message.chatroomId);
 
     final receivedPlainMessage = ReceivedPlainMessage(
       sender: sender,
