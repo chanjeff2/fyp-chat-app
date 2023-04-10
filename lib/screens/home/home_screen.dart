@@ -114,10 +114,10 @@ class _HomeScreenState extends State<HomeScreen> {
             return ListView.builder(
               itemBuilder: (_, i) => GestureDetector(
                 onTapDown: (position) => {_getTapPosition(position)},
-                onLongPress: () {
+                onLongPress: () async {
                   chatroomListForDeleteToGestureDetector = chatroomList;
                   chatroomListForDeleteToGestureDetectorID = i;
-                  _showContextMenu(context);
+                  await _showContextMenu(context);
                 },
                 child: HomeContact(
                     chatroom: chatroomList[i],
@@ -273,7 +273,21 @@ class _HomeScreenState extends State<HomeScreen> {
                 //check whether the group is left, or blocked, if not, the user should not delete the group
                 if (true) {
                   //showdialog to alert user the group is not left or blocked
-
+                  showDialog(
+                      context: context,
+                      builder: (context) {
+                        return AlertDialog(
+                            title:
+                                const Text("Failed to delete Group Chatroom"),
+                            content: const Text(
+                                "Group chatroom can only be deleted if the group is left or blocked."),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(context),
+                                child: const Text("Understand"),
+                              ),
+                            ]);
+                      });
                 } else {
                   //if the group is left or blocked, delete the group
                   bool status = await ChatroomStore().remove(chatroomId);
