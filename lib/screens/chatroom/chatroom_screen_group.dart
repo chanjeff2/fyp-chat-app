@@ -120,9 +120,9 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
 
   // Selecting camera
   void _onCameraSelected() {
-    Navigator.of(context).push(MaterialPageRoute(builder: (context) => 
-      CameraScreen(source: Source.chatroom, chatroom: widget.chatroom)
-    ));
+    Navigator.of(context).push(MaterialPageRoute(
+        builder: (context) =>
+            CameraScreen(source: Source.chatroom, chatroom: widget.chatroom)));
   }
 
   @override
@@ -284,64 +284,60 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
               return const Center(child: CircularProgressIndicator());
             }
             return Chat(
-              messages: _messages
-                .map(
-                  (e) {
-                    switch (e.type) {
-                      case MessageType.text:
-                        return types.TextMessage(
-                        id: e.id.toString(),
-                        author: types.User(id: e.senderUserId),
-                        text: (e as PlainMessage).content,
-                        createdAt: e.sentAt.millisecondsSinceEpoch,
-                      );
+              messages: _messages.map((e) {
+                switch (e.type) {
+                  case MessageType.text:
+                    return types.TextMessage(
+                      id: e.id.toString(),
+                      author: types.User(id: e.senderUserId),
+                      text: (e as PlainMessage).content,
+                      createdAt: e.sentAt.millisecondsSinceEpoch,
+                    );
 
-                      // All return same thing first
-                      case MessageType.image:
-                        return types.ImageMessage(
-                          id: e.id.toString(),
-                          author: types.User(id: e.senderUserId),
-                          name: "${(e as MediaMessage).media.id}${(e).media.ext}",
-                          size: (e).media.content.lengthInBytes,
-                          uri: "Local",
-                        );
-                      case MessageType.video:
-                        return types.VideoMessage(
-                          id: e.id.toString(),
-                          author: types.User(id: e.senderUserId),
-                          name: "${(e as MediaMessage).media.id}${(e).media.ext}",
-                          size: (e).media.content.lengthInBytes,
-                          uri: "Local",
-                        );
-                      case MessageType.audio:
-                        return types.AudioMessage(
-                          id: e.id.toString(),
-                          author: types.User(id: e.senderUserId),
-                          name: "${(e as MediaMessage).media.id}${(e).media.ext}",
-                          size: (e).media.content.lengthInBytes,
-                          duration: Duration(seconds: 2),
-                          uri: "Local",
-                        );
-                      case MessageType.document:
-                        return types.FileMessage(
-                            id: e.id.toString(),
-                            author: types.User(id: e.senderUserId),
-                            name: "${(e as MediaMessage).media.id}${(e).media.ext}",
-                            size: (e).media.content.lengthInBytes,
-                            uri: "Local",
-                          );
+                  // All return same thing first
+                  case MessageType.image:
+                    return types.ImageMessage(
+                      id: e.id.toString(),
+                      author: types.User(id: e.senderUserId),
+                      name: "${(e as MediaMessage).media.id}${(e).media.ext}",
+                      size: (e).media.content.lengthInBytes,
+                      uri: "Local",
+                    );
+                  case MessageType.video:
+                    return types.VideoMessage(
+                      id: e.id.toString(),
+                      author: types.User(id: e.senderUserId),
+                      name: "${(e as MediaMessage).media.id}${(e).media.ext}",
+                      size: (e).media.content.lengthInBytes,
+                      uri: "Local",
+                    );
+                  case MessageType.audio:
+                    return types.AudioMessage(
+                      id: e.id.toString(),
+                      author: types.User(id: e.senderUserId),
+                      name: "${(e as MediaMessage).media.id}${(e).media.ext}",
+                      size: (e).media.content.lengthInBytes,
+                      duration: Duration(seconds: 2),
+                      uri: "Local",
+                    );
+                  case MessageType.document:
+                    return types.FileMessage(
+                      id: e.id.toString(),
+                      author: types.User(id: e.senderUserId),
+                      name: "${(e as MediaMessage).media.id}${(e).media.ext}",
+                      size: (e).media.content.lengthInBytes,
+                      uri: "Local",
+                    );
 
-                      default:
-                        return types.TextMessage(
-                        id: e.id.toString(),
-                        author: types.User(id: e.senderUserId),
-                        text: "Undefined Message",
-                        createdAt: e.sentAt.millisecondsSinceEpoch,
-                      );
-                    }
-                  } 
-                )
-                .toList(),
+                  default:
+                    return types.TextMessage(
+                      id: e.id.toString(),
+                      author: types.User(id: e.senderUserId),
+                      text: "Undefined Message",
+                      createdAt: e.sentAt.millisecondsSinceEpoch,
+                    );
+                }
+              }).toList(),
               showUserNames: true,
               nameBuilder: (userId) => UserName(
                   author: types.User(
@@ -371,8 +367,7 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
               ),
               onEndReached: _loadMessageHistory,
               isLastPage: _isLastPage,
-              customBottomWidget: Column(
-                children: <Widget>[
+              customBottomWidget: Column(children: <Widget>[
                 Padding(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
@@ -486,74 +481,85 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
                               child: Container(
                                 alignment: Alignment.centerLeft,
                                 decoration: BoxDecoration(
-                                  border: Border.all(color: Colors.grey.shade600),
+                                  border:
+                                      Border.all(color: Colors.grey.shade600),
                                   borderRadius: BorderRadius.circular(16.0),
                                 ),
                                 child: Scrollbar(
-                                  controller: _scrollController,
-                                  child: TextField(
-                                    textAlignVertical: TextAlignVertical.center,
-                                    keyboardType: TextInputType.multiline,
-                                    controller: _messageController,
-                                    style: const TextStyle(color: Colors.black),
-                                    cursorColor: Theme.of(context).primaryColor,
-                                    decoration: InputDecoration(
-                                      contentPadding: EdgeInsets.zero,
-                                      isCollapsed: true,
-                                      filled: true,
-                                      fillColor: Colors.white70,
-                                      hintText: 'Message',
-                                      hintStyle:
-                                          TextStyle(color: Colors.grey.shade600),
-                                      border: InputBorder.none,
-                                      prefixIcon: IconButton(
-                                        icon: _emojiBoardShown
-                                            ? Icon(
-                                                Icons.keyboard,
-                                                color: Colors.grey.shade600,
-                                              )
-                                            : Icon(
-                                                Icons.emoji_emotions_outlined,
-                                                color: Colors.grey.shade600,
+                                    controller: _scrollController,
+                                    child: TextField(
+                                      textAlignVertical:
+                                          TextAlignVertical.center,
+                                      keyboardType: TextInputType.multiline,
+                                      controller: _messageController,
+                                      style:
+                                          const TextStyle(color: Colors.black),
+                                      cursorColor:
+                                          Theme.of(context).primaryColor,
+                                      decoration: InputDecoration(
+                                        contentPadding: EdgeInsets.zero,
+                                        isCollapsed: true,
+                                        filled: true,
+                                        fillColor: Colors.white70,
+                                        hintText: 'Message',
+                                        hintStyle: TextStyle(
+                                            color: Colors.grey.shade600),
+                                        border: InputBorder.none,
+                                        prefixIcon: IconButton(
+                                          icon: _emojiBoardShown
+                                              ? Icon(
+                                                  Icons.keyboard,
+                                                  color: Colors.grey.shade600,
+                                                )
+                                              : Icon(
+                                                  Icons.emoji_emotions_outlined,
+                                                  color: Colors.grey.shade600,
+                                                ),
+                                          onPressed: () {
+                                            FocusManager.instance.primaryFocus
+                                                ?.unfocus();
+                                            setState(() {
+                                              _attachmentMenuShown = false;
+                                              _emojiBoardShown =
+                                                  !_emojiBoardShown;
+                                            });
+                                          },
+                                        ),
+                                        suffixIcon: (_textMessage)
+                                            ? null
+                                            : Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  IconButton(
+                                                    icon: Icon(
+                                                      Icons.attach_file,
+                                                      color:
+                                                          Colors.grey.shade600,
+                                                    ),
+                                                    onPressed: () {
+                                                      FocusManager
+                                                          .instance.primaryFocus
+                                                          ?.unfocus();
+                                                      setState(() {
+                                                        _attachmentMenuShown =
+                                                            !_attachmentMenuShown;
+                                                        _emojiBoardShown =
+                                                            false;
+                                                      });
+                                                    },
+                                                  ),
+                                                  IconButton(
+                                                    icon: Icon(
+                                                      Icons.camera_alt,
+                                                      color:
+                                                          Colors.grey.shade600,
+                                                    ),
+                                                    onPressed: () {
+                                                      _onCameraSelected();
+                                                    },
+                                                  ),
+                                                ],
                                               ),
-                                        onPressed: () {
-                                          FocusManager.instance.primaryFocus
-                                              ?.unfocus();
-                                          setState(() {
-                                            _attachmentMenuShown = false;
-                                            _emojiBoardShown = !_emojiBoardShown;
-                                          });
-                                },
-                                      ),
-                                      suffixIcon: (_textMessage)
-                                          ? null
-                                          : Row(
-                                              mainAxisSize: MainAxisSize.min,
-                                              children: [
-                                                IconButton(
-                                                  icon: Icon(
-                                                    Icons.attach_file,
-                                      color: Colors.grey.shade600,
-                                                  ),
-                                                  onPressed: () {
-                                                    FocusManager.instance.primaryFocus?.unfocus();
-                                                    setState(() {
-                                                      _attachmentMenuShown = !_attachmentMenuShown;
-                                                      _emojiBoardShown = false;
-                                                    });
-                                                  },
-                                                ),
-                                                IconButton(
-                                          icon: Icon(
-                                                    Icons.camera_alt,
-                                                    color: Colors.grey.shade600,
-                                                  ),
-                                    onPressed: () {
-                                                    _onCameraSelected();
-                                                  },
-                                                ),
-                                              ],
-                                            ),
                                       ),
                                       onChanged: (text) {
                                         setState(() {
@@ -599,56 +605,54 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
                 Offstage(
                   offstage: !_emojiBoardShown && !_attachmentMenuShown,
                   child: SizedBox(
-                      height: 250,
+                    height: 250,
                     child: _emojiBoardShown
-                    ? EmojiPicker(
-                        textEditingController: _messageController,
-                        onEmojiSelected: (category, emoji) {
-                          setState(() {
-                            _textMessage = message.trim().isNotEmpty;
-                          });
-                        },
-                        onBackspacePressed: () {
-                          setState(() {
-                            _textMessage = message.trim().isNotEmpty;
-                          });
-                        },
-                        config: Config(
-                          columns: 8,
-                          emojiSizeMax: 32 * (Platform.isIOS ? 1.30 : 1.0),
-                          verticalSpacing: 0,
-                          horizontalSpacing: 0,
-                          gridPadding: EdgeInsets.zero,
-                          initCategory: Category.RECENT,
-                          bgColor: const Color(0xFFF2F2F2),
-                          indicatorColor: Theme.of(context).primaryColor,
-                          iconColor: Colors.grey,
-                          iconColorSelected: Theme.of(context).primaryColor,
-                          backspaceColor: Theme.of(context).primaryColor,
-                          skinToneDialogBgColor: Colors.white,
-                          skinToneIndicatorColor: Colors.grey,
-                          enableSkinTones: true,
-                          showRecentsTab: true,
-                          recentsLimit: 28,
-                          replaceEmojiOnLimitExceed: false,
-                          noRecents: const Text(
-                            'No Recents',
-                            style: TextStyle(
-                              fontSize: 20,
-                              color: Colors.black26,
+                        ? EmojiPicker(
+                            textEditingController: _messageController,
+                            onEmojiSelected: (category, emoji) {
+                              setState(() {
+                                _textMessage = message.trim().isNotEmpty;
+                              });
+                            },
+                            onBackspacePressed: () {
+                              setState(() {
+                                _textMessage = message.trim().isNotEmpty;
+                              });
+                            },
+                            config: Config(
+                              columns: 8,
+                              emojiSizeMax: 32 * (Platform.isIOS ? 1.30 : 1.0),
+                              verticalSpacing: 0,
+                              horizontalSpacing: 0,
+                              gridPadding: EdgeInsets.zero,
+                              initCategory: Category.RECENT,
+                              bgColor: const Color(0xFFF2F2F2),
+                              indicatorColor: Theme.of(context).primaryColor,
+                              iconColor: Colors.grey,
+                              iconColorSelected: Theme.of(context).primaryColor,
+                              backspaceColor: Theme.of(context).primaryColor,
+                              skinToneDialogBgColor: Colors.white,
+                              skinToneIndicatorColor: Colors.grey,
+                              enableSkinTones: true,
+                              showRecentsTab: true,
+                              recentsLimit: 28,
+                              replaceEmojiOnLimitExceed: false,
+                              noRecents: const Text(
+                                'No Recents',
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  color: Colors.black26,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                              loadingIndicator: const SizedBox.shrink(),
+                              tabIndicatorAnimDuration: kTabScrollDuration,
+                              categoryIcons: const CategoryIcons(),
+                              buttonMode: ButtonMode.MATERIAL,
+                              checkPlatformCompatibility: true,
                             ),
-                            textAlign: TextAlign.center,
-                          ),
-                          loadingIndicator: const SizedBox.shrink(),
-                          tabIndicatorAnimDuration: kTabScrollDuration,
-                          categoryIcons: const CategoryIcons(),
-                          buttonMode: ButtonMode.MATERIAL,
-                          checkPlatformCompatibility: true,
-                        ),
-                      )
-                    : AttachmentMenu(
-                        chatroom: widget.chatroom
-                      ),
+                          )
+                        : AttachmentMenu(chatroom: widget.chatroom),
                   ),
                 ),
               ]),
