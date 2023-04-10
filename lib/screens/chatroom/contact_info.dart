@@ -407,7 +407,7 @@ class ContactInfo extends StatelessWidget {
                           return ListView.builder(
                               // +1 for add members
                               shrinkWrap: true,
-                              physics: NeverScrollableScrollPhysics(),
+                              physics: const NeverScrollableScrollPhysics(),
                               itemCount:
                                   (snapshot.data as List<GroupMember>).length +
                                       1,

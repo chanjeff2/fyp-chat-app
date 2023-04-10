@@ -57,8 +57,8 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<bool> _loadChatroom() async {
-    _chatroomMap.clear();
     final chatroomList = await ChatroomStore().getAllChatroom();
+    _chatroomMap.clear();
     setState(() {
       _chatroomMap.addEntries(chatroomList.map((e) => MapEntry(e.id, e)));
     });
@@ -266,11 +266,26 @@ class _HomeScreenState extends State<HomeScreen> {
                     _chatroomMap.remove(chatroomId);
                   });
                 } else {
-                  throw Exception('Chatroom already has been deleted');
+                  throw Exception(
+                      'Chatroom already has been deleted or chatroom not found');
                 }
               } else if (_chatroomMap[chatroomId]?.type == ChatroomType.group) {
-                //havent handle group deletion
+                //check whether the group is left, or blocked, if not, the user should not delete the group
+                if (true) {
+                  //showdialog to alert user the group is not left or blocked
 
+                } else {
+                  //if the group is left or blocked, delete the group
+                  bool status = await ChatroomStore().remove(chatroomId);
+                  if (status) {
+                    setState(() {
+                      _chatroomMap.remove(chatroomId);
+                    });
+                  } else {
+                    throw Exception(
+                        'Chatroom already has been deleted or chatroom not found');
+                  }
+                }
               } else {
                 throw Exception('Chatroom type not found');
               }

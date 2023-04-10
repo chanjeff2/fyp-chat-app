@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:fyp_chat_app/dto/login_dto.dart';
 import 'package:fyp_chat_app/models/access_token.dart';
+import 'package:fyp_chat_app/models/group_chat.dart';
+import 'package:fyp_chat_app/models/group_member.dart';
 import 'package:fyp_chat_app/models/user_state.dart';
 import 'package:fyp_chat_app/network/account_api.dart';
 import 'package:fyp_chat_app/network/api.dart';
@@ -177,7 +179,6 @@ class _RegisterOrLoginScreenState extends State<RegisterOrLoginScreen> {
                           }
                           // get account profile
                           // add account to contact store
-
                           final account = await AccountApi().getMe();
 
                           await ContactStore().storeContact(account);
@@ -225,6 +226,16 @@ class _RegisterOrLoginScreenState extends State<RegisterOrLoginScreen> {
 
   Future<void> restoreGroupChat() async {
     final groups = await GroupChatApi().getMyGroups();
+
+    //save contact of group members
+    Set<GroupMember> set = {};
+    for (GroupChat group in groups) {
+      set.addAll(group.members);
+    }
+    for (GroupMember contact in set) {
+      await ContactStore().storeContact(contact.user);
+    }
+
     await Future.wait(groups.map((group) => ChatroomStore().save(group)));
   }
 }

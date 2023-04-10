@@ -159,33 +159,55 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  //showing top bars chatroom name and participant's name
                   Text(widget.chatroom.name),
                   Text(
                     (widget.chatroom as GroupChat).members.isEmpty
-                        ? ((_state.me!.displayName == null)
-                            ? _state.me!.username
-                            : _state.me!.displayName!)
-                        : ((_state.me!.displayName == null)
-                                ? _state.me!.username
-                                : _state.me!.displayName!) +
-                            ', ' +
-                            (((widget.chatroom as GroupChat)
+                        //if empty, show no ppl in group
+                        ? ""
+                        : (((widget.chatroom as GroupChat)
                                         .members[0]
                                         .user
                                         .displayName ==
                                     null)
+                                //check first member have display name or not
                                 ? (widget.chatroom as GroupChat)
-                                        .members[0]
-                                        .user
-                                        .username
-                                        .toString() +
-                                    ", ..."
+                                    .members[0]
+                                    .user
+                                    .username
+                                    .toString()
                                 : (widget.chatroom as GroupChat)
-                                        .members[0]
-                                        .user
-                                        .displayName!
-                                        .toString() +
-                                    ", ..."),
+                                    .members[0]
+                                    .user
+                                    .displayName!
+                                    .toString()) +
+                            (((widget.chatroom as GroupChat).members.length < 2)
+                                //check there is second member or not
+                                ? ""
+                                : ', ' +
+                                    (((widget.chatroom as GroupChat)
+                                                .members[1]
+                                                .user
+                                                .displayName ==
+                                            null)
+                                        //check second member have display name or not
+                                        ? (widget.chatroom as GroupChat)
+                                            .members[1]
+                                            .user
+                                            .username
+                                            .toString()
+                                        : (widget.chatroom as GroupChat)
+                                            .members[1]
+                                            .user
+                                            .displayName!
+                                            .toString()) +
+                                    (((widget.chatroom as GroupChat)
+                                                .members
+                                                .length <
+                                            3)
+                                        //check if there are more members
+                                        ? ""
+                                        : ", ...")),
                     style: const TextStyle(fontSize: 12),
                   ),
                 ],
