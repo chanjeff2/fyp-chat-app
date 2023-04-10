@@ -241,7 +241,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  _showContextMenu(context) async {
+  _showContextMenu(BuildContext context) async {
     final RenderObject? overlay =
         Overlay.of(context)?.context.findRenderObject();
     final result = await showMenu(
@@ -254,55 +254,61 @@ class _HomeScreenState extends State<HomeScreen> {
           PopupMenuItem(
             child: const Text('Delete chatroom'),
             onTap: () async {
-              String chatroomId = chatroomListForDeleteToGestureDetector[
+              Future.delayed(
+                const Duration(seconds: 0),
+                () async {
+                  String chatroomId = chatroomListForDeleteToGestureDetector[
                       chatroomListForDeleteToGestureDetectorID]
                   .id;
-              if (_chatroomMap[chatroomId]?.type == ChatroomType.oneToOne) {
-                //one to one chatroom deletion
-                bool status = await ChatroomStore().remove(chatroomId);
-                if (status) {
-                  await MessageStore().removeAllMessageByChatroomId(chatroomId);
-                  setState(() {
-                    _chatroomMap.remove(chatroomId);
-                  });
-                } else {
-                  throw Exception(
-                      'Chatroom already has been deleted or chatroom not found');
-                }
-              } else if (_chatroomMap[chatroomId]?.type == ChatroomType.group) {
-                //check whether the group is left, or blocked, if not, the user should not delete the group
-                if (true) {
-                  //showdialog to alert user the group is not left or blocked
-                  showDialog(
-                      context: context,
-                      builder: (context) {
-                        return AlertDialog(
-                            title:
-                                const Text("Failed to delete Group Chatroom"),
-                            content: const Text(
-                                "Group chatroom can only be deleted if the group is left or blocked."),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.pop(context),
-                                child: const Text("Understand"),
-                              ),
-                            ]);
+                  if (_chatroomMap[chatroomId]?.type == ChatroomType.oneToOne) {
+                    //one to one chatroom deletion
+                    bool status = await ChatroomStore().remove(chatroomId);
+                    if (status) {
+                      await MessageStore().removeAllMessageByChatroomId(chatroomId);
+                      setState(() {
+                        _chatroomMap.remove(chatroomId);
                       });
-                } else {
-                  //if the group is left or blocked, delete the group
-                  bool status = await ChatroomStore().remove(chatroomId);
-                  if (status) {
-                    setState(() {
-                      _chatroomMap.remove(chatroomId);
-                    });
+                    } else {
+                      throw Exception(
+                          'Chatroom already has been deleted or chatroom not found');
+                    }
+                  } else if (_chatroomMap[chatroomId]?.type == ChatroomType.group) {
+                    //check whether the group is left, or blocked, if not, the user should not delete the group
+                    if (true) {
+                      //showdialog to alert user the group is not left or blocked
+                      showDialog(
+                          context: context,
+                          builder: (context) {
+                            return AlertDialog(
+                                title:
+                                    const Text("Action failed"),
+                                content: const Text(
+                                    "Group chatrooms can only be deleted if you left or blocked the group."),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(context),
+                                    child: const Text("OK"),
+                                  ),
+                                ]);
+                          });
+                    } else {
+                      //if the group is left or blocked, delete the group
+                      bool status = await ChatroomStore().remove(chatroomId);
+                      if (status) {
+                        setState(() {
+                          _chatroomMap.remove(chatroomId);
+                        });
+                      } else {
+                        throw Exception(
+                            'Chatroom already has been deleted or chatroom not found');
+                      }
+                    }
                   } else {
-                    throw Exception(
-                        'Chatroom already has been deleted or chatroom not found');
+                    throw Exception('Chatroom type not found');
                   }
                 }
-              } else {
-                throw Exception('Chatroom type not found');
-              }
+              );
+              
             },
             value: "Delete chatroom",
           ),
