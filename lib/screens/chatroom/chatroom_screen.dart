@@ -47,14 +47,14 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
   late final UserState _state;
   late final Future<bool> blockedFuture;
 
-  late final Future<bool> warningStatusFuture;
+  late final Future<bool> trustworthyFuture;
   late bool warningStatus =
       true; //just a variable to turn off the warning screen
   @override
   void initState() {
     super.initState();
     _messageHistoryFuture = _loadMessageHistory();
-    warningStatusFuture = BlockApi().getWarningStatus(widget.chatroom.id);
+    trustworthyFuture = BlockApi().getWarningStatus(widget.chatroom.id);
     //check chatroom blocked
     blockedFuture = BlockStore().contain(widget.chatroom.id);
     // set chatting with
@@ -574,7 +574,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                       return const SizedBox(height: 0);
                     }
                   },
-                  future: warningStatusFuture),
+                  future: trustworthyFuture),
             ]);
           },
         ),
