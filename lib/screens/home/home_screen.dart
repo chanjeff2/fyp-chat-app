@@ -50,7 +50,8 @@ class _HomeScreenState extends State<HomeScreen> {
       setState(() {
         // update contact on receive new message
         _chatroomMap[receivedMessage.chatroom.id] = receivedMessage.chatroom;
-        _filteredChatroomMap[receivedMessage.chatroom.id] = receivedMessage.chatroom;
+        _filteredChatroomMap[receivedMessage.chatroom.id] =
+            receivedMessage.chatroom;
       });
     });
   }
@@ -66,6 +67,7 @@ class _HomeScreenState extends State<HomeScreen> {
     _chatroomMap.clear();
     setState(() {
       _chatroomMap.addEntries(chatroomList.map((e) => MapEntry(e.id, e)));
+      _filteredChatroomMap.addAll(_chatroomMap);
     });
     return true;
   }
@@ -83,7 +85,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Consumer<UserState>(
       builder: (context, userState, child) => Scaffold(
         appBar: AppBar(
-          title: _isSearching 
+            title: _isSearching
                 ? TextField(
                     enabled: true,
                     textAlignVertical: TextAlignVertical.center,
@@ -100,9 +102,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       border: InputBorder.none,
                       prefixIcon: IconButton(
                         icon: const Icon(
-                                Icons.arrow_back,
-                                color: Colors.white,
-                              ),
+                          Icons.arrow_back,
+                          color: Colors.white,
+                        ),
                         onPressed: () {
                           setState(() {
                             _keywordController.text = "";
@@ -119,39 +121,37 @@ class _HomeScreenState extends State<HomeScreen> {
                         _filteredChatroomMap.clear();
                         _filteredChatroomMap.addAll(_chatroomMap);
                         _filteredChatroomMap.removeWhere((key, value) =>
-                                                          !(value.name.toLowerCase())
-                                                          .contains(text.toLowerCase())
-                                                        );
+                            !(value.name.toLowerCase())
+                                .contains(text.toLowerCase()));
                       });
                     },
                   )
                 : const Text("USTalk"),
-          actions: _isSearching
-          ? null
-          : [
-            IconButton(
-              onPressed: () {
-                setState(() {
-                  _isSearching = true;
-                });
-              },
-              icon: const Icon(Icons.search),
-            ),
-            PopupMenuButton(
-              offset: Offset(0.0, appBarHeight),
-              shape: const RoundedRectangleBorder(
-                borderRadius: BorderRadius.all(Radius.circular(8.0)),
-              ),
-              onSelected: (value) {
-                _onMenuItemSelected(value as int, userState);
-              },
-              itemBuilder: (context) => [
-                _buildPopupMenuItem('Settings', Icons.settings, 0),
-                _buildPopupMenuItem('Logout', Icons.logout, 1),
-              ],
-            ),
-          ]
-        ),
+            actions: _isSearching
+                ? null
+                : [
+                    IconButton(
+                      onPressed: () {
+                        setState(() {
+                          _isSearching = true;
+                        });
+                      },
+                      icon: const Icon(Icons.search),
+                    ),
+                    PopupMenuButton(
+                      offset: Offset(0.0, appBarHeight),
+                      shape: const RoundedRectangleBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(8.0)),
+                      ),
+                      onSelected: (value) {
+                        _onMenuItemSelected(value as int, userState);
+                      },
+                      itemBuilder: (context) => [
+                        _buildPopupMenuItem('Settings', Icons.settings, 0),
+                        _buildPopupMenuItem('Logout', Icons.logout, 1),
+                      ],
+                    ),
+                  ]),
         body: FutureBuilder<bool>(
           future: _loadChatroomFuture,
           builder: (_, snapshot) {
@@ -305,17 +305,46 @@ class _HomeScreenState extends State<HomeScreen> {
           PopupMenuItem(
             child: const Text('Delete chatroom'),
             onTap: () async {
-              Future.delayed(
-                const Duration(seconds: 0),
-                () async {
-                  String chatroomId = chatroomListForDeleteToGestureDetector[
-                      chatroomListForDeleteToGestureDetectorID]
-                  .id;
-                  if (_chatroomMap[chatroomId]?.type == ChatroomType.oneToOne) {
-                    //one to one chatroom deletion
+              Future.delayed(const Duration(seconds: 0), () async {
+                String chatroomId = chatroomListForDeleteToGestureDetector[
+                        chatroomListForDeleteToGestureDetectorID]
+                    .id;
+                if (_chatroomMap[chatroomId]?.type == ChatroomType.oneToOne) {
+                  //one to one chatroom deletion
+                  bool status = await ChatroomStore().remove(chatroomId);
+                  if (status) {
+                    await MessageStore()
+                        .removeAllMessageByChatroomId(chatroomId);
+                    setState(() {
+                      _chatroomMap.remove(chatroomId);
+                    });
+                  } else {
+                    throw Exception(
+                        'Chatroom already has been deleted or chatroom not found');
+                  }
+                } else if (_chatroomMap[chatroomId]?.type ==
+                    ChatroomType.group) {
+                  //check whether the group is left, or blocked, if not, the user should not delete the group
+                  if (true) {
+                    //showdialog to alert user the group is not left or blocked
+                    showDialog(
+                        context: context,
+                        builder: (context) {
+                          return AlertDialog(
+                              title: const Text("Action failed"),
+                              content: const Text(
+                                  "Group chatrooms can only be deleted if you left or blocked the group."),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context),
+                                  child: const Text("OK"),
+                                ),
+                              ]);
+                        });
+                  } else {
+                    //if the group is left or blocked, delete the group
                     bool status = await ChatroomStore().remove(chatroomId);
                     if (status) {
-                      await MessageStore().removeAllMessageByChatroomId(chatroomId);
                       setState(() {
                         _chatroomMap.remove(chatroomId);
                       });
@@ -323,43 +352,11 @@ class _HomeScreenState extends State<HomeScreen> {
                       throw Exception(
                           'Chatroom already has been deleted or chatroom not found');
                     }
-                  } else if (_chatroomMap[chatroomId]?.type == ChatroomType.group) {
-                    //check whether the group is left, or blocked, if not, the user should not delete the group
-                    if (true) {
-                      //showdialog to alert user the group is not left or blocked
-                      showDialog(
-                          context: context,
-                          builder: (context) {
-                            return AlertDialog(
-                                title:
-                                    const Text("Action failed"),
-                                content: const Text(
-                                    "Group chatrooms can only be deleted if you left or blocked the group."),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () => Navigator.pop(context),
-                                    child: const Text("OK"),
-                                  ),
-                                ]);
-                          });
-                    } else {
-                      //if the group is left or blocked, delete the group
-                      bool status = await ChatroomStore().remove(chatroomId);
-                      if (status) {
-                        setState(() {
-                          _chatroomMap.remove(chatroomId);
-                        });
-                      } else {
-                        throw Exception(
-                            'Chatroom already has been deleted or chatroom not found');
-                      }
-                    }
-                  } else {
-                    throw Exception('Chatroom type not found');
                   }
+                } else {
+                  throw Exception('Chatroom type not found');
                 }
-              );
-              
+              });
             },
             value: "Delete chatroom",
           ),
