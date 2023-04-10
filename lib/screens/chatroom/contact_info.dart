@@ -5,6 +5,7 @@ import 'package:fyp_chat_app/models/group_member.dart';
 import 'package:fyp_chat_app/models/one_to_one_chat.dart';
 import 'package:fyp_chat_app/models/user_state.dart';
 import 'package:fyp_chat_app/network/block_api.dart';
+import 'package:fyp_chat_app/network/group_chat_api.dart';
 import 'package:fyp_chat_app/screens/chatroom/chatroom_screen.dart';
 import 'package:fyp_chat_app/screens/chatroom/chatroom_screen_group.dart';
 import 'package:fyp_chat_app/screens/home/create_group_screen.dart';
@@ -32,8 +33,6 @@ class _ContactInfoState extends State<ContactInfo> {
   // Change the data type of the lists below if necessary
   List<int> _media = [1, 2, 3, 4, 5, 6, 7, 8, 9];
   Offset _tapPosition = Offset.zero;
-  List<GroupMember> participantListForDeleteToGestureDetector = [];
-  int participantForDeleteToGestureDetectorID = 0;
 
   Future<bool> checkSelfAccount(
       GroupMember chatroom, int index, UserState myAcc) async {
@@ -477,7 +476,11 @@ class _ContactInfoState extends State<ContactInfo> {
                                   onTapDown: (position) =>
                                       {_getTapPosition(position)},
                                   onLongPress: () async {
-                                    await _showContextMenu(context, userState);
+                                    await _showContextMenu(
+                                        context,
+                                        userState,
+                                        (snapshot.data
+                                            as List<GroupMember>)[index - 1]);
                                   },
                                   onTap: () async {
                                     /* direct to OneToOne chat */
@@ -792,7 +795,8 @@ class _ContactInfoState extends State<ContactInfo> {
     );
   }
 
-  _showContextMenu(BuildContext context, UserState userstate) async {
+  _showContextMenu(BuildContext context, UserState userstate,
+      GroupMember memberSelectedForTheAction) async {
     final RenderObject? overlay =
         Overlay.of(context)?.context.findRenderObject();
     final result = await showMenu(
@@ -812,21 +816,30 @@ class _ContactInfoState extends State<ContactInfo> {
                 PopupMenuItem(
                   child: const Text('Promote admin'),
                   onTap: () async {
-                    Future.delayed(const Duration(seconds: 0), () async {});
+                    Future.delayed(const Duration(seconds: 0), () async {
+                      GroupChatApi().addAdmin(widget.chatroom.id,
+                          memberSelectedForTheAction.user.userId);
+                    });
                   },
                   value: "Add admin",
                 ),
                 PopupMenuItem(
                   child: const Text('Demote admin'),
                   onTap: () async {
-                    Future.delayed(const Duration(seconds: 0), () async {});
+                    Future.delayed(const Duration(seconds: 0), () async {
+                      GroupChatApi().removeAdmin(widget.chatroom.id,
+                          memberSelectedForTheAction.user.userId);
+                    });
                   },
                   value: "Remove admin",
                 ),
                 PopupMenuItem(
                   child: const Text('Remove member'),
                   onTap: () async {
-                    Future.delayed(const Duration(seconds: 0), () async {});
+                    Future.delayed(const Duration(seconds: 0), () async {
+                      GroupChatApi().kickMember(widget.chatroom.id,
+                          memberSelectedForTheAction.user.userId);
+                    });
                   },
                   value: "Remove member",
                 ),
