@@ -50,13 +50,13 @@ class GroupChatApi extends Api {
 
   Future<void> inviteMember(
     String groupId,
-    SendInvitationDto sendInvitationDto,
+    String userId,
   ) async {
-    final json = await post(
-      "/$groupId/invite",
-      body: sendInvitationDto.toJson(),
-      useAuth: true,
-    );
+    var sendAccessControlDto =
+        SendAccessControlDto(targetUserId: userId, actionType: "add-member");
+
+    final json = await post("/$groupId",
+        body: sendAccessControlDto.toJson(), useAuth: true);
   }
 
   Future<bool> kickMember(String groupId, String userId) async {

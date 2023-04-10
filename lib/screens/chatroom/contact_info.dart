@@ -678,7 +678,10 @@ class _ContactInfoState extends State<ContactInfo> {
               // Block / Leave group
               if ((widget.chatroom.type == ChatroomType.group)) ...[
                 InkWell(
-                  onTap: () {/* confirm => process leave group */},
+                  onTap: () {
+                    /* confirm => process leave group */
+                    _leaveGroupAlert(context);
+                  },
                   child: const ListTile(
                     leading:
                         Icon(Icons.exit_to_app, size: 24, color: Colors.red),
@@ -881,5 +884,38 @@ class _ContactInfoState extends State<ContactInfo> {
             value: "Remove member",
           ),
         ]);
+  }
+
+  _leaveGroupAlert(BuildContext context) {
+    Widget cancelButton = TextButton(
+      child: const Text("Cancel"),
+      onPressed: () {
+        Navigator.pop(context, 'Cancel');
+      },
+    );
+    Widget continueButton = TextButton(
+      child: const Text("Leave Group"),
+      onPressed: () {
+        /* TODO: Leave Group Action */
+        Navigator.pop(context, 'Leave Group');
+        //return to home screen (delete if unnecessary)
+        Navigator.of(context).pop();
+        Navigator.of(context).pop();
+      },
+    );
+    AlertDialog leaveGroupDialog = AlertDialog(
+      title: const Text("Leaving group"),
+      content: const Text("Would you like to leave this chat group?"),
+      actions: [
+        cancelButton,
+        continueButton,
+      ],
+    );
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return leaveGroupDialog;
+      },
+    );
   }
 }
