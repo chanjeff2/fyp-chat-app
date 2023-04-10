@@ -9,13 +9,14 @@ part of 'media_key_item_dto.dart';
 MediaKeyItemDto _$MediaKeyItemDtoFromJson(Map<String, dynamic> json) {
   $checkKeys(
     json,
-    requiredKeys: const ['type', 'ext', 'aesKey', 'iv'],
+    requiredKeys: const ['type', 'ext', 'aesKey', 'iv', 'mediaId'],
   );
   return MediaKeyItemDto(
     type: json['type'] as int,
     ext: json['ext'] as String,
     aesKey: (json['aesKey'] as List<dynamic>).map((e) => e as int).toList(),
     iv: (json['iv'] as List<dynamic>).map((e) => e as int).toList(),
+    mediaId: json['mediaId'] as String,
   );
 }
 
@@ -25,4 +26,5 @@ Map<String, dynamic> _$MediaKeyItemDtoToJson(MediaKeyItemDto instance) =>
       'ext': instance.ext,
       'aesKey': instance.aesKey,
       'iv': instance.iv,
+      'mediaId': instance.mediaId,
     };

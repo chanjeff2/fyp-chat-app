@@ -83,7 +83,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
       OneToOneChat(
           target: (widget.chatroom as OneToOneChat).target,
           unread: 0,
-          createdAt: widget.chatroom!.createdAt,
+          createdAt: widget.chatroom.createdAt,
           latestMessage: (_messages.isEmpty) ? null : _messages[0]),
     );
     _state.chatroom = null;

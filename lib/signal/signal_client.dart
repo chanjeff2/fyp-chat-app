@@ -29,6 +29,7 @@ import 'package:fyp_chat_app/network/devices_api.dart';
 import 'package:fyp_chat_app/network/events_api.dart';
 import 'package:fyp_chat_app/network/group_chat_api.dart';
 import 'package:fyp_chat_app/network/keys_api.dart';
+import 'package:fyp_chat_app/network/media_api.dart';
 import 'package:fyp_chat_app/network/users_api.dart';
 import 'package:fyp_chat_app/signal/device_helper.dart';
 import 'package:fyp_chat_app/storage/account_store.dart';
@@ -274,11 +275,15 @@ class SignalClient {
 
     final encryptedData = base64Encode(encrypter.encrypt(encodedContent).bytes);
 
+    // Send media to server, and obtain the id for the key
+    final mediaId = await MediaApi().uploadFile(dto);
+
     final mediaKeyToSend = MediaKeyItem(
       type: type,
       ext: ext,
       aesKey: key.bytes,
       iv: iv.bytes,
+      mediaId: mediaId
     ).toDto().toJson().toString();
 
     // check if already establish session

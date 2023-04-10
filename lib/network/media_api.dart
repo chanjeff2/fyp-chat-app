@@ -15,8 +15,9 @@ class MediaApi extends Api {
   @override
   String pathPrefix = "/media";
 
-  Future<void> uploadFile(MediaItemEntity dto) async {
-    await post("/", body: dto.toJson(), useAuth: true);
+  Future<String> uploadFile(MediaItemEntity dto) async {
+    final response = await post("/", body: dto.toJson(), useAuth: true);
+    
   }
 
   Future<Uint8List> getFile(String mediaId) async {

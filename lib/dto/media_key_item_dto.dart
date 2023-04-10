@@ -17,11 +17,15 @@ class MediaKeyItemDto {
   @JsonKey(required: true)
   final List<int> iv;
 
+  @JsonKey(required: true)
+  final String mediaId;
+
   MediaKeyItemDto({
     required this.type,
     required this.ext,
     required this.aesKey,
     required this.iv,
+    required this.mediaId,
   });
 
   Map<String, dynamic> toJson() => _$MediaKeyItemDtoToJson(this);
