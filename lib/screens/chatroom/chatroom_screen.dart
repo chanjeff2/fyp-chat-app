@@ -8,6 +8,7 @@ import 'package:fyp_chat_app/models/one_to_one_chat.dart';
 import 'package:fyp_chat_app/models/plain_message.dart';
 import 'package:fyp_chat_app/models/received_plain_message.dart';
 import 'package:fyp_chat_app/models/user_state.dart';
+import 'package:fyp_chat_app/network/block_api.dart';
 import 'package:fyp_chat_app/screens/chatroom/contact_info.dart';
 import 'package:fyp_chat_app/signal/signal_client.dart';
 import 'package:fyp_chat_app/storage/chatroom_store.dart';
@@ -46,12 +47,14 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
   late final UserState _state;
   late final Future<bool> blockedFuture;
 
-  bool stat = false;
-
+  late final Future<bool> warningStatusFuture;
+  late bool warningStatus =
+      true; //just a variable to turn off the warning screen
   @override
   void initState() {
     super.initState();
     _messageHistoryFuture = _loadMessageHistory();
+    warningStatusFuture = BlockApi().getWarningStatus(widget.chatroom.id);
     //check chatroom blocked
     blockedFuture = BlockStore().contain(widget.chatroom.id);
     // set chatting with
@@ -549,23 +552,29 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                 ]),
                 onMessageTap: (context, p1) => _handleMessageTap(context, p1),
               ),
-              (stat)
-                  ? AlertDialog(
-                      title: const Text("Warning"),
-                      content: const Text(
-                          "This may be a potential scammer due to blocked by many users recently."),
-                      actions: [
-                        TextButton(
-                          onPressed: () => {
-                            setState(() => {
-                                  stat = false,
-                                })
-                          },
-                          child: const Text("Confirm"),
-                        ),
-                      ],
-                    )
-                  : const SizedBox(height: 0),
+              FutureBuilder<bool>(
+                  builder: (_, snapshot) {
+                    if (snapshot.hasData && !snapshot.data! && warningStatus) {
+                      return AlertDialog(
+                        title: const Text("Warning"),
+                        content: const Text(
+                            "This may be a potential scammer due to blocked by many users recently."),
+                        actions: [
+                          TextButton(
+                            onPressed: () => {
+                              setState(() => {
+                                    warningStatus = false,
+                                  })
+                            },
+                            child: const Text("Confirm"),
+                          ),
+                        ],
+                      );
+                    } else {
+                      return const SizedBox(height: 0);
+                    }
+                  },
+                  future: warningStatusFuture),
             ]);
           },
         ),

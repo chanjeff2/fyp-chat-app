@@ -57,4 +57,48 @@ class GroupChatApi extends Api {
       useAuth: true,
     );
   }
+
+  Future<bool> kickMember(String groupId, String userId) async {
+    try {
+      final json = await delete("/$groupId/member/$userId", useAuth: true);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  Future<bool> leaveGroup(String groupId) async {
+    try {
+      final json = await delete("/$groupId", useAuth: true);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  Future<bool> addAdmin(String groupId, String userId) async {
+    try {
+      final json = await post("/$groupId/admin/$userId", useAuth: true);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  Future<bool> removeAdmin(String groupId, String userId) async {
+    try {
+      final json = await delete("/$groupId/admin/$userId", useAuth: true);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  //get admins
+  Future<List<GroupMember>> getAdmins(String groupId) async {
+    final List<dynamic> json = await get("/$groupId/admin", useAuth: true);
+    return json
+        .map((e) => GroupMember.fromDto(GroupMemberDto.fromJson(e)))
+        .toList();
+  }
 }

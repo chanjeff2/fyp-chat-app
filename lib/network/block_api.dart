@@ -48,7 +48,7 @@ class BlockApi extends Api {
   //get whether the target user is in low score/warning status
   Future<bool> getWarningStatus(String targetuserId) async {
     try {
-      final json = await get("/$targetuserId", useAuth: true);
+      final json = await get("/$targetuserId/trustworthy", useAuth: true);
       return json;
     } catch (e) {
       rethrow;
