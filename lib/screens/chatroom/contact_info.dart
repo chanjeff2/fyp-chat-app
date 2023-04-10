@@ -75,6 +75,24 @@ class _ContactInfoState extends State<ContactInfo> {
     });
   }
 
+  bool checkIsAdmin(UserState userState) {
+    if (widget.chatroom.type == ChatroomType.oneToOne) {
+      return false;
+    }
+    return (widget.chatroom as GroupChat)
+            .members
+            .firstWhere((member) => member.user.userId == userState.me?.userId)
+            .role ==
+        Role.admin;
+  }
+
+  GroupMember determineListViewIndexForCommonGroupList(
+      UserState userState, List<GroupMember> groupMembers, int index) {
+    return checkIsAdmin(userState)
+        ? groupMembers[index - 1]
+        : groupMembers[index];
+  }
+
   @override
   void initState() {
     super.initState();
@@ -202,10 +220,12 @@ class _ContactInfoState extends State<ContactInfo> {
                       ),
                     ),
                   ]),
-                  (widget.chatroom.type == ChatroomType.group)
+                  (widget.chatroom.type == ChatroomType.group &&
+                          checkIsAdmin(userState))
                       ? const SizedBox(width: 32)
                       : const SizedBox(width: 0),
-                  (widget.chatroom.type == ChatroomType.group)
+                  (widget.chatroom.type == ChatroomType.group &&
+                          checkIsAdmin(userState))
                       ? Column(children: [
                           InkWell(
                             onTap: () {
@@ -429,12 +449,14 @@ class _ContactInfoState extends State<ContactInfo> {
                               // +1 for add members
                               shrinkWrap: true,
                               physics: const NeverScrollableScrollPhysics(),
-                              itemCount:
-                                  (snapshot.data as List<GroupMember>).length +
-                                      1,
+                              itemCount: checkIsAdmin(userState)
+                                  ? (snapshot.data as List<GroupMember>)
+                                          .length +
+                                      1
+                                  : (snapshot.data as List<GroupMember>).length,
                               itemBuilder: (context, index) {
                                 // Add member
-                                if (index == 0) {
+                                if (index == 0 && checkIsAdmin(userState)) {
                                   return InkWell(
                                     onTap: () {
                                       // for (var i in (snapshot.data
@@ -476,13 +498,7 @@ class _ContactInfoState extends State<ContactInfo> {
                                   onTapDown: (position) =>
                                       {_getTapPosition(position)},
                                   onLongPress: () async {
-                                    if ((widget.chatroom as GroupChat)
-                                            .members
-                                            .firstWhere((member) =>
-                                                member.user.userId ==
-                                                userState.me?.userId)
-                                            .role ==
-                                        Role.admin) {
+                                    if (checkIsAdmin(userState)) {
                                       await _showContextMenu(
                                           context,
                                           (snapshot.data
@@ -492,23 +508,33 @@ class _ContactInfoState extends State<ContactInfo> {
                                   onTap: () async {
                                     /* direct to OneToOne chat */
                                     if (!(await checkSelfAccount(
-                                        (snapshot.data
-                                            as List<GroupMember>)[index - 1],
+                                        determineListViewIndexForCommonGroupList(
+                                            userState,
+                                            (snapshot.data
+                                                as List<GroupMember>),
+                                            index),
                                         index,
                                         userState))) {
                                       Chatroom? pmChatroom =
                                           await ChatroomStore().get(
-                                              (snapshot.data as List<
-                                                      GroupMember>)[index - 1]
+                                              determineListViewIndexForCommonGroupList(
+                                                      userState,
+                                                      (snapshot.data
+                                                          as List<GroupMember>),
+                                                      index)
                                                   .user
                                                   .userId);
                                       if (pmChatroom == null) {
                                         // havent have chatroom in the chatroom store but have contact in contact store
                                         // store chatroom in chatroom store
                                         pmChatroom = OneToOneChat(
-                                          target: (snapshot.data as List<
-                                                  GroupMember>)[index - 1]
-                                              .user,
+                                          target:
+                                              determineListViewIndexForCommonGroupList(
+                                                      userState,
+                                                      (snapshot.data
+                                                          as List<GroupMember>),
+                                                      index)
+                                                  .user,
                                           unread: 0,
                                           createdAt: DateTime.now(),
                                         );
@@ -536,22 +562,31 @@ class _ContactInfoState extends State<ContactInfo> {
                                         const SizedBox(width: 16),
                                         Text(
                                             // isGroup ? _members[index].name : _common_group[index].name,
-                                            ((snapshot.data as List<
-                                                                GroupMember>)[
-                                                            index - 1]
+                                            ((checkIsAdmin(userState)
+                                                            ? (snapshot.data
+                                                                    as List<GroupMember>)[
+                                                                index - 1]
+                                                            : (snapshot.data
+                                                                    as List<GroupMember>)[
+                                                                index])
                                                         .user
                                                         .displayName ==
                                                     null)
-                                                ? (snapshot.data as List<
-                                                        GroupMember>)[index - 1]
+                                                ? determineListViewIndexForCommonGroupList(
+                                                        userState,
+                                                        (snapshot.data as List<
+                                                            GroupMember>),
+                                                        index)
                                                     .user
                                                     .username
-                                                : (snapshot.data as List<
-                                                        GroupMember>)[index - 1]
+                                                : determineListViewIndexForCommonGroupList(
+                                                        userState,
+                                                        (snapshot.data
+                                                            as List<GroupMember>),
+                                                        index)
                                                     .user
                                                     .displayName!,
-                                            style:
-                                                const TextStyle(fontSize: 16))
+                                            style: const TextStyle(fontSize: 16))
                                       ],
                                     ),
                                   ),
@@ -573,34 +608,34 @@ class _ContactInfoState extends State<ContactInfo> {
                               shrinkWrap: true,
                               physics: NeverScrollableScrollPhysics(),
                               itemCount:
-                                  (snapshot.data as List<Chatroom>).length + 1,
+                                  (snapshot.data as List<Chatroom>).length,
                               itemBuilder: (context, index) {
                                 // Add member / add to group
-                                if (index == 0) {
-                                  return InkWell(
-                                    onTap: () {
-                                      /* isGroup ? addMember : addGroup */
-                                    },
-                                    child: Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                          vertical: 8),
-                                      child: Row(
-                                        children: const [
-                                          SizedBox(width: 16),
-                                          CircleAvatar(
-                                            radius: 24,
-                                            child: Icon(Icons.add,
-                                                size: 24, color: Colors.white),
-                                            backgroundColor: Colors.blueGrey,
-                                          ),
-                                          SizedBox(width: 16),
-                                          Text("Add to a group",
-                                              style: TextStyle(fontSize: 16))
-                                        ],
-                                      ),
-                                    ),
-                                  );
-                                }
+                                // if (index == 0) {
+                                //   return InkWell(
+                                //     onTap: () {
+                                //       /* isGroup ? addMember : addGroup */
+                                //     },
+                                //     child: Padding(
+                                //       padding: const EdgeInsets.symmetric(
+                                //           vertical: 8),
+                                //       child: Row(
+                                //         children: const [
+                                //           SizedBox(width: 16),
+                                //           CircleAvatar(
+                                //             radius: 24,
+                                //             child: Icon(Icons.add,
+                                //                 size: 24, color: Colors.white),
+                                //             backgroundColor: Colors.blueGrey,
+                                //           ),
+                                //           SizedBox(width: 16),
+                                //           Text("Add to a group",
+                                //               style: TextStyle(fontSize: 16))
+                                //         ],
+                                //       ),
+                                //     ),
+                                //   );
+                                // }
                                 // Common groups
                                 return InkWell(
                                   onTap: () {
@@ -610,7 +645,7 @@ class _ContactInfoState extends State<ContactInfo> {
                                                 ChatRoomScreenGroup(
                                                     chatroom: (snapshot.data
                                                             as List<Chatroom>)[
-                                                        index - 1])));
+                                                        index])));
                                   },
                                   child: Padding(
                                     padding:
@@ -626,8 +661,8 @@ class _ContactInfoState extends State<ContactInfo> {
                                         const SizedBox(width: 16),
                                         Text(
                                             // isGroup ? _members[index].name : _common_group[index].name,
-                                            (snapshot.data as List<Chatroom>)[
-                                                    index - 1]
+                                            (snapshot.data
+                                                    as List<Chatroom>)[index]
                                                 .name,
                                             style:
                                                 const TextStyle(fontSize: 16))
@@ -814,6 +849,7 @@ class _ContactInfoState extends State<ContactInfo> {
                 overlay.paintBounds.size.height)),
         items: [
           //admin visbile menu
+          //TODO : Wait backend finish and DEBUG
           PopupMenuItem(
             child: const Text('Promote admin'),
             onTap: () async {
