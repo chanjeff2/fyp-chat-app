@@ -29,12 +29,16 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   var appBarHeight = AppBar().preferredSize.height;
   final Map<String, Chatroom> _chatroomMap = {};
+  final Map<String, Chatroom> _filteredChatroomMap = {};
   late final Future<bool> _loadChatroomFuture;
   late final StreamSubscription<ReceivedPlainMessage>
       _messageStreamSubscription;
   Offset _tapPosition = Offset.zero;
   List<Chatroom> chatroomListForDeleteToGestureDetector = [];
   int chatroomListForDeleteToGestureDetectorID = 0;
+
+  final TextEditingController _keywordController = TextEditingController();
+  bool _isSearching = false;
 
   @override
   void initState() {
@@ -46,6 +50,7 @@ class _HomeScreenState extends State<HomeScreen> {
       setState(() {
         // update contact on receive new message
         _chatroomMap[receivedMessage.chatroom.id] = receivedMessage.chatroom;
+        _filteredChatroomMap[receivedMessage.chatroom.id] = receivedMessage.chatroom;
       });
     });
   }
@@ -78,11 +83,57 @@ class _HomeScreenState extends State<HomeScreen> {
     return Consumer<UserState>(
       builder: (context, userState, child) => Scaffold(
         appBar: AppBar(
-          title: const Text("USTalk"),
-          actions: [
+          title: _isSearching 
+                ? TextField(
+                    enabled: true,
+                    textAlignVertical: TextAlignVertical.center,
+                    keyboardType: TextInputType.multiline,
+                    controller: _keywordController,
+                    style: const TextStyle(color: Colors.white),
+                    cursorColor: Colors.white,
+                    decoration: InputDecoration(
+                      contentPadding: EdgeInsets.zero,
+                      isCollapsed: true,
+                      filled: true,
+                      hintText: 'Search by chatroom name...',
+                      hintStyle: TextStyle(color: Colors.grey.shade200),
+                      border: InputBorder.none,
+                      prefixIcon: IconButton(
+                        icon: const Icon(
+                                Icons.arrow_back,
+                                color: Colors.white,
+                              ),
+                        onPressed: () {
+                          setState(() {
+                            _keywordController.text = "";
+                            _filteredChatroomMap.clear();
+                            _filteredChatroomMap.addAll(_chatroomMap);
+                            _isSearching = false;
+                          });
+                        },
+                      ),
+                    ),
+                    maxLines: 1,
+                    onChanged: (text) {
+                      setState(() {
+                        _filteredChatroomMap.clear();
+                        _filteredChatroomMap.addAll(_chatroomMap);
+                        _filteredChatroomMap.removeWhere((key, value) =>
+                                                          !(value.name.toLowerCase())
+                                                          .contains(text.toLowerCase())
+                                                        );
+                      });
+                    },
+                  )
+                : const Text("USTalk"),
+          actions: _isSearching
+          ? null
+          : [
             IconButton(
               onPressed: () {
-                print("Search - To be implemented");
+                setState(() {
+                  _isSearching = true;
+                });
               },
               icon: const Icon(Icons.search),
             ),
@@ -99,7 +150,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 _buildPopupMenuItem('Logout', Icons.logout, 1),
               ],
             ),
-          ],
+          ]
         ),
         body: FutureBuilder<bool>(
           future: _loadChatroomFuture,
@@ -109,7 +160,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: CircularProgressIndicator(),
               );
             }
-            final chatroomList = _chatroomMap.values.toList();
+            final chatroomList = _filteredChatroomMap.values.toList();
             chatroomList.sort((a, b) => a.compareByLastActivityTime(b) * -1);
             return ListView.builder(
               itemBuilder: (_, i) => GestureDetector(
