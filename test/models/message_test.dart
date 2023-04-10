@@ -76,6 +76,7 @@ void main() {
       senderDeviceId: deviceId,
       recipientUserId: 'recipientUserId',
       chatroomId: 'recipientUserId', // TODO: handle group chat
+      type: 0,
       messages: [
         MessageToServer(
           cipherTextType: ciphertext.getType(),

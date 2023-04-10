@@ -1,7 +1,7 @@
 import 'package:fyp_chat_app/entities/blocklist_entity.dart';
+import 'package:fyp_chat_app/entities/chat_message_entity.dart';
 import 'package:fyp_chat_app/entities/chatroom_entity.dart';
 import 'package:fyp_chat_app/entities/group_member_entity.dart';
-import 'package:fyp_chat_app/entities/plain_message_entity.dart';
 import 'package:fyp_chat_app/entities/pre_key_pair_entity.dart';
 import 'package:fyp_chat_app/entities/session_entity.dart';
 import 'package:fyp_chat_app/entities/signed_pre_key_pair_entity.dart';
@@ -50,7 +50,7 @@ class DiskStorage {
     return await openDatabase(
       join(await getDatabasesPath(), databasePath),
       password: password,
-      version: 12,
+      version: 13,
       onCreate: (db, version) {
         db.execute(
           "CREATE TABLE ${DiskIdentityKeyStore.table}(${TheirIdentityKeyEntity.createTableCommandFields});",
@@ -68,7 +68,7 @@ class DiskStorage {
           "CREATE TABLE ${ContactStore.table}(${UserEntity.createTableCommandFields});",
         );
         db.execute(
-          "CREATE TABLE ${MessageStore.table}(${PlainMessageEntity.createTableCommandFields});",
+          "CREATE TABLE ${MessageStore.table}(${ChatMessageEntity.createTableCommandFields});",
         );
         db.execute(
           "CREATE TABLE ${ChatroomStore.table}(${ChatroomEntity.createTableCommandFields});",

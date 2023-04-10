@@ -101,7 +101,7 @@ class HomeContact extends StatelessWidget {
               if (chatroom.latestMessage != null)
                 Expanded(
                   child: Text(
-                    chatroom.latestMessage!.content, // Latest message
+                    chatroom.latestMessage!.notificationContent, // Latest message
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(

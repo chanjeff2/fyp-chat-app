@@ -5,6 +5,7 @@ class SendMessageDao {
   final int senderDeviceId;
   final String recipientUserId;
   final String chatroomId;
+  final int type;
   final List<MessageToServer> messages;
   final DateTime sentAt;
 
@@ -12,6 +13,7 @@ class SendMessageDao {
     required this.senderDeviceId,
     required this.recipientUserId,
     required this.chatroomId,
+    required this.type,
     required this.messages,
     required this.sentAt,
   });
@@ -21,6 +23,7 @@ class SendMessageDao {
       senderDeviceId: senderDeviceId,
       recipientUserId: recipientUserId,
       chatroomId: chatroomId,
+      type: type,
       messages: messages.map((e) => e.toDto()).toList(),
       sentAt: sentAt.toIso8601String(),
     );

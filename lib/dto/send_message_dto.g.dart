@@ -14,6 +14,7 @@ SendMessageDto _$SendMessageDtoFromJson(Map<String, dynamic> json) {
       'recipientUserId',
       'chatroomId',
       'messages',
+      'type',
       'sentAt'
     ],
   );
@@ -24,6 +25,7 @@ SendMessageDto _$SendMessageDtoFromJson(Map<String, dynamic> json) {
     messages: (json['messages'] as List<dynamic>)
         .map((e) => MessageToServerDto.fromJson(e as Map<String, dynamic>))
         .toList(),
+    type: json['type'] as int,
     sentAt: json['sentAt'] as String,
   );
 }
@@ -34,5 +36,6 @@ Map<String, dynamic> _$SendMessageDtoToJson(SendMessageDto instance) =>
       'recipientUserId': instance.recipientUserId,
       'chatroomId': instance.chatroomId,
       'messages': instance.messages,
+      'type': instance.type,
       'sentAt': instance.sentAt,
     };

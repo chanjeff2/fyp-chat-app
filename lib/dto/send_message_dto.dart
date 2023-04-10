@@ -18,6 +18,9 @@ class SendMessageDto {
   final List<MessageToServerDto> messages;
 
   @JsonKey(required: true)
+  final int type;
+
+  @JsonKey(required: true)
   final String sentAt; // iso string
 
   SendMessageDto({
@@ -25,6 +28,7 @@ class SendMessageDto {
     required this.recipientUserId,
     required this.chatroomId,
     required this.messages,
+    required this.type,
     required this.sentAt,
   });
 
