@@ -49,7 +49,7 @@ class BlockApi extends Api {
   Future<bool> getWarningStatus(String targetuserId) async {
     try {
       final json = await get("/$targetuserId/trustworthy", useAuth: true);
-      return json;
+      return json["isTrustWorthy"];
     } catch (e) {
       rethrow;
     }

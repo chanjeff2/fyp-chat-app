@@ -94,11 +94,5 @@ class GroupChatApi extends Api {
     }
   }
 
-  //get admins
-  Future<List<GroupMember>> getAdmins(String groupId) async {
-    final List<dynamic> json = await get("/$groupId/admin", useAuth: true);
-    return json
-        .map((e) => GroupMember.fromDto(GroupMemberDto.fromJson(e)))
-        .toList();
-  }
+  //get admins can be done by get group->check admin
 }
