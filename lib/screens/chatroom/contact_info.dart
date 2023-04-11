@@ -14,6 +14,7 @@ import 'package:fyp_chat_app/storage/block_store.dart';
 import 'package:fyp_chat_app/storage/group_member_store.dart';
 import 'package:provider/provider.dart';
 import 'package:fyp_chat_app/models/chatroom.dart';
+import 'package:collection/collection.dart';
 
 class ContactInfo extends StatefulWidget {
   const ContactInfo({
@@ -76,12 +77,18 @@ class _ContactInfoState extends State<ContactInfo> {
   }
 
   bool checkIsAdmin(UserState userState) {
-    if (widget.chatroom.type == ChatroomType.oneToOne) {
+    if (widget.chatroom.type != ChatroomType.group) {
+      return false;
+    }
+    if ((widget.chatroom as GroupChat).members.firstWhereOrNull(
+            (member) => member.user.userId == userState.me?.userId) ==
+        null) {
       return false;
     }
     return (widget.chatroom as GroupChat)
             .members
-            .firstWhere((member) => member.user.userId == userState.me?.userId)
+            .firstWhereOrNull(
+                (member) => member.user.userId == userState.me?.userId)!
             .role ==
         Role.admin;
   }
@@ -898,14 +905,13 @@ class _ContactInfoState extends State<ContactInfo> {
       onPressed: () async {
         /* TODO: Leave Group Action */
         Navigator.pop(context, 'Leave Group');
-        bool leaveGroupSuccess = await GroupChatApi().leaveGroup(widget.chatroom.id);
+        bool leaveGroupSuccess =
+            await GroupChatApi().leaveGroup(widget.chatroom.id);
         //return to home screen (delete if unnecessary)
-        if (leaveGroupSuccess){
+        if (leaveGroupSuccess) {
           Navigator.of(context).pop();
           Navigator.of(context).pop();
-        } else {
-
-        } 
+        } else {}
       },
     );
     AlertDialog leaveGroupDialog = AlertDialog(
@@ -923,6 +929,7 @@ class _ContactInfoState extends State<ContactInfo> {
       },
     );
   }
+
   _leaveGroupFailedAlert(BuildContext context) {
     Widget okButton = TextButton(
       child: const Text("OK"),
@@ -932,7 +939,8 @@ class _ContactInfoState extends State<ContactInfo> {
     );
     AlertDialog leaveGroupDialog = AlertDialog(
       title: const Text("Leave group failed"),
-      content: const Text("Please try again.\nIf this window keeps prompt out, please contact the developers"),
+      content: const Text(
+          "Please try again.\nIf this window keeps prompt out, please contact the developers"),
       actions: [
         okButton,
       ],
