@@ -1,7 +1,6 @@
 import 'package:fyp_chat_app/entities/media_item_entity.dart';
 import 'package:fyp_chat_app/models/media_item.dart';
 import 'package:fyp_chat_app/storage/disk_storage.dart';
-import 'package:sqflite/sqflite.dart';
 
 class MediaStore {
   // singleton

@@ -5,6 +5,7 @@ import 'dart:typed_data';
 import 'package:encrypt/encrypt.dart';
 import 'package:fyp_chat_app/dto/account_dto.dart';
 import 'package:fyp_chat_app/dto/events/fcm_event.dart';
+import 'package:fyp_chat_app/dto/events/received_media_key_dto.dart';
 import 'package:fyp_chat_app/dto/media_key_item_dto.dart';
 import 'package:fyp_chat_app/dto/update_keys_dto.dart';
 import 'package:fyp_chat_app/entities/media_item_entity.dart';
@@ -244,9 +245,8 @@ class SignalClient {
     await EventsApi().sendMessage(messageRetry);
   }
 
-  Future<void> _sendMediaMessage(
+  Future<String> _sendMediaMessage(
     String myUserId, // to avoid send to sender device
-    String mediaId,
     int senderDeviceId,
     String recipientUserId,
     String chatroomId,
@@ -255,10 +255,6 @@ class SignalClient {
     MessageType type,
     DateTime sentAt,
   ) async {
-
-    // Convert content to a base64 string first
-    final encodedContent = base64Encode(content);
-
     /**
      * Encryption of file:
      * 1. Generate random IV, AES256 and encryptor
@@ -273,10 +269,10 @@ class SignalClient {
 
     Encrypter encrypter = Encrypter(AES(key, mode: AESMode.cbc));
 
-    final encryptedData = base64Encode(encrypter.encrypt(encodedContent).bytes);
+    final encryptedData = encrypter.encryptBytes(content, iv: iv).bytes;
 
     // Send media to server, and obtain the id for the key
-    final mediaId = await MediaApi().uploadFile(dto);
+    final mediaId = await MediaApi().uploadFile(encryptedData);
 
     final mediaKeyToSend = MediaKeyItem(
       type: type,
@@ -372,6 +368,8 @@ class SignalClient {
     ).toDto();
 
     await EventsApi().sendMessage(mediaSendingRetry);
+
+    return mediaId;
   }
 
   Future<PlainMessage> sendMessageToChatroom(
@@ -440,9 +438,6 @@ class SignalClient {
     if (senderDeviceId == null) {
       throw Exception('Sender Device Id is null');
     }
-
-    // UUID - Near-zero chance of collision
-    final mediaId = uuid.v4();
     
     final path = mediaPath ?? media.path;
     final ext = p.extension(path);
@@ -461,19 +456,14 @@ class SignalClient {
 
     DateTime sentAt = DateTime.now();
 
-    final mediaGenerated = MediaItem(
-      id: mediaId,
-      content: content,
-      type: type,
-      ext: ext,
-    );
+    // The id for retrieving the media on server
+    late final mediaId;
 
     switch (chatroom.type) {
       case ChatroomType.oneToOne:
         chatroom as OneToOneChat;
-        await _sendMediaMessage(
+        mediaId = await _sendMediaMessage(
           me.userId,
-          mediaId,
           senderDeviceId,
           chatroom.target.userId,
           me.userId, // chatroom id w.r.t. recipient, i.e. my user id
@@ -485,9 +475,8 @@ class SignalClient {
         break;
       case ChatroomType.group:
         chatroom as GroupChat;
-        await Future.wait(chatroom.members.map((e) async => await _sendMediaMessage(
+        mediaId = await Future.wait(chatroom.members.map((e) async => await _sendMediaMessage(
               me.userId,
-              mediaId,
               senderDeviceId,
               e.user.userId,
               chatroom.id,
@@ -498,6 +487,14 @@ class SignalClient {
             )));
         break;
     }
+
+    // Generated media (For group message, save with the id of the last member send to)
+    final mediaGenerated = MediaItem(
+      id: mediaId,
+      content: content,
+      type: type,
+      ext: ext,
+    );
 
     // save message to disk
     final mediaMessage = MediaMessage(
@@ -563,125 +560,178 @@ class SignalClient {
 
     final plaintext = utf8.decode(decrypted);
 
-    switch (message.type) {
-      case EventType.textMessage: // text
-        final plainMessage = PlainMessage(
-          senderUserId: sender.userId,
-          chatroomId: message.chatroomId, // TODO: update to chatroom id
-          content: plaintext,
-          sentAt: message.sentAt,
-        );
+    final plainMessage = PlainMessage(
+      senderUserId: sender.userId,
+      chatroomId: message.chatroomId, // TODO: update to chatroom id
+      content: plaintext,
+      sentAt: message.sentAt,
+    );
 
-        // save message to disk
-        final messageId = await MessageStore().storeMessage(plainMessage);
-        plainMessage.id = messageId;
-    
-        // TODO: support group chat
-        /*
-        if (!(await ChatroomStore().contains(sender.userId))) {
-          final chatroom = OneToOneChat(
-            target: sender,
-            unread: 1,
-            latestMessage: plainMessage,
-            createdAt: DateTime.now(),
-          );
-          await ChatroomStore().save(chatroom);
-        }
-        final chatroom = await ChatroomStore().get(sender.userId);
-        */
-        if (!(await ChatroomStore().contains(message.chatroomId))) {
-          // In theory, if the chatroom is group chat, sender ID != chatroom ID (chance -> 0)
-          if (sender.userId != message.chatroomId) {
-            // If possible, develop another way to get group chat without re-instantiate a new GroupChat
-            final obtainedChatroom =
-                await GroupChatApi().getGroup(message.chatroomId);
-            final groupChatroom = GroupChat(
-              id: obtainedChatroom.id,
-              members: obtainedChatroom.members,
-              name: obtainedChatroom.name,
-              unread: 1,
-              latestMessage: plainMessage,
-              createdAt: obtainedChatroom.createdAt,
-            );
-            await ChatroomStore().save(groupChatroom);
-          } else {
-            final oneToOneChatroom = OneToOneChat(
-              target: sender,
-              latestMessage: plainMessage,
-              unread: 1,
-              createdAt: DateTime.now(),
-            );
-            await ChatroomStore().save(oneToOneChatroom);
-          }
-        }
-        final chatroom = await ChatroomStore().get(message.chatroomId);
+    // save message to disk
+    final messageId = await MessageStore().storeMessage(plainMessage);
+    plainMessage.id = messageId;
 
-        final receivedPlainMessage = ReceivedPlainMessage(
-          sender: sender,
-          chatroom: chatroom!,
-          message: plainMessage,
-        );
-        return receivedPlainMessage;
-
-      // Placeholder for other cases
-      default:
-        final plainMessage = PlainMessage(
-          senderUserId: sender.userId,
-          chatroomId: message.chatroomId, // TODO: update to chatroom id
-          content: plaintext,
-          sentAt: message.sentAt,
-        );
-
-        // save message to disk
-        final messageId = await MessageStore().storeMessage(plainMessage);
-        plainMessage.id = messageId;
-    
-        // TODO: support group chat
-        /*
-        if (!(await ChatroomStore().contains(sender.userId))) {
-          final chatroom = OneToOneChat(
-            target: sender,
-            unread: 1,
-            latestMessage: plainMessage,
-            createdAt: DateTime.now(),
-          );
-          await ChatroomStore().save(chatroom);
-        }
-        final chatroom = await ChatroomStore().get(sender.userId);
-        */
-        if (!(await ChatroomStore().contains(message.chatroomId))) {
-          // In theory, if the chatroom is group chat, sender ID != chatroom ID (chance -> 0)
-          if (sender.userId != message.chatroomId) {
-            // If possible, develop another way to get group chat without re-instantiate a new GroupChat
-            final obtainedChatroom =
-                await GroupChatApi().getGroup(message.chatroomId);
-            final groupChatroom = GroupChat(
-              id: obtainedChatroom.id,
-              members: obtainedChatroom.members,
-              name: obtainedChatroom.name,
-              unread: 1,
-              latestMessage: plainMessage,
-              createdAt: obtainedChatroom.createdAt,
-            );
-            await ChatroomStore().save(groupChatroom);
-          } else {
-            final oneToOneChatroom = OneToOneChat(
-              target: sender,
-              latestMessage: plainMessage,
-              unread: 1,
-              createdAt: DateTime.now(),
-            );
-            await ChatroomStore().save(oneToOneChatroom);
-          }
-        }
-        final chatroom = await ChatroomStore().get(message.chatroomId);
-
-        final receivedPlainMessage = ReceivedPlainMessage(
-          sender: sender,
-          chatroom: chatroom!,
-          message: plainMessage,
-        );
-        return receivedPlainMessage;
+    // TODO: support group chat
+    /*
+    if (!(await ChatroomStore().contains(sender.userId))) {
+      final chatroom = OneToOneChat(
+        target: sender,
+        unread: 1,
+        latestMessage: plainMessage,
+        createdAt: DateTime.now(),
+      );
+      await ChatroomStore().save(chatroom);
     }
+    final chatroom = await ChatroomStore().get(sender.userId);
+    */
+    if (!(await ChatroomStore().contains(message.chatroomId))) {
+      // In theory, if the chatroom is group chat, sender ID != chatroom ID (chance -> 0)
+      if (sender.userId != message.chatroomId) {
+        // If possible, develop another way to get group chat without re-instantiate a new GroupChat
+        final obtainedChatroom =
+            await GroupChatApi().getGroup(message.chatroomId);
+        final groupChatroom = GroupChat(
+          id: obtainedChatroom.id,
+          members: obtainedChatroom.members,
+          name: obtainedChatroom.name,
+          unread: 1,
+          latestMessage: plainMessage,
+          createdAt: obtainedChatroom.createdAt,
+        );
+        await ChatroomStore().save(groupChatroom);
+      } else {
+        final oneToOneChatroom = OneToOneChat(
+          target: sender,
+          latestMessage: plainMessage,
+          unread: 1,
+          createdAt: DateTime.now(),
+        );
+        await ChatroomStore().save(oneToOneChatroom);
+      }
+    }
+    final chatroom = await ChatroomStore().get(message.chatroomId);
+
+    final receivedPlainMessage = ReceivedPlainMessage(
+      sender: sender,
+      chatroom: chatroom!,
+      message: plainMessage,
+    );
+    return receivedPlainMessage;
+  }
+
+  Future<ReceivedPlainMessage?> processMediaMessage(Message message) async {
+    final me = await AccountStore().getAccount();
+    if (me == null) {
+      return null; // user not yet login (tho it should not happen)
+    }
+    final User sender;
+    // try to find user in disk
+    final senderInDisk =
+        await ContactStore().getContactById(message.senderUserId);
+    if (senderInDisk != null) {
+      sender = senderInDisk;
+    } else {
+      // get user from server
+      sender = await UsersApi().getUserById(message.senderUserId);
+      // add sender to contact
+      await ContactStore().storeContact(sender);
+    }
+
+    // set up address
+    final remoteAddress = SignalProtocolAddress(
+      message.senderUserId,
+      message.senderDeviceId,
+    );
+    // decrypt message
+    final remoteSessionCipher = SessionCipher(
+      DiskSessionStore(),
+      DiskPreKeyStore(),
+      DiskSignedPreKeyStore(),
+      DiskIdentityKeyStore(),
+      remoteAddress,
+    );
+
+    late final Uint8List decrypted;
+    switch (message.cipherTextType) {
+      case CiphertextMessage.prekeyType:
+        final ciphertext = PreKeySignalMessage(message.content);
+        decrypted = await remoteSessionCipher.decrypt(ciphertext);
+        break;
+      case CiphertextMessage.whisperType:
+        final ciphertext = SignalMessage.fromSerialized(message.content);
+        decrypted = await remoteSessionCipher.decryptFromSignal(ciphertext);
+        break;
+      default:
+        return null;
+    }
+
+    final plaintext = utf8.decode(decrypted);
+
+    // Part where diverts from normal process message - Construct the item and obtain keys
+    final recoveredDto = MediaKeyItemDto.fromJson(jsonDecode(plaintext));
+    final recoveredKeyItem = MediaKeyItem.fromDto(recoveredDto);
+
+    final aesKey = Key(recoveredKeyItem.aesKey);
+    final iv = IV(recoveredKeyItem.iv);
+
+    final encrypter =  Encrypter(AES(aesKey));
+
+    // Fetch the item from server
+    final media = await MediaApi().getFile(recoveredKeyItem.mediaId);
+    
+    final decryptedMedia = Uint8List.fromList(encrypter.decryptBytes(Encrypted(media), iv: iv));
+
+    final reconstructedMediaItem = MediaItem(
+      id: recoveredKeyItem.mediaId,
+      content: decryptedMedia,
+      type: recoveredKeyItem.type,
+      ext: recoveredKeyItem.ext
+    );
+
+    final mediaMessage = MediaMessage(
+      senderUserId: message.senderUserId,
+      chatroomId: message.chatroomId,
+      media: reconstructedMediaItem,
+      type: recoveredKeyItem.type,
+      sentAt: message.sentAt,
+    );
+
+    // save message and media to disk
+    final messageId = await MessageStore().storeMessage(mediaMessage);
+    await MediaStore().storeMedia(reconstructedMediaItem);
+    mediaMessage.id = messageId;
+
+    if (!(await ChatroomStore().contains(message.chatroomId))) {
+      // In theory, if the chatroom is group chat, sender ID != chatroom ID (chance -> 0)
+      if (sender.userId != message.chatroomId) {
+        final obtainedChatroom =
+            await GroupChatApi().getGroup(message.chatroomId);
+        final groupChatroom = GroupChat(
+          id: obtainedChatroom.id,
+          members: obtainedChatroom.members,
+          name: obtainedChatroom.name,
+          unread: 1,
+          latestMessage: mediaMessage,
+          createdAt: obtainedChatroom.createdAt,
+        );
+        await ChatroomStore().save(groupChatroom);
+      } else {
+        final oneToOneChatroom = OneToOneChat(
+          target: sender,
+          latestMessage: mediaMessage,
+          unread: 1,
+          createdAt: DateTime.now(),
+        );
+        await ChatroomStore().save(oneToOneChatroom);
+      }
+    }
+    final chatroom = await ChatroomStore().get(message.chatroomId);
+    
+    final receivedPlainMessage = ReceivedPlainMessage(
+      sender: sender,
+      chatroom: chatroom!,
+      message: mediaMessage,
+    );
+    return receivedPlainMessage;
   }
 }

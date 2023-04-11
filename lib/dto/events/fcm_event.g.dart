@@ -11,4 +11,5 @@ const _$EventTypeEnumMap = {
   EventType.memberInvitation: 'member-invitation',
   EventType.memberRemoval: 'member-removal',
   EventType.permissionUpdate: 'permission-update',
+  EventType.mediaMessage: 'media-message',
 };

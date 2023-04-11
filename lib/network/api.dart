@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:fyp_chat_app/models/access_token.dart';
 import 'package:fyp_chat_app/network/auth_api.dart';
 import 'package:fyp_chat_app/storage/credential_store.dart';
@@ -90,6 +91,26 @@ abstract class Api {
   }
 
   @protected
+  Future<dynamic> getMedia(
+    String path, {
+    Map<String, String>? headers,
+    bool useAuth = false,
+  }) async {
+    final url =
+        Uri.parse("$baseUrl$pathPrefix$path");
+    if (useAuth) {
+      AccessToken accessToken = await _getAccessToken();
+      headers ??= {};
+      headers['Authorization'] = 'Bearer ${accessToken.accessToken}';
+    }
+    final response = await http.get(
+      url,
+      headers: headers,
+    );
+    return _processResponse(response);
+  }
+
+  @protected
   Future<dynamic> post(
     String path, {
     Map<String, String>? headers,
@@ -107,6 +128,29 @@ abstract class Api {
       url,
       headers: headers,
       body: body != null ? json.encode(body) : null,
+    );
+    return _processResponse(response);
+  }
+
+  // Post function, for media (Uses multipart as content type instead)
+  @protected
+  Future<dynamic> postMedia(
+    String path, {
+    Map<String, String>? headers,
+    required Uint8List file,
+    bool useAuth = false,
+  }) async {
+    final url = Uri.parse("$baseUrl$pathPrefix$path");
+    headers ??= {};
+    headers['Content-Type'] = 'multipart/form-data';
+    if (useAuth) {
+      AccessToken accessToken = await _getAccessToken();
+      headers['Authorization'] = 'Bearer ${accessToken.accessToken}';
+    }
+    final response = await http.post(
+      url,
+      headers: headers,
+      body: file,
     );
     return _processResponse(response);
   }

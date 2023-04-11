@@ -5,6 +5,7 @@ import 'package:fyp_chat_app/dto/events/fcm_event.dart';
 import 'package:fyp_chat_app/dto/events/member_invitation_dto.dart';
 import 'package:fyp_chat_app/dto/events/member_removal_dto.dart';
 import 'package:fyp_chat_app/dto/events/message_dto.dart';
+import 'package:fyp_chat_app/dto/events/received_media_key_dto.dart';
 import 'package:fyp_chat_app/models/chatroom.dart';
 import 'package:fyp_chat_app/models/chat_message.dart';
 import 'package:fyp_chat_app/models/received_plain_message.dart';
@@ -90,6 +91,11 @@ class FCMHandler {
             .getGroupMember(dto.chatroomId, dto.recipientUserId);
         await GroupMemberStore().save(dto.chatroomId, updatedMember);
         break;
+      case EventType.mediaMessage:
+        final messageDto = event as MessageDto;
+        final message = message_model.Message.fromDto(messageDto);
+        final plainMessage = await SignalClient().processMessage(message);
+        return plainMessage;
     }
   }
 
