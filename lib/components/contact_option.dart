@@ -89,7 +89,7 @@ class HomeContact extends StatelessWidget {
                       .format(chatroom.latestMessage!.sentAt), // time
                   style: TextStyle(
                     fontSize: 16,
-                    fontWeight: FontWeight.bold,
+                    fontWeight: (chatroom.unread > 0) ? FontWeight.bold : FontWeight.normal,
                     color:
                         (chatroom.unread > 0) ? Colors.redAccent : Colors.black,
                   ),
@@ -104,34 +104,34 @@ class HomeContact extends StatelessWidget {
                     chatroom.latestMessage!.content, // Latest message
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 14,
+                      fontWeight: (chatroom.unread > 0) ? FontWeight.w700 : FontWeight.normal
                     ),
                   ),
                 ),
               const Spacer(),
-              Container(
-                width: 20,
-                height: 20,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: (chatroom.unread > 0)
-                      ? Colors.redAccent
-                      : null, // Theme.of(context).primaryColor,
+              Visibility(
+                visible: chatroom.unread > 0,
+                child: Container(
+                  width: 20,
+                  height: 20,
+                  alignment: Alignment.center,
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.redAccent, // Theme.of(context).primaryColor,
+                  ),
+                  child: Text(
+                    chatroom.unread > 9 ? '9+' : chatroom.unread.toString(),
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: Colors.white,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
                 ),
-                child: (chatroom.unread > 0)
-                    ? Text(
-                        chatroom.unread > 9 ? '9+' : chatroom.unread.toString(),
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          color: Colors.white,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      )
-                    : null,
-              ),
+              )
             ],
           ),
         ),
