@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:libsignal_protocol_dart/libsignal_protocol_dart.dart';
 
 class JoinCourseGroupScreen extends StatefulWidget {
   const JoinCourseGroupScreen({
@@ -15,7 +16,7 @@ class _JoinCourseGroupScreenState extends State<JoinCourseGroupScreen> {
   final TextEditingController _courseCodeController = TextEditingController();
   final TextEditingController _yearController = TextEditingController();
   String get courseCode => _courseCodeController.text;
-  int get year => int.parse(_yearController.text);
+  String get year => _yearController.text;
   final List<String> semesters = ["Fall", "Winter", "Spring", "Summer"];
   String semesterSelected = "";
   @override
@@ -44,10 +45,10 @@ class _JoinCourseGroupScreenState extends State<JoinCourseGroupScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   TextFormField(
-                    // inputFormatters: [
-                    //   FilteringTextInputFormatter.allow(RegExp(r'[A-Z]')),
-                    //   FilteringTextInputFormatter.allow(RegExp(r'[0-9]'))
-                    // ],
+                    inputFormatters: [
+                      FilteringTextInputFormatter.allow(RegExp(r'[A-Z]')),
+                      FilteringTextInputFormatter.allow(RegExp(r'[0-9]'))
+                    ],
                     controller: _courseCodeController,
                     decoration: const InputDecoration(
                       labelText: "Course Code",
@@ -61,7 +62,10 @@ class _JoinCourseGroupScreenState extends State<JoinCourseGroupScreen> {
                           borderSide: BorderSide()),
                     ),
                     //TODO: validator to be done
-                    validator: (courseCode) {},
+                    validator: (courseCode) {
+                      
+                    },
+                    enabled: true,
                   ),
                   const SizedBox(height: 35),
                   Row(
@@ -70,6 +74,10 @@ class _JoinCourseGroupScreenState extends State<JoinCourseGroupScreen> {
                       Container(
                         width: 120,
                         child: TextFormField(
+                          inputFormatters: [
+                            LengthLimitingTextInputFormatter(4),
+                            FilteringTextInputFormatter.digitsOnly
+                          ],
                           keyboardType: TextInputType.number,
                           controller: _yearController,
                           decoration: const InputDecoration(
@@ -84,8 +92,16 @@ class _JoinCourseGroupScreenState extends State<JoinCourseGroupScreen> {
                                     BorderRadius.all(Radius.circular(10.0)),
                                 borderSide: BorderSide()),
                           ),
-                          //TODO: validator to be done
-                          validator: (year) {},
+                          validator: (year) {
+                            if (year?.isEmpty ?? true) {
+                              return "Year cannot be empty";
+                            }
+                            if (int.parse(year!) < 2000 ||
+                                int.parse(year!) > 2025) {
+                              return "Invalid year";
+                            }
+                            return null;
+                          },
                         ),
                       ),
                       const SizedBox(width: 60),
@@ -102,6 +118,7 @@ class _JoinCourseGroupScreenState extends State<JoinCourseGroupScreen> {
                           setState(() {
                             semesterSelected = newValue!;
                           });
+                          //print(semesterSelected);
                         },
                       )
                     ],
