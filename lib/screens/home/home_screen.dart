@@ -65,6 +65,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<bool> _loadChatroom() async {
     final chatroomList = await ChatroomStore().getAllChatroom();
     _chatroomMap.clear();
+    _filteredChatroomMap.clear();
     setState(() {
       _chatroomMap.addEntries(chatroomList.map((e) => MapEntry(e.id, e)));
       _filteredChatroomMap.addAll(_chatroomMap);
@@ -179,16 +180,20 @@ class _HomeScreenState extends State<HomeScreen> {
                               .push(MaterialPageRoute(
                                   builder: (context) => ChatRoomScreen(
                                       chatroom: chatroomList[i])))
-                              .then(
-                                  (value) => setState(() => {_loadChatroom()}));
+                              .then((value) async {
+                            await ChatroomStore().save(value);
+                            await _loadChatroom();
+                          });
                           break;
                         case ChatroomType.group:
                           Navigator.of(context)
                               .push(MaterialPageRoute(
                                   builder: (context) => ChatRoomScreenGroup(
                                       chatroom: chatroomList[i])))
-                              .then(
-                                  (value) => setState(() => {_loadChatroom()}));
+                              .then((value) async {
+                            await ChatroomStore().save(value);
+                            await _loadChatroom();
+                          });
                           break;
                       }
                     }),
@@ -209,14 +214,18 @@ class _HomeScreenState extends State<HomeScreen> {
                     Navigator.of(context)
                         .push(MaterialPageRoute(
                             builder: (_) => ChatRoomScreen(chatroom: chatroom)))
-                        .then((value) => setState(() => {_loadChatroom()}));
+                        .then((value) {
+                      setState(() => {_loadChatroom()});
+                    });
                     break;
                   case ChatroomType.group:
                     Navigator.of(context)
                         .push(MaterialPageRoute(
                             builder: (_) =>
                                 ChatRoomScreenGroup(chatroom: chatroom)))
-                        .then((value) => setState(() => {_loadChatroom()}));
+                        .then((value) {
+                      setState(() => {_loadChatroom()});
+                    });
                     break;
                   default:
                     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -317,7 +326,9 @@ class _HomeScreenState extends State<HomeScreen> {
                         .removeAllMessageByChatroomId(chatroomId);
                     setState(() {
                       _chatroomMap.remove(chatroomId);
+                      _filteredChatroomMap.remove(chatroomId);
                     });
+                    await _loadChatroom();
                   } else {
                     throw Exception(
                         'Chatroom already has been deleted or chatroom not found');
@@ -342,12 +353,14 @@ class _HomeScreenState extends State<HomeScreen> {
                               ]);
                         });
                   } else {
-                    //if the group is left or blocked, delete the group
+                    //if the group is left or blocked, allow to delete the group
                     bool status = await ChatroomStore().remove(chatroomId);
                     if (status) {
                       setState(() {
                         _chatroomMap.remove(chatroomId);
+                        _filteredChatroomMap.remove(chatroomId);
                       });
+                      await _loadChatroom();
                     } else {
                       throw Exception(
                           'Chatroom already has been deleted or chatroom not found');

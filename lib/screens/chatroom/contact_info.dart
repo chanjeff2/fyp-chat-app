@@ -46,7 +46,8 @@ class _ContactInfoState extends State<ContactInfo> {
     return false;
   }
 
-  Future<List<Chatroom>> checkCommonGroupChat(Chatroom chatroom) async {
+  Future<List<Chatroom>> checkCommonGroupChat(
+      Chatroom chatroom, UserState userState) async {
     if (chatroom.type == ChatroomType.group) {
       return [];
     }
@@ -55,15 +56,21 @@ class _ContactInfoState extends State<ContactInfo> {
         .where((element) => element.type == ChatroomType.group)
         .where((element) => checkIfInGroup(
             (chatroom as OneToOneChat).target.userId,
-            (element as GroupChat).members))
+            (element as GroupChat).members,
+            userState))
         .toList();
   }
 
-  bool checkIfInGroup(String id, List<GroupMember> memberList) {
+  bool checkIfInGroup(
+      String id, List<GroupMember> memberList, UserState userState) {
+    bool meInGroup = false;
+    bool targetInGroup = false;
     for (var element in memberList) {
-      if (id == element.user.userId) {
-        return true;
-      }
+      meInGroup = meInGroup || element.user.userId == userState.me?.userId;
+      targetInGroup = targetInGroup || element.user.userId == id;
+    }
+    if (meInGroup && targetInGroup) {
+      return true;
     }
     return false;
   }
@@ -604,7 +611,7 @@ class _ContactInfoState extends State<ContactInfo> {
                   :
                   // oneToOne Chatroom List View
                   FutureBuilder(
-                      future: checkCommonGroupChat(widget.chatroom),
+                      future: checkCommonGroupChat(widget.chatroom, userState),
                       builder: (context, snapshot) {
                         if (!snapshot.hasData) {
                           return const Center(
@@ -733,8 +740,7 @@ class _ContactInfoState extends State<ContactInfo> {
                                           .storeBlocked(widget.chatroom.id);
                                     }
                                     Navigator.pop(context);
-                                    Navigator.pop(context);
-                                    Navigator.pop(context);
+                                    Navigator.pop(context, widget.chatroom);
                                   },
                                   child: const Text("Block"),
                                 ),
@@ -769,8 +775,7 @@ class _ContactInfoState extends State<ContactInfo> {
                                           .removeBlocked(widget.chatroom.id);
                                     }
                                     Navigator.pop(context);
-                                    Navigator.pop(context);
-                                    Navigator.pop(context);
+                                    Navigator.pop(context, widget.chatroom);
                                   },
                                   child: const Text("Unblock"),
                                 ),
@@ -791,7 +796,8 @@ class _ContactInfoState extends State<ContactInfo> {
                                       "You will no longer be able to receive messages from this user."),
                               actions: [
                                 TextButton(
-                                  onPressed: () => Navigator.pop(context),
+                                  onPressed: () =>
+                                      Navigator.pop(context, widget.chatroom),
                                   child: const Text("Cancel"),
                                 ),
                                 TextButton(
