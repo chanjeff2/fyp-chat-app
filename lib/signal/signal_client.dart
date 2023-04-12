@@ -3,12 +3,10 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:encrypt/encrypt.dart';
+import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:fyp_chat_app/dto/account_dto.dart';
-import 'package:fyp_chat_app/dto/events/fcm_event.dart';
-import 'package:fyp_chat_app/dto/events/received_media_key_dto.dart';
 import 'package:fyp_chat_app/dto/media_key_item_dto.dart';
 import 'package:fyp_chat_app/dto/update_keys_dto.dart';
-import 'package:fyp_chat_app/entities/media_item_entity.dart';
 import 'package:fyp_chat_app/extensions/signal_lib_extension.dart';
 import 'package:fyp_chat_app/models/account.dart';
 import 'package:fyp_chat_app/models/chatroom.dart';
@@ -45,7 +43,7 @@ import 'package:fyp_chat_app/storage/message_store.dart';
 import 'package:libsignal_protocol_dart/libsignal_protocol_dart.dart';
 import 'package:fyp_chat_app/models/send_message_dao.dart';
 import 'package:path/path.dart' as p;
-import 'package:uuid/uuid.dart';
+import 'package:video_compress/video_compress.dart';
 
 class SignalClient {
   SignalClient._();
@@ -55,8 +53,6 @@ class SignalClient {
   factory SignalClient() {
     return _instance;
   }
-
-  static const uuid = Uuid();
 
   Future<void> initialize() async {
     await registerDevice();
@@ -427,7 +423,7 @@ class SignalClient {
   }
 
   Future<MediaMessage> sendMediaToChatroom(
-    AccountDto me,
+    Account me,
     Chatroom chatroom,
     File media,
     String? mediaPath,
@@ -443,15 +439,36 @@ class SignalClient {
     final baseName = p.basename(path);
 
     // Process to the media. Particularly, compression
+    // Currently support only video and image
     final mediaInBytes = File(path).readAsBytesSync();
 
-
     final content = mediaInBytes;
+    late final processedContent;
+
+    switch (type) {
+      case MessageType.image:
+        processedContent = await FlutterImageCompress.compressWithList(
+          content,
+          quality: 5,
+        );
+        break;
+      case MessageType.video:
+        final mediaInfo = await VideoCompress.compressVideo(
+          media.path,
+          quality: VideoQuality.MediumQuality,
+          deleteOrigin: false,
+          includeAudio: true,
+        );
+        processedContent = mediaInfo!.file!.readAsBytesSync();
+        break;
+      default:
+        processedContent = content;
+    }
 
     // If size > 8MB, throw error
     const maximumSize = 8 * 1024 * 1024;
-    if (media.lengthSync() > maximumSize) {
-      throw Exception('File exceed 8MB. Your message is NOT sent.');
+    if (File.fromRawPath(processedContent).lengthSync() > maximumSize) {
+      throw Exception('Uploaded file exceeded 8MB. Your message is NOT sent.');
     }
 
     DateTime sentAt = DateTime.now();
@@ -467,9 +484,9 @@ class SignalClient {
           senderDeviceId,
           chatroom.target.userId,
           me.userId, // chatroom id w.r.t. recipient, i.e. my user id
-          content,
+          processedContent,
           type,
-          sentAt,
+          sentAt.toUtc(),
         );
         break;
       case ChatroomType.group:
@@ -479,9 +496,9 @@ class SignalClient {
               senderDeviceId,
               e.user.userId,
               chatroom.id,
-              content,
+              processedContent,
               type,
-              sentAt,
+              sentAt.toUtc(),
             )));
         break;
     }
@@ -489,7 +506,7 @@ class SignalClient {
     // Generated media (For group message, save with the id of the last member send to)
     final mediaGenerated = MediaItem(
       id: mediaId,
-      content: content,
+      content: processedContent,
       type: type,
       baseName: baseName,
     );
@@ -674,7 +691,7 @@ class SignalClient {
 
     final encrypter =  Encrypter(AES(aesKey));
 
-    final media = await getFile(recoveredKeyItem.publicUrl);
+    final media = await MediaApi().downloadFile(recoveredKeyItem.publicUrl);
     
     final decryptedMedia = Uint8List.fromList(encrypter.decryptBytes(Encrypted(media), iv: iv));
 

@@ -8,6 +8,11 @@ class MediaItem {
   final MessageType type;
   final String baseName;
 
+  String get fileExtension {
+    final dotIndex = baseName.lastIndexOf('.');
+    return dotIndex != -1 ? baseName.substring(dotIndex) : '';
+  }
+
   MediaItem({
     required this.id,
     required this.content,

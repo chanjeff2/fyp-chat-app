@@ -2,9 +2,11 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:fyp_chat_app/components/palette.dart';
+import 'package:fyp_chat_app/models/chat_message.dart';
 import 'package:fyp_chat_app/models/chatroom.dart';
 import 'package:fyp_chat_app/screens/chatroom/chatroom_screen.dart';
 import 'package:fyp_chat_app/screens/chatroom/chatroom_screen_group.dart';
+import 'package:fyp_chat_app/signal/signal_client.dart';
 import 'package:provider/provider.dart';
 
 import '../../models/user_state.dart';
@@ -121,8 +123,6 @@ class ImagePreview extends StatelessWidget {
                         backgroundColor: Palette.ustBlue[500],
                         child: IconButton(
                         onPressed: () {
-                          // TODO: Send message to chatroom
-
                           // return to chatroom
                           switch (chatroom.type) {
                             case ChatroomType.oneToOne:
@@ -157,7 +157,18 @@ class ImagePreview extends StatelessWidget {
           backgroundColor: Palette.ustBlue[500],
           onPressed: () async {
             // TODO: Send message to chatroom
-
+            try {
+              await SignalClient().sendMediaToChatroom(
+                userState.me!,
+                chatroom,
+                image,
+                image.path, 
+                MessageType.image,
+              );
+            } on Exception catch (e) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text("error: $e")));
+            }
 
             // return to chatroom
             switch (chatroom.type) {

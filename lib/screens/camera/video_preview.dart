@@ -1,10 +1,11 @@
 import 'dart:io';
 
-import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:fyp_chat_app/components/palette.dart';
+import 'package:fyp_chat_app/models/chat_message.dart';
 import 'package:fyp_chat_app/screens/chatroom/chatroom_screen.dart';
 import 'package:fyp_chat_app/screens/chatroom/chatroom_screen_group.dart';
+import 'package:fyp_chat_app/signal/signal_client.dart';
 import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
 
@@ -14,7 +15,7 @@ import '../../models/user_state.dart';
 class VideoPreview extends StatefulWidget {
   const VideoPreview({Key? key, required this.video, required this.chatroom}) : super(key: key);
 
-  final XFile video;
+  final File video;
   final Chatroom chatroom;
 
   @override
@@ -28,7 +29,7 @@ class _VideoPreviewState extends State<VideoPreview> {
   @override
   void initState() {
     super.initState();
-    _controller = VideoPlayerController.file(File(widget.video.path))
+    _controller = VideoPlayerController.file(widget.video)
       ..initialize().then((_) {
         // Ensure the first frame is shown after the video is initialized,
         // even before the play button has been pressed. DO NOT REMOVE
@@ -42,6 +43,7 @@ class _VideoPreviewState extends State<VideoPreview> {
       builder: (context, userState, child) => Scaffold(
         backgroundColor: Colors.black,
         appBar: AppBar(
+          backgroundColor: Colors.black,
           leadingWidth: 56,
           leading: IconButton(
             icon: const Icon(
@@ -138,8 +140,6 @@ class _VideoPreviewState extends State<VideoPreview> {
                         backgroundColor: Palette.ustBlue[500],
                         child: IconButton(
                         onPressed: () {
-                          // TODO: Send message to chatroom
-
                           // return to chatroom
                           switch (chatroom.type) {
                             case ChatroomType.oneToOne:
@@ -196,8 +196,21 @@ class _VideoPreviewState extends State<VideoPreview> {
         ),
         floatingActionButton: FloatingActionButton(
           backgroundColor: Palette.ustBlue[500],
-          onPressed: () {
+          onPressed: () async {
             // TODO: Send message to chatroom
+            try {
+              await SignalClient().sendMediaToChatroom(
+                userState.me!,
+                widget.chatroom,
+                widget.video,
+                widget.video.path, 
+                MessageType.video,
+              );
+            } on Exception catch (e) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text("error: $e")));
+            }
+              
 
             // return to chatroom
             switch (widget.chatroom.type) {

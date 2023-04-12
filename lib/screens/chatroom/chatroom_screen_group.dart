@@ -12,8 +12,10 @@ import 'package:fyp_chat_app/models/received_plain_message.dart';
 import 'package:fyp_chat_app/models/user_state.dart';
 import 'package:fyp_chat_app/screens/chatroom/contact_info.dart';
 import 'package:fyp_chat_app/signal/signal_client.dart';
+import 'package:fyp_chat_app/storage/media_store.dart';
 import 'package:fyp_chat_app/storage/message_store.dart';
 import 'package:fyp_chat_app/storage/block_store.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 
 import 'package:flutter_chat_ui/flutter_chat_ui.dart';
@@ -45,6 +47,7 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
   late final Future<bool> _messageHistoryFuture;
   final List<ChatMessage> _messages = [];
   final Map<String, String> _names = {};
+  final Map<String, String> _mediaMap = {};
   int _page = 0; // pagination
   bool _isLastPage = false;
   static const _pageSize = 100;
@@ -90,6 +93,22 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
     if (messages.length < _pageSize) {
       _isLastPage = true;
     }
+    // Extract media from database, and put to temporary storage
+    late final media;
+    final localStorage = await getTemporaryDirectory();
+    messages.forEach((msg) async {
+      // Message > 2 => Not text, not system log, not media key
+      if (msg.type.index > 2 && !_mediaMap.containsKey(msg.id)) {
+        final media = await MediaStore().getMediaById((msg as MediaMessage).media.id);
+        final filePath = "$localStorage/${media.id}${media.fileExtension}";
+        final file = File(filePath);
+        await file.writeAsBytes(media.content);
+        setState(() {
+          _mediaMap.addAll({media.id: filePath});
+        });
+      }
+    });
+
     GroupChat room = _state.chatroom as GroupChat;
     final members = room.members;
     final names = <String, String>{

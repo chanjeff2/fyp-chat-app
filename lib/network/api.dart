@@ -90,14 +90,14 @@ abstract class Api {
     return _processResponse(response);
   }
 
+  // GET request, which downloads media using the link provided
   @protected
   Future<dynamic> getMedia(
-    String path, {
+    String publicUrl, {
     Map<String, String>? headers,
     bool useAuth = false,
   }) async {
-    final url =
-        Uri.parse("$baseUrl$pathPrefix$path");
+    final url = Uri.parse(publicUrl);
     if (useAuth) {
       AccessToken accessToken = await _getAccessToken();
       headers ??= {};

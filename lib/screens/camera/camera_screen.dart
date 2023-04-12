@@ -285,7 +285,11 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
       setState(() {
         _isRecordingInProgress = false;
       });
-      // Redirect to video preview page (param: path: video.path)
+      if (widget.source == Source.chatroom) {
+        Navigator.push(context, MaterialPageRoute(builder: (builder) => 
+          ImagePreview(image: File(video.path), chatroom: widget.chatroom!, saveImage: true)
+        ));
+      }
     } on CameraException catch (e) {
       print('Error stopping video recording: $e');
       return;
