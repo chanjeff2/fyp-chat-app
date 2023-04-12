@@ -32,7 +32,7 @@ $columnIsRead INTEGER NOT NULL
 
   static const columnType = "type";
 
-  // 0: text, 1: image, 2: video, 3: audio, 4: document, 5: mediaKey, 6: system log
+  /// 0: text, 1: system log, 2: mediaKey, 3: image, 4: video, 5: audio, 6: document
   @JsonKey(required: true, name: columnType)
   final int type;
 
@@ -42,7 +42,7 @@ $columnIsRead INTEGER NOT NULL
 
   static const columnIsRead = "isRead";
 
-  // 0: false, 1: true
+  /// 0: false, 1: true
   @JsonKey(required: true, name: columnIsRead)
   final int isRead;
 
