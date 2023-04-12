@@ -17,7 +17,9 @@ class _JoinCourseGroupScreenState extends State<JoinCourseGroupScreen> {
   final TextEditingController _yearController = TextEditingController();
   String get courseCode => _courseCodeController.text;
   String get year => _yearController.text;
+  String upperCaseCourseCode = "";
   final List<String> semesters = ["Fall", "Winter", "Spring", "Summer"];
+  final RegExp courseCodeFilter = RegExp(r'^[A-Za-z]{4}\d{4}[A-Za-z]?$');
   String semesterSelected = "";
   @override
   void initState() {
@@ -45,14 +47,13 @@ class _JoinCourseGroupScreenState extends State<JoinCourseGroupScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   TextFormField(
-                    inputFormatters: [
-                      FilteringTextInputFormatter.allow(RegExp(r'[A-Z]')),
-                      FilteringTextInputFormatter.allow(RegExp(r'[0-9]'))
-                    ],
+                    // inputFormatters: [
+                    //   FilteringTextInputFormatter.allow(courseCodeFilter),
+                    // ],
                     controller: _courseCodeController,
                     decoration: const InputDecoration(
-                      labelText: "Course Code",
-                      hintText: "(E.g. COMP4981)",
+                      labelText: "Course Code (Please use Upper Case)",
+                      hintText: "(E.g. COMP4981 or LANG1002A)",
                       contentPadding: EdgeInsets.symmetric(
                         vertical: 15.0,
                         horizontal: 15.0,
@@ -63,7 +64,13 @@ class _JoinCourseGroupScreenState extends State<JoinCourseGroupScreen> {
                     ),
                     //TODO: validator to be done
                     validator: (courseCode) {
-                      
+                      if (courseCode?.isEmpty ?? true) {
+                        return "Course Code cannot be empty";
+                      }
+                      if (!courseCodeFilter.hasMatch(courseCode!)) {
+                        return "Invalid Course Code";
+                      }
+                      return null;
                     },
                     enabled: true,
                   ),
@@ -131,6 +138,7 @@ class _JoinCourseGroupScreenState extends State<JoinCourseGroupScreen> {
                         return;
                       }
                       //TODO: implement the controller of the button
+                      upperCaseCourseCode = courseCode.toUpperCase();
                     },
                     child: const Text(
                       "Join",
