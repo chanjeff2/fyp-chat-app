@@ -4,14 +4,16 @@ import 'package:fyp_chat_app/models/chat_message.dart';
 
 class MediaKeyItem {
   final MessageType type;
-  final String ext;
+  final String baseName;
+  final String publicUrl;
   final Uint8List aesKey;
   final Uint8List iv;
   final String mediaId;
 
   MediaKeyItem({
     required this.type,
-    required this.ext,
+    required this.baseName,
+    required this.publicUrl,
     required this.aesKey,
     required this.iv,
     required this.mediaId,
@@ -19,14 +21,16 @@ class MediaKeyItem {
 
   MediaKeyItem.fromDto(MediaKeyItemDto dto)
       : type = MessageType.values[dto.type],
-        ext = dto.ext,
+        baseName = dto.baseName,
+        publicUrl = dto.publicUrl,
         aesKey = Uint8List.fromList(dto.aesKey),
         iv = Uint8List.fromList(dto.iv),
         mediaId = dto.mediaId;
 
   MediaKeyItemDto toDto() => MediaKeyItemDto(
         type: MessageType.values.indexOf(type),
-        ext: ext,
+        baseName: baseName,
+        publicUrl: publicUrl,
         aesKey: aesKey.toList(),
         iv: iv.toList(),
         mediaId: mediaId,

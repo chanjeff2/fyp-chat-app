@@ -251,7 +251,6 @@ class SignalClient {
     String recipientUserId,
     String chatroomId,
     Uint8List content,
-    String ext,
     MessageType type,
     DateTime sentAt,
   ) async {
@@ -272,14 +271,15 @@ class SignalClient {
     final encryptedData = encrypter.encryptBytes(content, iv: iv).bytes;
 
     // Send media to server, and obtain the id for the key
-    final mediaId = await MediaApi().uploadFile(encryptedData);
+    final mediaInfo = await MediaApi().uploadFile(encryptedData);
 
     final mediaKeyToSend = MediaKeyItem(
       type: type,
-      ext: ext,
+      baseName: mediaInfo.name,
+      publicUrl: mediaInfo.publicUrl,
       aesKey: key.bytes,
       iv: iv.bytes,
-      mediaId: mediaId
+      mediaId: mediaInfo.id
     ).toDto().toJson().toString();
 
     // check if already establish session
@@ -369,7 +369,7 @@ class SignalClient {
 
     await EventsApi().sendMessage(mediaSendingRetry);
 
-    return mediaId;
+    return mediaInfo.id;
   }
 
   Future<PlainMessage> sendMessageToChatroom(
@@ -440,7 +440,7 @@ class SignalClient {
     }
     
     final path = mediaPath ?? media.path;
-    final ext = p.extension(path);
+    final baseName = p.basename(path);
 
     // Process to the media. Particularly, compression
     final mediaInBytes = File(path).readAsBytesSync();
@@ -468,7 +468,6 @@ class SignalClient {
           chatroom.target.userId,
           me.userId, // chatroom id w.r.t. recipient, i.e. my user id
           content,
-          ext,
           type,
           sentAt,
         );
@@ -481,7 +480,6 @@ class SignalClient {
               e.user.userId,
               chatroom.id,
               content,
-              ext,
               type,
               sentAt,
             )));
@@ -493,7 +491,7 @@ class SignalClient {
       id: mediaId,
       content: content,
       type: type,
-      ext: ext,
+      baseName: baseName,
     );
 
     // save message to disk
@@ -676,8 +674,7 @@ class SignalClient {
 
     final encrypter =  Encrypter(AES(aesKey));
 
-    // Fetch the item from server
-    final media = await MediaApi().getFile(recoveredKeyItem.mediaId);
+    final media = await getFile(recoveredKeyItem.publicUrl);
     
     final decryptedMedia = Uint8List.fromList(encrypter.decryptBytes(Encrypted(media), iv: iv));
 
@@ -685,7 +682,7 @@ class SignalClient {
       id: recoveredKeyItem.mediaId,
       content: decryptedMedia,
       type: recoveredKeyItem.type,
-      ext: recoveredKeyItem.ext
+      baseName: recoveredKeyItem.baseName
     );
 
     final mediaMessage = MediaMessage(

@@ -299,7 +299,7 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
                     return types.ImageMessage(
                       id: e.id.toString(),
                       author: types.User(id: e.senderUserId),
-                      name: "${(e as MediaMessage).media.id}${(e).media.ext}",
+                      name: (e as MediaMessage).media.baseName,
                       size: (e).media.content.lengthInBytes,
                       uri: "Local",
                     );
@@ -307,7 +307,7 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
                     return types.VideoMessage(
                       id: e.id.toString(),
                       author: types.User(id: e.senderUserId),
-                      name: "${(e as MediaMessage).media.id}${(e).media.ext}",
+                      name: (e as MediaMessage).media.baseName,
                       size: (e).media.content.lengthInBytes,
                       uri: "Local",
                     );
@@ -315,7 +315,7 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
                     return types.AudioMessage(
                       id: e.id.toString(),
                       author: types.User(id: e.senderUserId),
-                      name: "${(e as MediaMessage).media.id}${(e).media.ext}",
+                      name: (e as MediaMessage).media.baseName,
                       size: (e).media.content.lengthInBytes,
                       duration: Duration(seconds: 2),
                       uri: "Local",
@@ -324,7 +324,7 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
                     return types.FileMessage(
                       id: e.id.toString(),
                       author: types.User(id: e.senderUserId),
-                      name: "${(e as MediaMessage).media.id}${(e).media.ext}",
+                      name: (e as MediaMessage).media.baseName,
                       size: (e).media.content.lengthInBytes,
                       uri: "Local",
                     );

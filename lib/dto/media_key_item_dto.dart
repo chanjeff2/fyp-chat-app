@@ -9,7 +9,10 @@ class MediaKeyItemDto {
   final int type;
 
   @JsonKey(required: true)
-  final String ext;
+  final String baseName;
+
+  @JsonKey(required: true)
+  final String publicUrl;
 
   @JsonKey(required: true)
   final List<int> aesKey;
@@ -22,7 +25,8 @@ class MediaKeyItemDto {
 
   MediaKeyItemDto({
     required this.type,
-    required this.ext,
+    required this.baseName,
+    required this.publicUrl,
     required this.aesKey,
     required this.iv,
     required this.mediaId,

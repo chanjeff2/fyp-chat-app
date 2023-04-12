@@ -6,25 +6,25 @@ class MediaItem {
   String id;
   final Uint8List content;
   final MessageType type;
-  final String ext;
+  final String baseName;
 
   MediaItem({
     required this.id,
     required this.content,
     required this.type,
-    required this.ext,
+    required this.baseName,
   });
 
   MediaItem.fromEntity(MediaItemEntity dto)
       : id = dto.id,
         content = Uint8List.fromList(dto.content) ,
         type = MessageType.values[dto.type],
-        ext = dto.ext;
+        baseName = dto.baseName;
 
   MediaItemEntity toEntity() => MediaItemEntity(
         id: id,
         content: content.toList(),
         type: MessageType.values.indexOf(type),
-        ext: ext,
+        baseName: baseName,
       );
 }

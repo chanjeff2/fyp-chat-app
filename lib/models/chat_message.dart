@@ -42,7 +42,7 @@ abstract class ChatMessage {
       case MessageType.audio:
         return "Sent an audio";
       case MessageType.document:
-        return "${(this as MediaMessage).media.id}${(this as MediaMessage).media.ext}";
+        return (this as MediaMessage).media.baseName;
       default:
         return "Unable to preview message";
     }

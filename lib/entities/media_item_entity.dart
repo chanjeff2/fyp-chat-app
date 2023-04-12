@@ -7,8 +7,8 @@ class MediaItemEntity {
    static const String createTableCommandFields = """
 $columnId TEXT PRIMARY KEY NOT NULL,
 $columnContent BLOB NOT NULL, 
-$columnExtension TEXT NOT NULL,
-$columnType INTEGER NOT NULL
+$columnBaseName TEXT NOT NULL,
+$columnBaseName INTEGER NOT NULL
 """;
 
   static const columnId = "id";
@@ -19,9 +19,9 @@ $columnType INTEGER NOT NULL
   @JsonKey(required: true)
   final List<int> content;
 
-  static const columnExtension = "extension";
+  static const columnBaseName = "basename";
   @JsonKey(required: true)
-  final String ext;
+  final String baseName;
 
   
   static const columnType = "type";
@@ -31,7 +31,7 @@ $columnType INTEGER NOT NULL
   MediaItemEntity({
     required this.id,
     required this.content,
-    required this.ext,
+    required this.baseName,
     required this.type,
   });
 
