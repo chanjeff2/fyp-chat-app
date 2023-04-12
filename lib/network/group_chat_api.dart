@@ -52,18 +52,21 @@ class GroupChatApi extends Api {
     String groupId,
     String userId,
   ) async {
-    var sendAccessControlDto =
-        SendAccessControlDto(targetUserId: userId, actionType: "add-member");
-
-    final json = await post("/$groupId",
-        body: sendAccessControlDto.toJson(), useAuth: true);
+    try {
+      var sendAccessControlDto = SendAccessControlDto(
+          targetUserId: userId, type: FCMEventType.AddMember,sentAt: DateTime.now());
+      final json = await post("/$groupId/access-control",
+          body: sendAccessControlDto.toJson(), useAuth: true);
+    } catch (e) {
+      return;
+    }
   }
 
   Future<bool> kickMember(String groupId, String userId) async {
     try {
       var sendAccessControlDto =
-          SendAccessControlDto(targetUserId: userId, actionType: "kick-member");
-      final json = await post("/$groupId",
+          SendAccessControlDto(targetUserId: userId, type: FCMEventType.KickMember,sentAt: DateTime.now());
+      final json = await post("/$groupId/access-control",
           body: sendAccessControlDto.toJson(), useAuth: true);
       return true;
     } catch (e) {
@@ -83,8 +86,8 @@ class GroupChatApi extends Api {
   Future<bool> addAdmin(String groupId, String userId) async {
     try {
       var sendAccessControlDto = SendAccessControlDto(
-          targetUserId: userId, actionType: "promote-member");
-      final json = await post("/$groupId",
+          targetUserId: userId, type: FCMEventType.PromoteAdmin,sentAt: DateTime.now());
+      final json = await post("/$groupId/access-control",
           body: sendAccessControlDto.toJson(), useAuth: true);
       return true;
     } catch (e) {
@@ -95,8 +98,8 @@ class GroupChatApi extends Api {
   Future<bool> removeAdmin(String groupId, String userId) async {
     try {
       var sendAccessControlDto = SendAccessControlDto(
-          targetUserId: userId, actionType: "demote-member");
-      final json = await post("/$groupId",
+          targetUserId: userId, type: FCMEventType.DemoteAdmin,sentAt: DateTime.now());
+      final json = await post("/$groupId/access-control",
           body: sendAccessControlDto.toJson(), useAuth: true);
       return true;
     } catch (e) {
@@ -107,8 +110,8 @@ class GroupChatApi extends Api {
   Future<bool> addMember(String groupId, String userId) async {
     try {
       var sendAccessControlDto =
-          SendAccessControlDto(targetUserId: userId, actionType: "add-member");
-      final json = await post("/$groupId",
+          SendAccessControlDto(targetUserId: userId, type: FCMEventType.AddMember,sentAt: DateTime.now());
+      final json = await post("/$groupId/access-control",
           body: sendAccessControlDto.toJson(), useAuth: true);
       return true;
     } catch (e) {
@@ -116,11 +119,3 @@ class GroupChatApi extends Api {
     }
   }
 }
-/*
-enum ActionType {
-  AddMember = 'add-member',
-  KickMember = 'kick-member',
-  PromoteAdmin = 'promote-member',
-  DemoteAdmin = 'demote-member',
-}
-*/

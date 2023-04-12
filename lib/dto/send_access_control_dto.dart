@@ -4,21 +4,28 @@ part 'send_access_control_dto.g.dart';
 
 @JsonSerializable()
 class SendAccessControlDto {
+  @JsonKey(required: true)
   String targetUserId;
-  String actionType;
+  @JsonKey(required: true)
+  FCMEventType type;
+  @JsonKey(required: true)
+  DateTime sentAt;
 
-  SendAccessControlDto({
-    required this.targetUserId,
-    required this.actionType,
-  });
+  SendAccessControlDto(
+      {required this.targetUserId, required this.type, required this.sentAt});
 
   Map<String, dynamic> toJson() => _$SendAccessControlDtoToJson(this);
 }
-/*
-enum ActionType {
-  AddMember = 'add-member',
-  KickMember = 'kick-member',
-  PromoteAdmin = 'promote-member',
-  DemoteAdmin = 'demote-member',
+
+@JsonEnum(alwaysCreate: true, fieldRename: FieldRename.kebab)
+enum FCMEventType {
+  TextMessage,
+  MediaMessage,
+  PatchGroup,
+  AddMember,
+  KickMember,
+  PromoteAdmin,
+  DemoteAdmin,
+  MemberJoin,
+  MemberLeave,
 }
-*/
