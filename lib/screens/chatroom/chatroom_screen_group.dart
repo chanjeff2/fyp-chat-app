@@ -66,7 +66,18 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
     // register new message listener
     _messageSubscription = Provider.of<UserState>(context, listen: false)
         .messageStream
-        .listen((receivedMessage) {
+        .listen((receivedMessage) async {
+      if (receivedMessage.message.type.index > 2) {
+        final localStorage = await getTemporaryDirectory();
+        final media = await MediaStore()
+                      .getMediaById((receivedMessage.message as MediaMessage).media.id);
+        final filePath = "$localStorage/${media.id}${media.fileExtension}";
+        final file = File(filePath);
+        await file.writeAsBytes(media.content);
+        setState(() {
+          _mediaMap.addAll({media.id: filePath});
+        });
+      }
       setState(() {
         if (receivedMessage.chatroom.id == widget.chatroom.id) {
           _messages.insert(0, receivedMessage.message);

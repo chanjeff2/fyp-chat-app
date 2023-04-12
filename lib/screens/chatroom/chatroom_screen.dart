@@ -71,7 +71,18 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
     // register new message listener
     _messageSubscription = Provider.of<UserState>(context, listen: false)
         .messageStream
-        .listen((receivedMessage) {
+        .listen((receivedMessage) async {
+      if (receivedMessage.message.type.index > 2) {
+        final localStorage = await getTemporaryDirectory();
+        final media = await MediaStore()
+                      .getMediaById((receivedMessage.message as MediaMessage).media.id);
+        final filePath = "$localStorage/${media.id}${media.fileExtension}";
+        final file = File(filePath);
+        await file.writeAsBytes(media.content);
+        setState(() {
+          _mediaMap.addAll({media.id: filePath});
+        });
+      }
       setState(() {
         _messages.insert(0, receivedMessage.message);
       });
@@ -104,7 +115,6 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
       _isLastPage = true;
     }
     // Extract media from database, and put to temporary storage
-    late final media;
     final localStorage = await getTemporaryDirectory();
     messages.forEach((msg) async {
       // Message > 2 => Not text, not system log, not media key
