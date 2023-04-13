@@ -1,12 +1,7 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:fyp_chat_app/dto/group_member_dto.dart';
-import 'package:fyp_chat_app/models/group_chat.dart';
-import 'package:fyp_chat_app/models/group_member.dart';
-import 'package:fyp_chat_app/models/user.dart';
-import 'package:fyp_chat_app/screens/chatroom/chatroom_screen_group.dart';
+import 'package:fyp_chat_app/dto/join_course_dto.dart';
+import 'package:fyp_chat_app/network/course_group_api.dart';
 import 'package:fyp_chat_app/screens/register_or_login/loading_screen.dart';
 
 import '../../network/api.dart';
@@ -114,8 +109,8 @@ class _JoinCourseGroupScreenState extends State<JoinCourseGroupScreen> {
                               if (year?.isEmpty ?? true) {
                                 return "Year cannot be empty";
                               }
-                              if (int.parse(year!) < 2000 ||
-                                  int.parse(year!) > 2025) {
+                              if (int.parse(year!) < DateTime.now().year - 6 ||
+                                  int.parse(year!) > DateTime.now().year + 1) {
                                 return "Invalid year";
                               }
                               return null;
@@ -148,35 +143,23 @@ class _JoinCourseGroupScreenState extends State<JoinCourseGroupScreen> {
                           // validation failed for some fields
                           return;
                         }
-                        //TODO: implement the controller of the button
+                        final String courseCodeUpperCase =
+                            courseCode.toUpperCase();
+                        Semester semseterToPass = Semester.values.firstWhere(
+                            (element) =>
+                                element.toString() ==
+                                'Semester.' + semesterSelected);
                         setState(() {
                           _isLoading = true;
                         });
-                        upperCaseCourseCode = courseCode.toUpperCase();
-                        upperCaseCourseCode = upperCaseCourseCode +
-                            " " +
-                            semesterSelected +
-                            " " +
-                            year;
                         try {
-                          //------------dummy checking for the UI---------------
-                          GroupMember dummyMember = GroupMember(
-                              user:
-                                  User(userId: "dummyId", username: "IAmDummy"),
-                              role: Role.admin);
-                          GroupChat dummyGroup = GroupChat(
-                              id: "CourseCodeDummyID",
-                              members: [dummyMember],
-                              unread: 0,
-                              createdAt: DateTime.now(),
-                              name: upperCaseCourseCode);
-                          Navigator.of(context).pop();
-                          Navigator.of(context).pop();
-                          Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) =>
-                                  ChatRoomScreenGroup(chatroom: dummyGroup)));
-
-                          //------------dummy checking for the UI---------------
+                          //TODO: debug the join course API and join course DTO------------------------
+                          print(semseterToPass.runtimeType);
+                          print(semseterToPass);
+                          print(courseCodeUpperCase);
+                          print(year);
+                          await CourseGroupApi().joinCourse(
+                             courseCodeUpperCase, year, semseterToPass);
                         } on ApiException catch (e) {
                           ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(content: Text("error: ${e.message}")));
