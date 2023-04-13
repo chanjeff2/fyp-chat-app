@@ -8,7 +8,7 @@ class MediaItemEntity {
 $columnId TEXT PRIMARY KEY NOT NULL,
 $columnContent BLOB NOT NULL, 
 $columnBaseName TEXT NOT NULL,
-$columnBaseName INTEGER NOT NULL
+$columnType INTEGER NOT NULL
 """;
 
   static const columnId = "id";

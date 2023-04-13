@@ -2,6 +2,7 @@ import 'package:fyp_chat_app/entities/blocklist_entity.dart';
 import 'package:fyp_chat_app/entities/chat_message_entity.dart';
 import 'package:fyp_chat_app/entities/chatroom_entity.dart';
 import 'package:fyp_chat_app/entities/group_member_entity.dart';
+import 'package:fyp_chat_app/entities/media_item_entity.dart';
 import 'package:fyp_chat_app/entities/pre_key_pair_entity.dart';
 import 'package:fyp_chat_app/entities/session_entity.dart';
 import 'package:fyp_chat_app/entities/signed_pre_key_pair_entity.dart';
@@ -14,6 +15,7 @@ import 'package:fyp_chat_app/storage/disk_pre_key_store.dart';
 import 'package:fyp_chat_app/storage/disk_session_store.dart';
 import 'package:fyp_chat_app/storage/disk_signed_pre_key_store.dart';
 import 'package:fyp_chat_app/storage/group_member_store.dart';
+import 'package:fyp_chat_app/storage/media_store.dart';
 import 'package:fyp_chat_app/storage/message_store.dart';
 import 'package:fyp_chat_app/storage/block_store.dart';
 import 'package:fyp_chat_app/storage/secure_storage.dart';
@@ -69,6 +71,9 @@ class DiskStorage {
         );
         db.execute(
           "CREATE TABLE ${MessageStore.table}(${ChatMessageEntity.createTableCommandFields});",
+        );
+        db.execute(
+          "CREATE TABLE ${MediaStore.table}(${MediaItemEntity.createTableCommandFields});",
         );
         db.execute(
           "CREATE TABLE ${ChatroomStore.table}(${ChatroomEntity.createTableCommandFields});",

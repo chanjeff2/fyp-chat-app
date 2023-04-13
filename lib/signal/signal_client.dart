@@ -7,6 +7,7 @@ import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:fyp_chat_app/dto/account_dto.dart';
 import 'package:fyp_chat_app/dto/media_key_item_dto.dart';
 import 'package:fyp_chat_app/dto/update_keys_dto.dart';
+import 'package:fyp_chat_app/dto/upload_file_dto.dart';
 import 'package:fyp_chat_app/extensions/signal_lib_extension.dart';
 import 'package:fyp_chat_app/models/account.dart';
 import 'package:fyp_chat_app/models/chatroom.dart';
@@ -247,6 +248,7 @@ class SignalClient {
     String recipientUserId,
     String chatroomId,
     Uint8List content,
+    String baseName,
     MessageType type,
     DateTime sentAt,
   ) async {
@@ -266,8 +268,13 @@ class SignalClient {
 
     final encryptedData = encrypter.encryptBytes(content, iv: iv).bytes;
 
+    final file = UploadFileDto(
+      buffer: encryptedData.toList(),
+      originalname: baseName,
+    );
+
     // Send media to server, and obtain the id for the key
-    final mediaInfo = await MediaApi().uploadFile(encryptedData);
+    final mediaInfo = await MediaApi().uploadFile(file);
 
     final mediaKeyToSend = MediaKeyItem(
       type: type,
@@ -484,6 +491,7 @@ class SignalClient {
           chatroom.target.userId,
           me.userId, // chatroom id w.r.t. recipient, i.e. my user id
           processedContent,
+          baseName,
           type,
           sentAt.toUtc(),
         );
@@ -496,6 +504,7 @@ class SignalClient {
               e.user.userId,
               chatroom.id,
               processedContent,
+              baseName,
               type,
               sentAt.toUtc(),
             )));

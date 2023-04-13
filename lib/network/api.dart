@@ -3,6 +3,7 @@ import 'dart:developer';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
+import 'package:fyp_chat_app/dto/upload_file_dto.dart';
 import 'package:fyp_chat_app/models/access_token.dart';
 import 'package:fyp_chat_app/network/auth_api.dart';
 import 'package:fyp_chat_app/storage/credential_store.dart';
@@ -117,7 +118,7 @@ abstract class Api {
   Future<dynamic> postMedia(
     String path, {
     Map<String, String>? headers,
-    required Uint8List file,
+    required Map<String, dynamic>? file,
     bool useAuth = false,
   }) async {
     final url = Uri.parse("$baseUrl$pathPrefix$path");
