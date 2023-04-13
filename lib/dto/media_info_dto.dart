@@ -11,9 +11,6 @@ class MediaInfoDto {
   final String name;
 
   @JsonKey(required: true)
-  final String publicUrl; // iso string
-
-  @JsonKey(required: true)
   final String createdAt; // iso string
 
   @JsonKey(required: true)
@@ -22,7 +19,6 @@ class MediaInfoDto {
   MediaInfoDto({
     required this.id,
     required this.name,
-    required this.publicUrl,
     required this.createdAt,
     required this.updatedAt,
   });

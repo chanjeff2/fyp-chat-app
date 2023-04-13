@@ -13,7 +13,7 @@ class ReceivedMediaKeyDto extends ChatroomEvent {
   final int mediaType;
 
   @JsonKey(required: true)
-  final String ext;
+  final String baseName;
 
   @JsonKey(required: true)
   final List<int> aesKey;
@@ -33,7 +33,7 @@ class ReceivedMediaKeyDto extends ChatroomEvent {
     required this.aesKey,
     required this.iv,
     required this.mediaId,
-    required this.ext,
+    required this.baseName,
   }) : super(
           type: EventType.mediaMessage,
           senderUserId: senderUserId,

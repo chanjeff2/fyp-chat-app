@@ -272,7 +272,6 @@ class SignalClient {
     final mediaKeyToSend = MediaKeyItem(
       type: type,
       baseName: mediaInfo.name,
-      publicUrl: mediaInfo.publicUrl,
       aesKey: key.bytes,
       iv: iv.bytes,
       mediaId: mediaInfo.id
@@ -691,7 +690,7 @@ class SignalClient {
 
     final encrypter =  Encrypter(AES(aesKey));
 
-    final media = await MediaApi().downloadFile(recoveredKeyItem.publicUrl);
+    final media = await MediaApi().downloadFile(recoveredKeyItem.mediaId);
     
     final decryptedMedia = Uint8List.fromList(encrypter.decryptBytes(Encrypted(media), iv: iv));
 

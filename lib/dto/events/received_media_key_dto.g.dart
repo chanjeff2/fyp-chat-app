@@ -15,7 +15,7 @@ ReceivedMediaKeyDto _$ReceivedMediaKeyDtoFromJson(Map<String, dynamic> json) {
       'sentAt',
       'senderDeviceId',
       'mediaType',
-      'ext',
+      'baseName',
       'aesKey',
       'iv',
       'mediaId'
@@ -30,7 +30,7 @@ ReceivedMediaKeyDto _$ReceivedMediaKeyDtoFromJson(Map<String, dynamic> json) {
     aesKey: (json['aesKey'] as List<dynamic>).map((e) => e as int).toList(),
     iv: (json['iv'] as List<dynamic>).map((e) => e as int).toList(),
     mediaId: json['mediaId'] as String,
-    ext: json['ext'] as String,
+    baseName: json['baseName'] as String,
   );
 }
 
@@ -42,7 +42,7 @@ Map<String, dynamic> _$ReceivedMediaKeyDtoToJson(
       'sentAt': instance.sentAt,
       'senderDeviceId': instance.senderDeviceId,
       'mediaType': instance.mediaType,
-      'ext': instance.ext,
+      'baseName': instance.baseName,
       'aesKey': instance.aesKey,
       'iv': instance.iv,
       'mediaId': instance.mediaId,

@@ -331,7 +331,7 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
                       author: types.User(id: e.senderUserId),
                       name: (e as MediaMessage).media.baseName,
                       size: (e).media.content.lengthInBytes,
-                      uri: "Local",
+                      uri: _mediaMap[e.media.id]!,
                     );
                   case MessageType.video:
                     return types.VideoMessage(
@@ -339,7 +339,7 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
                       author: types.User(id: e.senderUserId),
                       name: (e as MediaMessage).media.baseName,
                       size: (e).media.content.lengthInBytes,
-                      uri: "Local",
+                      uri: _mediaMap[e.media.id]!,
                     );
                   case MessageType.audio:
                     return types.AudioMessage(
@@ -348,7 +348,7 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
                       name: (e as MediaMessage).media.baseName,
                       size: (e).media.content.lengthInBytes,
                       duration: Duration(seconds: 2),
-                      uri: "Local",
+                      uri: _mediaMap[e.media.id]!,
                     );
                   case MessageType.document:
                     return types.FileMessage(
@@ -356,7 +356,7 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
                       author: types.User(id: e.senderUserId),
                       name: (e as MediaMessage).media.baseName,
                       size: (e).media.content.lengthInBytes,
-                      uri: "Local",
+                      uri: _mediaMap[e.media.id]!,
                     );
 
                   default:
