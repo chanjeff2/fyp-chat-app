@@ -138,7 +138,7 @@ class _SelectContactState extends State<SelectContact> {
                         // Navigator.of(context).pop();
                         // // widget.onNewChatroom?.call(group);
                         Navigator.of(context).push(MaterialPageRoute(
-                          builder: (context) => const JoinCourseGroupScreen(),
+                          builder: (context) => JoinCourseGroupScreen(onNewChatroom: widget.onNewChatroom,),
                         ));
                       },
                       child: const DefaultOption(

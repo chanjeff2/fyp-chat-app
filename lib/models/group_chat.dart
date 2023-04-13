@@ -20,6 +20,7 @@ class GroupChat extends Chatroom {
     PlainMessage? latestMessage,
     required int unread,
     required DateTime createdAt,
+    //int isCourseGroup = 0,
   }) : super(
           id: id,
           latestMessage: latestMessage,

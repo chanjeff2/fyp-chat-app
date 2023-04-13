@@ -4,15 +4,19 @@ import 'package:fyp_chat_app/dto/join_course_dto.dart';
 import 'package:fyp_chat_app/network/course_group_api.dart';
 import 'package:fyp_chat_app/screens/register_or_login/loading_screen.dart';
 
+import '../../models/chatroom.dart';
 import '../../network/api.dart';
+import '../../storage/chatroom_store.dart';
 
 class JoinCourseGroupScreen extends StatefulWidget {
   const JoinCourseGroupScreen({
     Key? key,
+    this.onNewChatroom,
   }) : super(key: key);
 
   @override
   State<JoinCourseGroupScreen> createState() => _JoinCourseGroupScreenState();
+  final void Function(Chatroom)? onNewChatroom;
 }
 
 class _JoinCourseGroupScreenState extends State<JoinCourseGroupScreen> {
@@ -158,8 +162,13 @@ class _JoinCourseGroupScreenState extends State<JoinCourseGroupScreen> {
                           print(semseterToPass);
                           print(courseCodeUpperCase);
                           print(year);
-                          await CourseGroupApi().joinCourse(
+                          var group = await CourseGroupApi().joinCourse(
                              courseCodeUpperCase, year, semseterToPass);
+                             // isCourseGroup = true
+                          await ChatroomStore().save(group);
+                          Navigator.of(context).pop();
+                          Navigator.of(context).pop();
+                          widget.onNewChatroom?.call(group);
                         } on ApiException catch (e) {
                           ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(content: Text("error: ${e.message}")));
