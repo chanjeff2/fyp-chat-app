@@ -26,8 +26,8 @@ Map<String, dynamic> _$JoinCourseDtoToJson(JoinCourseDto instance) =>
     };
 
 const _$SemesterEnumMap = {
-  Semester.Fall: 'fall',
-  Semester.Winter: 'winter',
-  Semester.Spring: 'spring',
-  Semester.Summer: 'summer',
+  Semester.Fall: 'Fall',
+  Semester.Winter: 'Winter',
+  Semester.Spring: 'Spring',
+  Semester.Summer: 'Summer',
 };

@@ -1,34 +1,33 @@
 import 'package:fyp_chat_app/dto/group_dto.dart';
 import 'package:fyp_chat_app/entities/chatroom_entity.dart';
 import 'package:fyp_chat_app/models/chatroom.dart';
-import 'package:fyp_chat_app/models/group_member.dart';
+import 'package:fyp_chat_app/models/group_chat.dart';
 import 'package:fyp_chat_app/models/plain_message.dart';
 
-enum GroupChatType { group, course }
+import 'group_member.dart';
 
-class GroupChat extends Chatroom {
-  final List<GroupMember> members;
-
-  @override
-  final String name;
-
+class CourseGroup extends GroupChat {
   @override
   ChatroomType get type => ChatroomType.group;
-  GroupChatType get groupType => GroupChatType.group;
+  @override
+  GroupChatType get groupType => GroupChatType.course;
+  @override
+  List<GroupMember> members;
 
-  GroupChat({
+  CourseGroup({
     required String id,
     required this.members,
-    required this.name,
+    required name,
     PlainMessage? latestMessage,
     required int unread,
     required DateTime createdAt,
   }) : super(
-          id: id,
-          latestMessage: latestMessage,
-          unread: unread,
-          createdAt: createdAt,
-        );
+            id: id,
+            latestMessage: latestMessage,
+            unread: unread,
+            createdAt: createdAt,
+            members: members,
+            name: name);
 
   @override
   ChatroomEntity toEntity() => ChatroomEntity(
@@ -38,16 +37,17 @@ class GroupChat extends Chatroom {
         createdAt: createdAt.toIso8601String(),
       );
 
-  GroupChat.fromDto(GroupDto dto)
-      : members = dto.members
+  CourseGroup.fromDto(GroupDto dto)
+      : 
+      super(
+          id: dto.id,
+          createdAt: DateTime.parse(dto.createdAt),
+          unread: 0,
+          members: members = dto.members
             .map(
               (e) => GroupMember.fromDto(e),
             )
             .toList(),
-        name = dto.name,
-        super(
-          id: dto.id,
-          createdAt: DateTime.parse(dto.createdAt),
-          unread: 0,
+          name: dto.name,
         );
 }

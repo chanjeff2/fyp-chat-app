@@ -20,7 +20,7 @@ class JoinCourseDto {
       _$JoinCourseDtoFromJson(json);
 }
 
-@JsonEnum(alwaysCreate: true, fieldRename: FieldRename.kebab)
+@JsonEnum(alwaysCreate: true, fieldRename: FieldRename.pascal)
 enum Semester {
   Fall,
   Winter,
