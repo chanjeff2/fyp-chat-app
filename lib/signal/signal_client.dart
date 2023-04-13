@@ -7,7 +7,6 @@ import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:fyp_chat_app/dto/account_dto.dart';
 import 'package:fyp_chat_app/dto/media_key_item_dto.dart';
 import 'package:fyp_chat_app/dto/update_keys_dto.dart';
-import 'package:fyp_chat_app/dto/upload_file_dto.dart';
 import 'package:fyp_chat_app/extensions/signal_lib_extension.dart';
 import 'package:fyp_chat_app/models/account.dart';
 import 'package:fyp_chat_app/models/chatroom.dart';
@@ -44,6 +43,7 @@ import 'package:fyp_chat_app/storage/message_store.dart';
 import 'package:libsignal_protocol_dart/libsignal_protocol_dart.dart';
 import 'package:fyp_chat_app/models/send_message_dao.dart';
 import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 import 'package:video_compress/video_compress.dart';
 
 class SignalClient {
@@ -268,10 +268,12 @@ class SignalClient {
 
     final encryptedData = encrypter.encryptBytes(content, iv: iv).bytes;
 
-    final file = UploadFileDto(
-      buffer: encryptedData.toList(),
-      originalname: baseName,
-    );
+    // Temporarily write file into cache and upload
+    final cachePath = await getTemporaryDirectory();
+    final path = "$cachePath/$baseName";
+    final file = File(path);
+
+    await file.writeAsBytes(encryptedData);
 
     // Send media to server, and obtain the id for the key
     final mediaInfo = await MediaApi().uploadFile(file);

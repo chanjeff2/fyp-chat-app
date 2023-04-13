@@ -6,7 +6,7 @@ part 'media_key_item_dto.g.dart';
 class MediaKeyItemDto {
 
   @JsonKey(required: true)
-  final int type;
+  final String type;
 
   @JsonKey(required: true)
   final String baseName;

@@ -1,9 +1,9 @@
 import 'dart:convert';
 import 'dart:developer';
+import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
-import 'package:fyp_chat_app/dto/upload_file_dto.dart';
 import 'package:fyp_chat_app/models/access_token.dart';
 import 'package:fyp_chat_app/network/auth_api.dart';
 import 'package:fyp_chat_app/storage/credential_store.dart';
@@ -118,7 +118,7 @@ abstract class Api {
   Future<dynamic> postMedia(
     String path, {
     Map<String, String>? headers,
-    required Map<String, dynamic>? file,
+    required File file,
     bool useAuth = false,
   }) async {
     final url = Uri.parse("$baseUrl$pathPrefix$path");
@@ -128,11 +128,15 @@ abstract class Api {
       AccessToken accessToken = await _getAccessToken();
       headers['Authorization'] = 'Bearer ${accessToken.accessToken}';
     }
-    final response = await http.post(
-      url,
-      headers: headers,
-      body: file,
+    final request = http.MultipartRequest(
+      'POST',
+      url
     );
+    final fileToUpload = await http.MultipartFile.fromPath('file', file.path);
+    request.files.add(fileToUpload);
+    request.headers.addAll(headers); // Replace headers
+    final streamedResponse = await request.send();
+    final response = await http.Response.fromStream(streamedResponse);
     return _processResponse(response);
   }
 

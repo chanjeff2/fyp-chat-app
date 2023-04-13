@@ -12,7 +12,7 @@ MediaKeyItemDto _$MediaKeyItemDtoFromJson(Map<String, dynamic> json) {
     requiredKeys: const ['type', 'baseName', 'aesKey', 'iv', 'mediaId'],
   );
   return MediaKeyItemDto(
-    type: json['type'] as int,
+    type: json['type'] as String,
     baseName: json['baseName'] as String,
     aesKey: (json['aesKey'] as List<dynamic>).map((e) => e as int).toList(),
     iv: (json['iv'] as List<dynamic>).map((e) => e as int).toList(),

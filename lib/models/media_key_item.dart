@@ -18,14 +18,14 @@ class MediaKeyItem {
   });
 
   MediaKeyItem.fromDto(MediaKeyItemDto dto)
-      : type = MessageType.values[dto.type],
+      : type = MessageType.values.byName(dto.type),
         baseName = dto.baseName,
         aesKey = Uint8List.fromList(dto.aesKey),
         iv = Uint8List.fromList(dto.iv),
         mediaId = dto.mediaId;
 
   MediaKeyItemDto toDto() => MediaKeyItemDto(
-        type: MessageType.values.indexOf(type),
+        type: type.toString().split('.').last,
         baseName: baseName,
         aesKey: aesKey.toList(),
         iv: iv.toList(),

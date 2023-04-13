@@ -2,8 +2,7 @@
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
-import 'package:fyp_chat_app/dto/media_info_dto.dart';
-import 'package:fyp_chat_app/dto/upload_file_dto.dart';
+import 'package:fyp_chat_app/dto/file_dto.dart';
 
 import 'api.dart';
 import 'package:http/http.dart' as http;
@@ -19,9 +18,9 @@ class MediaApi extends Api {
   @override
   String pathPrefix = "/media";
 
-  Future<MediaInfoDto> uploadFile(UploadFileDto media) async {
-    final response = await postMedia("", file: media.toJson(), useAuth: true);
-    return MediaInfoDto.fromJson(response); // Need to decrypt the JSON in actual case
+  Future<FileDto> uploadFile(File media) async {
+    final response = await postMedia("", file: media, useAuth: true);
+    return FileDto.fromJson(response); // Need to decrypt the JSON in actual case
   }
 
   Future<Uint8List> downloadFile(String mediaId) async {
