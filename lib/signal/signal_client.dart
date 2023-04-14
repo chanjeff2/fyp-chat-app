@@ -200,7 +200,7 @@ class SignalClient {
       recipientUserId: recipientUserId,
       chatroomId: chatroomId,
       messages: messages,
-      type: 0,
+      messageType: MessageType.text,
       sentAt: sentAt,
     ).toDto();
 
@@ -235,7 +235,7 @@ class SignalClient {
       recipientUserId: recipientUserId,
       chatroomId: chatroomId,
       messages: messagesRetry,
-      type: 0,
+      messageType: MessageType.text,
       sentAt: sentAt,
     ).toDto();
 
@@ -320,7 +320,7 @@ class SignalClient {
       recipientUserId: recipientUserId,
       chatroomId: chatroomId,
       messages: mediaKeyMsg,
-      type: MessageType.values.indexOf(type),
+      messageType: MessageType.mediaKey,
       sentAt: sentAt,
     ).toDto();
 
@@ -367,7 +367,7 @@ class SignalClient {
       recipientUserId: recipientUserId,
       chatroomId: chatroomId,
       messages: mediaKeyMsgRetry,
-      type: MessageType.values.indexOf(type),
+      messageType: MessageType.mediaKey,
       sentAt: sentAt,
     ).toDto();
 
