@@ -71,7 +71,7 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> with WidgetsB
         final localStorage = await getTemporaryDirectory();
         final media = await MediaStore()
                       .getMediaById((receivedMessage.message as MediaMessage).media.id);
-        final filePath = "$localStorage/${media.id}${media.fileExtension}";
+        final filePath = "${localStorage.path}/${media.id}${media.fileExtension}";
         final file = File(filePath);
         await file.writeAsBytes(media.content);
         setState(() {
@@ -118,7 +118,7 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> with WidgetsB
       // Message > 2 => Not text, not system log, not media key
       if (msg.type.index > 2 && !_mediaMap.containsKey(msg.id)) {
         final media = await MediaStore().getMediaById((msg as MediaMessage).media.id);
-        final filePath = "$localStorage/${media.id}${media.fileExtension}";
+        final filePath = "${localStorage.path}/${media.id}${media.fileExtension}";
         final file = File(filePath);
         await file.writeAsBytes(media.content);
         setState(() {

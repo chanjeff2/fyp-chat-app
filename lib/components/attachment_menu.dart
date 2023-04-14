@@ -68,7 +68,7 @@ class AttachmentMenu extends StatelessWidget {
                     () async {
                       final result = await FilePicker.platform.pickFiles();
                       
-                      if (result != null) {
+                      if (result == null) {
                         return;
                       }
 
@@ -76,7 +76,7 @@ class AttachmentMenu extends StatelessWidget {
                         await SignalClient().sendMediaToChatroom(
                           userState.me!,
                           chatroom,
-                          File(result!.files.first.path!),
+                          File(result.files.first.path!),
                           result.files.first.path, 
                           MessageType.document,
                         );

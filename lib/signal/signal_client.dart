@@ -262,7 +262,7 @@ class SignalClient {
     
     // 32 bytes = 256 bits, equivalent to common chat apps like WhatsApp
     Key key = Key.fromSecureRandom(32); 
-    IV iv = IV.fromSecureRandom(32);
+    IV iv = IV.fromSecureRandom(16);
 
     Encrypter encrypter = Encrypter(AES(key, mode: AESMode.cbc));
 
@@ -270,7 +270,7 @@ class SignalClient {
 
     // Temporarily write file into cache and upload
     final cachePath = await getTemporaryDirectory();
-    final path = "$cachePath/$baseName";
+    final path = "${cachePath.path}/$baseName";
     final file = File(path);
 
     await file.writeAsBytes(encryptedData);
@@ -446,17 +446,18 @@ class SignalClient {
     final path = mediaPath ?? media.path;
     final baseName = p.basename(path);
 
+    print(baseName);
+
     // Process to the media. Particularly, compression
     // Currently support only video and image
     final mediaInBytes = File(path).readAsBytesSync();
 
-    final content = mediaInBytes;
-    late final processedContent;
+    late final Uint8List processedContent;
 
     switch (type) {
       case MessageType.image:
         processedContent = await FlutterImageCompress.compressWithList(
-          content,
+          mediaInBytes,
           quality: 5,
         );
         break;
@@ -472,12 +473,19 @@ class SignalClient {
         break;
       */
       default:
-        processedContent = content;
+        processedContent = Uint8List.fromList(mediaInBytes);
     }
+
+    // Temporarily write file into cache and upload
+    final cachePath = await getTemporaryDirectory();
+    final tempPath = "${cachePath.path}/$baseName";
+    final file = File(tempPath);
+
+    await file.writeAsBytes(processedContent);
 
     // If size > 8MB, throw error
     const maximumSize = 8 * 1024 * 1024;
-    if (File.fromRawPath(processedContent).lengthSync() > maximumSize) {
+    if (file.lengthSync() > maximumSize) {
       throw Exception('Uploaded file exceeded 8MB. Your message is NOT sent.');
     }
 
@@ -701,7 +709,7 @@ class SignalClient {
     final aesKey = Key(recoveredKeyItem.aesKey);
     final iv = IV(recoveredKeyItem.iv);
 
-    final encrypter =  Encrypter(AES(aesKey));
+    final encrypter =  Encrypter(AES(aesKey, mode: AESMode.cbc));
 
     final media = await MediaApi().downloadFile(recoveredKeyItem.mediaId);
     
