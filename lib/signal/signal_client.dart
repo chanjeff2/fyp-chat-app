@@ -44,7 +44,7 @@ import 'package:libsignal_protocol_dart/libsignal_protocol_dart.dart';
 import 'package:fyp_chat_app/models/send_message_dao.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
-import 'package:video_compress/video_compress.dart';
+// import 'package:video_compress/video_compress.dart';
 
 class SignalClient {
   SignalClient._();
@@ -460,6 +460,7 @@ class SignalClient {
           quality: 5,
         );
         break;
+      /*
       case MessageType.video:
         final mediaInfo = await VideoCompress.compressVideo(
           media.path,
@@ -469,6 +470,7 @@ class SignalClient {
         );
         processedContent = mediaInfo!.file!.readAsBytesSync();
         break;
+      */
       default:
         processedContent = content;
     }
