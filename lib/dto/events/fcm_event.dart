@@ -18,6 +18,7 @@ abstract class FCMEvent {
     final type = $enumDecode(_$EventTypeEnumMap, json['type']);
     switch (type) {
       case EventType.textMessage:
+      case EventType.mediaMessage:
         return MessageDto.fromJson(json);
       case EventType.memberInvitation:
         return MemberInvitationDto.fromJson(json);
@@ -25,8 +26,6 @@ abstract class FCMEvent {
         return MemberRemovalDto.fromJson(json);
       case EventType.permissionUpdate:
         return PermissionUpdateDto.fromJson(json);
-      case EventType.mediaMessage:
-        return ReceivedMediaKeyDto.fromJson(json);
     }
   }
 }
@@ -34,8 +33,8 @@ abstract class FCMEvent {
 @JsonEnum(alwaysCreate: true, fieldRename: FieldRename.kebab)
 enum EventType {
   textMessage,
+  mediaMessage,
   memberInvitation,
   memberRemoval,
   permissionUpdate,
-  mediaMessage,
 }

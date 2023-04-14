@@ -59,6 +59,11 @@ class FCMHandler {
         final message = message_model.Message.fromDto(messageDto);
         final plainMessage = await SignalClient().processMessage(message);
         return plainMessage;
+      case EventType.mediaMessage:
+        final messageDto = event as MessageDto;
+        final message = message_model.Message.fromDto(messageDto);
+        final plainMessage = await SignalClient().processMediaMessage(message);
+        return plainMessage;
       case EventType.memberInvitation:
         final dto = event as MemberInvitationDto;
         if (await ChatroomStore().contains(dto.chatroomId)) {
@@ -91,12 +96,8 @@ class FCMHandler {
             .getGroupMember(dto.chatroomId, dto.recipientUserId);
         await GroupMemberStore().save(dto.chatroomId, updatedMember);
         break;
-      case EventType.mediaMessage:
-        final messageDto = event as MessageDto;
-        final message = message_model.Message.fromDto(messageDto);
-        final plainMessage = await SignalClient().processMessage(message);
-        return plainMessage;
     }
+    return null;
   }
 
   static void _showNotification(ReceivedPlainMessage message) {

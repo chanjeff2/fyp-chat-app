@@ -38,7 +38,7 @@ class ChatRoomScreenGroup extends StatefulWidget {
   State<ChatRoomScreenGroup> createState() => _ChatRoomScreenGroupState();
 }
 
-class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
+class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> with WidgetsBindingObserver {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   bool _textMessage = false;
@@ -92,6 +92,13 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
     // remove chatting with
     _state.chatroom = null;
     _messageSubscription.cancel();
+  }
+
+  void didChangeAppLifecycleState(AppLifecycleState state) async {
+    if (state == AppLifecycleState.resumed) {
+      _page = 0;
+      await _loadMessageHistory();
+    }
   }
 
   Future<bool> _loadMessageHistory() async {
