@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fyp_chat_app/dto/join_course_dto.dart';
+import 'package:fyp_chat_app/models/enum.dart';
 import 'package:fyp_chat_app/network/course_group_api.dart';
 import 'package:fyp_chat_app/screens/register_or_login/loading_screen.dart';
 
