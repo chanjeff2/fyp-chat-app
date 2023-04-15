@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fyp_chat_app/models/chatroom.dart';
+import 'package:fyp_chat_app/models/enum.dart';
 import 'package:intl/intl.dart';
 
 // Contact in selecting user, which shows status
@@ -68,8 +69,10 @@ class HomeContact extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 8.0),
         child: ListTile(
-          leading: const CircleAvatar(
-            child: Icon(Icons.person, size: 28, color: Colors.white),
+          leading: CircleAvatar(
+            child: chatroom.type == ChatroomType.group
+                ? const Icon(Icons.group, size: 28, color: Colors.white)
+                : const Icon(Icons.person, size: 28, color: Colors.white),
             radius: 28,
             backgroundColor: Colors.blueGrey,
           ),
@@ -89,7 +92,9 @@ class HomeContact extends StatelessWidget {
                       .format(chatroom.latestMessage!.sentAt), // time
                   style: TextStyle(
                     fontSize: 16,
-                    fontWeight: (chatroom.unread > 0) ? FontWeight.bold : FontWeight.normal,
+                    fontWeight: (chatroom.unread > 0)
+                        ? FontWeight.bold
+                        : FontWeight.normal,
                     color:
                         (chatroom.unread > 0) ? Colors.redAccent : Colors.black,
                   ),
@@ -101,13 +106,15 @@ class HomeContact extends StatelessWidget {
               if (chatroom.latestMessage != null)
                 Expanded(
                   child: Text(
-                    chatroom.latestMessage!.notificationContent, // Latest message
+                    chatroom
+                        .latestMessage!.notificationContent, // Latest message
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: (chatroom.unread > 0) ? FontWeight.w700 : FontWeight.normal
-                    ),
+                        fontSize: 14,
+                        fontWeight: (chatroom.unread > 0)
+                            ? FontWeight.w700
+                            : FontWeight.normal),
                   ),
                 ),
               const Spacer(),

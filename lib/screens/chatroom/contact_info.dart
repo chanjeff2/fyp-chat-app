@@ -130,9 +130,9 @@ class _ContactInfoState extends State<ContactInfo> {
           ),
           title: Row(
             children: <Widget>[
-              const CircleAvatar(
+              CircleAvatar(
                 // child: profilePicture ? null : Icon(Icons.person, size: 20),
-                child: Icon(Icons.person, size: 20, color: Colors.white),
+                child: (widget.chatroom.type == ChatroomType.group)? const Icon(Icons.group, size: 20, color: Colors.white) : const Icon(Icons.person, size: 20, color: Colors.white),
                 radius: 20,
                 backgroundColor: Colors.blueGrey,
               ),
@@ -146,12 +146,12 @@ class _ContactInfoState extends State<ContactInfo> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const SizedBox(height: 20),
-              const Center(
+              Center(
                 child: CircleAvatar(
                   radius: 72,
                   // child: profilePicture ? null : Icon(Icons.person, size: 48),
                   // backgroundImage: profileImage,
-                  child: Icon(Icons.person, size: 72, color: Colors.white),
+                  child: (widget.chatroom.type == ChatroomType.group) ? const Icon(Icons.group, size: 72, color: Colors.white) : const Icon(Icons.person, size: 72, color: Colors.white),
                   backgroundColor: Colors.blueGrey,
                 ),
               ),
