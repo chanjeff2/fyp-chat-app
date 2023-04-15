@@ -33,8 +33,8 @@ abstract class FCMEvent {
 @JsonEnum(alwaysCreate: true, fieldRename: FieldRename.kebab)
 enum EventType {
   textMessage,
-  mediaMessage,
   memberInvitation,
   memberRemoval,
   permissionUpdate,
+  mediaMessage,
 }

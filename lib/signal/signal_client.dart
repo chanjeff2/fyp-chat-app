@@ -4,7 +4,6 @@ import 'dart:typed_data';
 
 import 'package:encrypt/encrypt.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
-import 'package:fyp_chat_app/dto/account_dto.dart';
 import 'package:fyp_chat_app/dto/media_key_item_dto.dart';
 import 'package:fyp_chat_app/dto/update_keys_dto.dart';
 import 'package:fyp_chat_app/extensions/signal_lib_extension.dart';
@@ -201,7 +200,7 @@ class SignalClient {
       recipientUserId: recipientUserId,
       chatroomId: chatroomId,
       messages: messages,
-      messageType: MessageType.text,
+      messageType: FCMEventType.TextMessage,
       sentAt: sentAt,
     ).toDto();
 
@@ -236,7 +235,7 @@ class SignalClient {
       recipientUserId: recipientUserId,
       chatroomId: chatroomId,
       messages: messagesRetry,
-      messageType: MessageType.text,
+      messageType: FCMEventType.TextMessage,
       sentAt: sentAt,
     ).toDto();
 
@@ -321,7 +320,7 @@ class SignalClient {
       recipientUserId: recipientUserId,
       chatroomId: chatroomId,
       messages: mediaKeyMsg,
-      messageType: MessageType.mediaKey,
+      messageType: FCMEventType.MediaMessage,
       sentAt: sentAt,
     ).toDto();
 
@@ -368,7 +367,7 @@ class SignalClient {
       recipientUserId: recipientUserId,
       chatroomId: chatroomId,
       messages: mediaKeyMsgRetry,
-      messageType: MessageType.mediaKey,
+      messageType: FCMEventType.MediaMessage,
       sentAt: sentAt,
     ).toDto();
 

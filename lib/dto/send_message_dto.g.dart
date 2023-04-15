@@ -25,7 +25,7 @@ SendMessageDto _$SendMessageDtoFromJson(Map<String, dynamic> json) {
     messages: (json['messages'] as List<dynamic>)
         .map((e) => MessageToServerDto.fromJson(e as Map<String, dynamic>))
         .toList(),
-    messageType: json['messageType'] as String,
+    messageType: $enumDecode(_$FCMEventTypeEnumMap, json['messageType']),
     sentAt: json['sentAt'] as String,
   );
 }
@@ -36,6 +36,18 @@ Map<String, dynamic> _$SendMessageDtoToJson(SendMessageDto instance) =>
       'recipientUserId': instance.recipientUserId,
       'chatroomId': instance.chatroomId,
       'messages': instance.messages,
-      'messageType': instance.messageType,
+      'messageType': _$FCMEventTypeEnumMap[instance.messageType]!,
       'sentAt': instance.sentAt,
     };
+
+const _$FCMEventTypeEnumMap = {
+  FCMEventType.TextMessage: 'text-message',
+  FCMEventType.MediaMessage: 'media-message',
+  FCMEventType.PatchGroup: 'patch-group',
+  FCMEventType.AddMember: 'add-member',
+  FCMEventType.KickMember: 'kick-member',
+  FCMEventType.PromoteAdmin: 'promote-admin',
+  FCMEventType.DemoteAdmin: 'demote-admin',
+  FCMEventType.MemberJoin: 'member-join',
+  FCMEventType.MemberLeave: 'member-leave',
+};

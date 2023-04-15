@@ -115,7 +115,7 @@ class _JoinCourseGroupScreenState extends State<JoinCourseGroupScreen> {
                                 return "Year cannot be empty";
                               }
                               if (int.parse(year!) < DateTime.now().year - 6 ||
-                                  int.parse(year!) > DateTime.now().year + 1) {
+                                  int.parse(year) > DateTime.now().year + 1) {
                                 return "Invalid year";
                               }
                               return null;
