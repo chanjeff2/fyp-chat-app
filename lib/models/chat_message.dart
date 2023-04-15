@@ -53,6 +53,7 @@ abstract class ChatMessage {
       case MessageType.text:
       case MessageType.systemLog:
         return PlainMessage(
+          id: e.id,
           senderUserId: e.senderUserId,
           chatroomId: e.chatroomId,
           content: e.content,
@@ -67,6 +68,7 @@ abstract class ChatMessage {
       case MessageType.mediaKey:
         final media = await MediaStore().getMediaById(e.content);
         return MediaMessage(
+          id: e.id,
           senderUserId: e.senderUserId,
           chatroomId: e.chatroomId,
           media: media,

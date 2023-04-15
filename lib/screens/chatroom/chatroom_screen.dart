@@ -4,6 +4,8 @@ import 'dart:io';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:fyp_chat_app/components/attachment_menu.dart';
+import 'package:fyp_chat_app/components/music_player.dart';
+import 'package:fyp_chat_app/components/video_player.dart';
 import 'package:fyp_chat_app/models/chat_message.dart';
 import 'package:fyp_chat_app/models/chatroom.dart';
 import 'package:fyp_chat_app/models/one_to_one_chat.dart';
@@ -104,6 +106,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> with WidgetsBindingObse
     _messageSubscription.cancel();
   }
 
+  @override
   void didChangeAppLifecycleState(AppLifecycleState state) async {
     if (state == AppLifecycleState.resumed) {
       _page = 0;
@@ -131,7 +134,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> with WidgetsBindingObse
         final file = File(filePath);
         await file.writeAsBytes(media.content);
         setState(() {
-          _mediaMap.addAll({media.id: filePath});
+          _mediaMap[media.id] = filePath;
         });
       }
     });
@@ -284,38 +287,68 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> with WidgetsBindingObse
                         text: (e as PlainMessage).content,
                         createdAt: e.sentAt.millisecondsSinceEpoch,
                       );
-
-                    // All return same thing first
                     case MessageType.image:
+                      if (_mediaMap[(e as MediaMessage).media.id] == null) {
+                        return types.TextMessage(
+                          id: e.id.toString(),
+                          author: types.User(id: e.senderUserId),
+                          text: "Loading Image...",
+                          createdAt: e.sentAt.millisecondsSinceEpoch,
+                        );
+                      }
                       return types.ImageMessage(
                         id: e.id.toString(),
                         author: types.User(id: e.senderUserId),
-                        name: (e as MediaMessage).media.baseName,
+                        name: (e).media.baseName,
                         size: (e).media.content.lengthInBytes,
                         uri: _mediaMap[e.media.id]!,
                       );
                     case MessageType.video:
+                      if (_mediaMap[(e as MediaMessage).media.id] == null) {
+                        return types.TextMessage(
+                          id: e.id.toString(),
+                          author: types.User(id: e.senderUserId),
+                          text: "Loading Video...",
+                          createdAt: e.sentAt.millisecondsSinceEpoch,
+                        );
+                      }
                       return types.VideoMessage(
                         id: e.id.toString(),
                         author: types.User(id: e.senderUserId),
-                        name: (e as MediaMessage).media.baseName,
+                        name: (e).media.baseName,
                         size: (e).media.content.lengthInBytes,
                         uri: _mediaMap[e.media.id]!,
                       );
                     case MessageType.audio:
+                      if (_mediaMap[(e as MediaMessage).media.id] == null) {
+                        return types.TextMessage(
+                          id: e.id.toString(),
+                          author: types.User(id: e.senderUserId),
+                          text: "Loading Audio...",
+                          createdAt: e.sentAt.millisecondsSinceEpoch,
+                        );
+                      }
                       return types.AudioMessage(
                         id: e.id.toString(),
                         author: types.User(id: e.senderUserId),
-                        name: (e as MediaMessage).media.baseName,
+                        name: (e).media.baseName,
                         size: (e).media.content.lengthInBytes,
                         duration: const Duration(seconds: 2),
                         uri: _mediaMap[e.media.id]!,
                       );
                     case MessageType.document:
+                      if (_mediaMap[(e as MediaMessage).media.id] == null) {
+                        return types.TextMessage(
+                          id: e.id.toString(),
+                          author: types.User(id: e.senderUserId),
+                          text: "Loading Document...",
+                          createdAt: e.sentAt.millisecondsSinceEpoch,
+                        );
+                      }
                       return types.FileMessage(
                         id: e.id.toString(),
                         author: types.User(id: e.senderUserId),
-                        name: (e as MediaMessage).media.baseName,
+                        name: (e).media.baseName,
                         size: (e).media.content.lengthInBytes,
                         uri: _mediaMap[e.media.id]!,
                       );
@@ -333,7 +366,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> with WidgetsBindingObse
                   required message,
                   required nextMessageInGroup,
                 }) =>
-                    Bubble(
+                Bubble(
                   child: child,
                   nip: (userState.me!.userId != message.author.id)
                       ? BubbleNip.leftBottom
@@ -344,6 +377,27 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> with WidgetsBindingObse
                   showNip: !nextMessageInGroup,
                   padding: const BubbleEdges.all(0),
                   elevation: 1,
+                ),
+                videoMessageBuilder: (p0, {required messageWidth}) =>
+                Container(
+                  constraints: BoxConstraints(
+                    maxWidth: MediaQuery.of(context).size.width * 0.7,
+                    maxHeight: MediaQuery.of(context).size.height * 0.5,
+                  ),
+                  child: VideoPlayer(
+                    video: File(p0.uri),
+                  ),
+                ),
+                audioMessageBuilder: (p0, {required messageWidth}) => 
+                Container(
+                  constraints: BoxConstraints(
+                    maxWidth: MediaQuery.of(context).size.width * 0.65,
+                    maxHeight: MediaQuery.of(context).size.height * 0.1,
+                  ),
+                  child: MusicPlayer(
+                    audio: p0.uri,
+                    isSender: userState.me!.userId == p0.author.id,
+                  )
                 ),
                 onSendPressed: (partialText) {
                   _sendMessage(partialText.text);

@@ -3,6 +3,9 @@ import 'dart:io';
 
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/material.dart';
+import 'package:fyp_chat_app/components/music_player.dart';
+import 'package:fyp_chat_app/components/palette.dart';
+import 'package:fyp_chat_app/components/video_player.dart';
 import 'package:fyp_chat_app/models/chatroom.dart';
 import 'package:fyp_chat_app/models/group_chat.dart';
 import 'package:fyp_chat_app/models/chat_message.dart';
@@ -94,6 +97,7 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> with WidgetsB
     _messageSubscription.cancel();
   }
 
+  @override
   void didChangeAppLifecycleState(AppLifecycleState state) async {
     if (state == AppLifecycleState.resumed) {
       _page = 0;
@@ -122,7 +126,7 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> with WidgetsB
         final file = File(filePath);
         await file.writeAsBytes(media.content);
         setState(() {
-          _mediaMap.addAll({media.id: filePath});
+          _mediaMap[media.id] = filePath;
         });
       }
     });
@@ -137,7 +141,6 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> with WidgetsB
       _messages.addAll(messages);
       _names.addAll(names);
     });
-    _messages.forEach((e) => print(e.id));
     return true;
   }
 
@@ -331,38 +334,68 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> with WidgetsB
                       text: (e as PlainMessage).content,
                       createdAt: e.sentAt.millisecondsSinceEpoch,
                     );
-
-                  // All return same thing first
                   case MessageType.image:
+                    if (_mediaMap[(e as MediaMessage).media.id] == null) {
+                      return types.TextMessage(
+                        id: e.id.toString(),
+                        author: types.User(id: e.senderUserId),
+                        text: "Loading Image...",
+                        createdAt: e.sentAt.millisecondsSinceEpoch,
+                      );
+                    }
                     return types.ImageMessage(
                       id: e.id.toString(),
                       author: types.User(id: e.senderUserId),
-                      name: (e as MediaMessage).media.baseName,
+                      name: (e).media.baseName,
                       size: (e).media.content.lengthInBytes,
                       uri: _mediaMap[e.media.id]!,
                     );
                   case MessageType.video:
+                    if (_mediaMap[(e as MediaMessage).media.id] == null) {
+                      return types.TextMessage(
+                        id: e.id.toString(),
+                        author: types.User(id: e.senderUserId),
+                        text: "Loading Video...",
+                        createdAt: e.sentAt.millisecondsSinceEpoch,
+                      );
+                    }
                     return types.VideoMessage(
                       id: e.id.toString(),
                       author: types.User(id: e.senderUserId),
-                      name: (e as MediaMessage).media.baseName,
+                      name: (e).media.baseName,
                       size: (e).media.content.lengthInBytes,
                       uri: _mediaMap[e.media.id]!,
                     );
                   case MessageType.audio:
+                    if (_mediaMap[(e as MediaMessage).media.id] == null) {
+                      return types.TextMessage(
+                        id: e.id.toString(),
+                        author: types.User(id: e.senderUserId),
+                        text: "Loading Audio...",
+                        createdAt: e.sentAt.millisecondsSinceEpoch,
+                      );
+                    }
                     return types.AudioMessage(
                       id: e.id.toString(),
                       author: types.User(id: e.senderUserId),
-                      name: (e as MediaMessage).media.baseName,
+                      name: (e).media.baseName,
                       size: (e).media.content.lengthInBytes,
-                      duration: Duration(seconds: 2),
+                      duration: const Duration(seconds: 2),
                       uri: _mediaMap[e.media.id]!,
                     );
                   case MessageType.document:
+                    if (_mediaMap[(e as MediaMessage).media.id] == null) {
+                      return types.TextMessage(
+                        id: e.id.toString(),
+                        author: types.User(id: e.senderUserId),
+                        text: "Loading Document...",
+                        createdAt: e.sentAt.millisecondsSinceEpoch,
+                      );
+                    }
                     return types.FileMessage(
                       id: e.id.toString(),
                       author: types.User(id: e.senderUserId),
-                      name: (e as MediaMessage).media.baseName,
+                      name: (e).media.baseName,
                       size: (e).media.content.lengthInBytes,
                       uri: _mediaMap[e.media.id]!,
                     );
@@ -397,6 +430,27 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> with WidgetsB
                 padding: const BubbleEdges.all(0),
                 elevation: 1,
               ),
+              videoMessageBuilder: (p0, {required messageWidth}) =>
+                Container(
+                  constraints: BoxConstraints(
+                    maxWidth: MediaQuery.of(context).size.width * 0.7,
+                    maxHeight: MediaQuery.of(context).size.height * 0.5,
+                  ),
+                  child: VideoPlayer(
+                    video: File(p0.uri),
+                  ),
+                ),
+              audioMessageBuilder: (p0, {required messageWidth}) => 
+                Container(
+                  constraints: BoxConstraints(
+                    maxWidth: MediaQuery.of(context).size.width * 0.65,
+                    maxHeight: MediaQuery.of(context).size.height * 0.1,
+                  ),
+                  child: MusicPlayer(
+                    audio: p0.uri,
+                    isSender: userState.me!.userId == p0.author.id,
+                  )
+                ),
               onSendPressed: (partialText) {
                 _sendMessage(partialText.text);
               },

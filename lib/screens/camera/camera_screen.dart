@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:camera/camera.dart';
 import 'package:fyp_chat_app/components/palette.dart';
 import 'package:fyp_chat_app/screens/camera/image_preview.dart';
+import 'package:fyp_chat_app/screens/camera/video_preview.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -46,6 +47,7 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
   bool _isVideoModeSelected = false; // on default it is photo mode
 
   bool _isRecordingInProgress = false; // State of recording video
+  bool _isRecordingPaused = false;
 
   // scale
   double _minAvailableZoom = 1.0;
@@ -141,6 +143,7 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
     // Replace with the new controller
     setState(() {
       controller = cameraController;
+      _isRecordingPaused = false;
     });
 
     // Update UI if controller updated (Commented for now as no use)
@@ -255,6 +258,9 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
     }
     try {
       await controller!.pauseVideoRecording();
+      setState(() {
+        _isRecordingPaused = true;
+      });
     } on CameraException catch (e) {
       print('Error pausing video recording: $e');
     }
@@ -268,6 +274,9 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
     }
     try {
       await controller!.resumeVideoRecording();
+      setState(() {
+        _isRecordingPaused = false;
+      });
     } on CameraException catch (e) {
       print('Error resuming video recording: $e');
     }
@@ -287,7 +296,7 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
       });
       if (widget.source == Source.chatroom) {
         Navigator.push(context, MaterialPageRoute(builder: (builder) => 
-          ImagePreview(image: File(video.path), chatroom: widget.chatroom!, saveImage: true)
+          VideoPreview(video: File(video.path), chatroom: widget.chatroom!)
         ));
       }
     } on CameraException catch (e) {
@@ -435,8 +444,7 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
                                   }
                                 },
                                 icon: Icon(
-                                  controller!.value.isRecordingPaused 
-                                    ? Icons.play_arrow : Icons.pause,
+                                  _isRecordingPaused ? Icons.play_arrow : Icons.pause,
                                   color: Colors.white,
                                   size: 28,
                                 ),
@@ -479,19 +487,21 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
                               // Gallery
                               IconButton(
                                 onPressed: () async {
-                                  final image = await ImagePicker().pickImage(source: ImageSource.gallery);
-                                  if (image == null) return;
-                                  // Redirect to preview screen if from chatroom
-                                  // Redirect to cropping if for user/group icon
-                                  if (widget.source == Source.chatroom) {
-                                    Navigator.push(context, MaterialPageRoute(builder: (builder) => 
-                                      ImagePreview(image: File(image.path), chatroom: widget.chatroom!)
-                                    ));
+                                  if (!_isRecordingInProgress) {
+                                    final image = await ImagePicker().pickImage(source: ImageSource.gallery);
+                                    if (image == null) return;
+                                    // Redirect to preview screen if from chatroom
+                                    // Redirect to cropping if for user/group icon
+                                    if (widget.source == Source.chatroom) {
+                                      Navigator.push(context, MaterialPageRoute(builder: (builder) => 
+                                        ImagePreview(image: File(image.path), chatroom: widget.chatroom!)
+                                      ));
+                                    }
                                   }
                                 },
-                                icon: const Icon(
+                                icon: Icon(
                                   Icons.image_search,
-                                  color: Colors.white,
+                                  color: (_isRecordingInProgress) ? Colors.grey : Colors.white,
                                   size: 28,
                                 ),
                               ),

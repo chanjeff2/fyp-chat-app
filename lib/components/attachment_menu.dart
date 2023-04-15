@@ -131,7 +131,7 @@ class AttachmentMenu extends StatelessWidget {
                         type: FileType.audio,
                       );
                       
-                      if (result != null) {
+                      if (result == null) {
                         return;
                       }
 
@@ -139,9 +139,9 @@ class AttachmentMenu extends StatelessWidget {
                         await SignalClient().sendMediaToChatroom(
                           userState.me!,
                           chatroom,
-                          File(result!.files.first.path!),
+                          File(result.files.first.path!),
                           result.files.first.path, 
-                          MessageType.document,
+                          MessageType.audio,
                         );
                       } on Exception catch (e) {
                         ScaffoldMessenger.of(context).showSnackBar(

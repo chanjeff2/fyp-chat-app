@@ -4,8 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:fyp_chat_app/components/palette.dart';
 import 'package:fyp_chat_app/models/chat_message.dart';
 import 'package:fyp_chat_app/models/chatroom.dart';
-import 'package:fyp_chat_app/screens/chatroom/chatroom_screen.dart';
-import 'package:fyp_chat_app/screens/chatroom/chatroom_screen_group.dart';
 import 'package:fyp_chat_app/signal/signal_client.dart';
 import 'package:provider/provider.dart';
 
@@ -196,7 +194,7 @@ class _ImagePreviewState extends State<ImagePreview> {
                 break;
               }
               setState(() {
-                  _isSending = false;
+                _isSending = false;
               });
             }
           },

@@ -13,6 +13,7 @@ class PlainMessage extends ChatMessage {
     required DateTime sentAt,
     isRead = false,
   }) : super(
+    id: id,
     senderUserId: senderUserId,
     chatroomId: chatroomId,
     type: MessageType.text,
@@ -22,6 +23,7 @@ class PlainMessage extends ChatMessage {
 
   @override
   ChatMessageEntity toEntity() => ChatMessageEntity(
+        id: id,
         senderUserId: senderUserId,
         chatroomId: chatroomId,
         content: content,
