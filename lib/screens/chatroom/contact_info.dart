@@ -164,10 +164,10 @@ class _ContactInfoState extends State<ContactInfo> {
               Text(
                 // isGroup ? "Group - $participants participants" : "Known as $user.username"
                 widget.chatroom.type == ChatroomType.group
-                    ? widget.chatroom.name +
-                        " participants: " +
-                        ((widget.chatroom as GroupChat).members.length)
-                            .toString()
+                    ? ((widget.chatroom as GroupChat).members.length)
+                            .toString() +
+                        ((widget.chatroom as GroupChat).members.length > 1 ? " participants" : " participant")
+                        
                     : widget.chatroom.name,
                 textAlign: TextAlign.center,
                 style: const TextStyle(
