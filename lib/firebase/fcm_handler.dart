@@ -52,7 +52,6 @@ class FCMHandler {
   static Future<ReceivedPlainMessage?> _handleMessage(
       RemoteMessage remoteMessage) async {
     final event = FCMEvent.fromJson(remoteMessage.data);
-    print(event.type);
     switch (event.type) {
       case EventType.textMessage:
         final messageDto = event as MessageDto;
