@@ -123,7 +123,7 @@ class _CreateGroupScreen extends State<CreateGroupScreen> {
                 user: (element as OneToOneChat).target, role: Role.member));
         //read the member stored and add the member to group member list
         GroupMember? storedMember =
-            await GroupMemberStore().getbyUserID(element.target.userId);
+            await GroupMemberStore().getbyUserID(groupId,element.target.userId);
         group.members.add(storedMember!);
       }
     } on ApiException catch (e) {

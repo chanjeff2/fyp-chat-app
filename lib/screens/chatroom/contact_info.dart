@@ -132,7 +132,9 @@ class _ContactInfoState extends State<ContactInfo> {
             children: <Widget>[
               CircleAvatar(
                 // child: profilePicture ? null : Icon(Icons.person, size: 20),
-                child: (widget.chatroom.type == ChatroomType.group)? const Icon(Icons.group, size: 20, color: Colors.white) : const Icon(Icons.person, size: 20, color: Colors.white),
+                child: (widget.chatroom.type == ChatroomType.group)
+                    ? const Icon(Icons.group, size: 20, color: Colors.white)
+                    : const Icon(Icons.person, size: 20, color: Colors.white),
                 radius: 20,
                 backgroundColor: Colors.blueGrey,
               ),
@@ -151,7 +153,9 @@ class _ContactInfoState extends State<ContactInfo> {
                   radius: 72,
                   // child: profilePicture ? null : Icon(Icons.person, size: 48),
                   // backgroundImage: profileImage,
-                  child: (widget.chatroom.type == ChatroomType.group) ? const Icon(Icons.group, size: 72, color: Colors.white) : const Icon(Icons.person, size: 72, color: Colors.white),
+                  child: (widget.chatroom.type == ChatroomType.group)
+                      ? const Icon(Icons.group, size: 72, color: Colors.white)
+                      : const Icon(Icons.person, size: 72, color: Colors.white),
                   backgroundColor: Colors.blueGrey,
                 ),
               ),
@@ -166,8 +170,9 @@ class _ContactInfoState extends State<ContactInfo> {
                 widget.chatroom.type == ChatroomType.group
                     ? ((widget.chatroom as GroupChat).members.length)
                             .toString() +
-                        ((widget.chatroom as GroupChat).members.length > 1 ? " participants" : " participant")
-                        
+                        ((widget.chatroom as GroupChat).members.length > 1
+                            ? " participants"
+                            : " participant")
                     : widget.chatroom.name,
                 textAlign: TextAlign.center,
                 style: const TextStyle(
@@ -619,7 +624,7 @@ class _ContactInfoState extends State<ContactInfo> {
                                         const SizedBox(width: 16),
                                         Text(
                                             // isGroup ? _members[index].name : _common_group[index].name,
-                                            ((checkIsAdmin(userState)
+                                            (((checkIsAdmin(userState)
                                                             ? (snapshot.data
                                                                     as List<GroupMember>)[
                                                                 index - 1]
@@ -627,22 +632,23 @@ class _ContactInfoState extends State<ContactInfo> {
                                                                     as List<GroupMember>)[
                                                                 index])
                                                         .user
-                                                        .displayName ==
-                                                    null)
-                                                ? determineListViewIndexForCommonGroupList(
-                                                        userState,
-                                                        (snapshot.data as List<
-                                                            GroupMember>),
-                                                        index)
-                                                    .user
-                                                    .username
-                                                : determineListViewIndexForCommonGroupList(
-                                                        userState,
-                                                        (snapshot.data
-                                                            as List<GroupMember>),
-                                                        index)
-                                                    .user
-                                                    .displayName!,
+                                                        .userId ==
+                                                    userState.me!.userId)
+                                                ? "YOU"
+                                                : ((checkIsAdmin(userState) ? (snapshot.data as List<GroupMember>)[index - 1] : (snapshot.data as List<GroupMember>)[index])
+                                                            .user
+                                                            .displayName ==
+                                                        null)
+                                                    ? determineListViewIndexForCommonGroupList(userState, (snapshot.data as List<GroupMember>), index)
+                                                        .user
+                                                        .username
+                                                    : determineListViewIndexForCommonGroupList(
+                                                            userState,
+                                                            (snapshot.data
+                                                                as List<GroupMember>),
+                                                            index)
+                                                        .user
+                                                        .displayName!),
                                             style: const TextStyle(fontSize: 16)),
                                         const Expanded(child: SizedBox()),
                                         ((checkIsAdmin(userState)
