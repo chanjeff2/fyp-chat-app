@@ -134,6 +134,7 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
                     unread: 0,
                     latestMessage: (_messages.isEmpty) ? null : _messages[0],
                     createdAt: widget.chatroom.createdAt,
+                    groupType: (widget.chatroom as GroupChat).groupType,
                   ));
             },
             borderRadius: BorderRadius.circular(40.0),

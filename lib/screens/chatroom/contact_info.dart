@@ -302,6 +302,37 @@ class _ContactInfoState extends State<ContactInfo> {
                 ),
               ),
               const Divider(thickness: 2, indent: 8, endIndent: 8),
+              //Official group
+              (widget.chatroom.type == ChatroomType.group &&
+                      (widget.chatroom as GroupChat).groupType ==
+                          GroupType.Course)
+                  ? GestureDetector(
+                      child: const ListTile(
+                        leading: SizedBox(
+                          height: double.infinity,
+                          child: Icon(Icons.fact_check, color: Colors.black),
+                        ),
+                        title: Text(
+                          "Official Course Group",
+                          style: TextStyle(
+                            fontSize: 16,
+                            // fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        subtitle: Text(
+                          "This is a authorized course group chat from HKUST",
+                          style: TextStyle(
+                            fontSize: 14,
+                          ),
+                        ),
+                      ),
+                    )
+                  : Container(),
+              (widget.chatroom.type == ChatroomType.group &&
+                      (widget.chatroom as GroupChat).groupType ==
+                          GroupType.Course)
+                  ? const Divider(thickness: 2, indent: 8, endIndent: 8)
+                  : Container(),
               /*
               // Disappearing Messages
               InkWell(
@@ -517,7 +548,8 @@ class _ContactInfoState extends State<ContactInfo> {
                                       await _showContextMenu(
                                           context,
                                           (snapshot.data
-                                              as List<GroupMember>)[index - 1]);
+                                              as List<GroupMember>)[index - 1],
+                                          userState);
                                     }
                                   },
                                   onTap: () async {
@@ -854,8 +886,8 @@ class _ContactInfoState extends State<ContactInfo> {
     );
   }
 
-  _showContextMenu(
-      BuildContext context, GroupMember memberSelectedForTheAction) async {
+  _showContextMenu(BuildContext context, GroupMember memberSelectedForTheAction,
+      UserState userState) async {
     final RenderObject? overlay =
         Overlay.of(context)?.context.findRenderObject();
     final result = await showMenu(
@@ -894,6 +926,8 @@ class _ContactInfoState extends State<ContactInfo> {
                 GroupChatApi().kickMember(
                     widget.chatroom.id, memberSelectedForTheAction.user.userId);
               });
+              GroupChatApi()
+                  .getGroupMember(widget.chatroom.id, userState.me!.id);
             },
             value: "Remove member",
           ),
@@ -916,9 +950,12 @@ class _ContactInfoState extends State<ContactInfo> {
             await GroupChatApi().leaveGroup(widget.chatroom.id);
         //return to home screen (delete if unnecessary)
         if (leaveGroupSuccess) {
+          ChatroomStore().remove(widget.chatroom.id);
           Navigator.of(context).pop();
           Navigator.of(context).pop();
-        } else {}
+        } else {
+          _leaveGroupFailedAlert(context);
+        }
       },
     );
     AlertDialog leaveGroupDialog = AlertDialog(

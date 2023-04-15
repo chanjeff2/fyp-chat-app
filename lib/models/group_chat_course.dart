@@ -13,12 +13,6 @@
 //   @override
 //   GroupType get groupType => GroupType.Course;
 
-//   String courseCode;
-
-//   String year;
-
-//   Semester semester;
-
 //   CourseGroup({
 //     required String id,
 //     required members,
@@ -26,9 +20,6 @@
 //     PlainMessage? latestMessage,
 //     required int unread,
 //     required DateTime createdAt,
-//     required this.courseCode,
-//     required this.year,
-//     required this.semester
 //   }) : super(
 //             id: id,
 //             latestMessage: latestMessage,

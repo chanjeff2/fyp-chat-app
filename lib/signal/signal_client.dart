@@ -364,6 +364,7 @@ class SignalClient {
           unread: 1,
           latestMessage: plainMessage,
           createdAt: obtainedChatroom.createdAt,
+          groupType: obtainedChatroom.groupType,
         );
         await ChatroomStore().save(groupChatroom);
       } else {

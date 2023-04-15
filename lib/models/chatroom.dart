@@ -76,6 +76,7 @@ abstract class Chatroom {
           latestMessage: latestMessage,
           unread: unread,
           createdAt: DateTime.parse(e.createdAt),
+          groupType: GroupType.values[e.groupType!],
         );
     }
   }
