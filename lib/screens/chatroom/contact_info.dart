@@ -633,7 +633,22 @@ class _ContactInfoState extends State<ContactInfo> {
                                                         index)
                                                     .user
                                                     .displayName!,
-                                            style: const TextStyle(fontSize: 16))
+                                            style: const TextStyle(fontSize: 16)),
+                                        const Expanded(child: SizedBox()),
+                                        ((checkIsAdmin(userState)
+                                                        ? (snapshot.data as List<
+                                                                GroupMember>)[
+                                                            index - 1]
+                                                        : (snapshot.data as List<
+                                                                GroupMember>)[
+                                                            index])
+                                                    .role ==
+                                                Role.admin)
+                                            ? const Icon(Icons.verified,
+                                                size: 36,
+                                                color: Colors.blueGrey)
+                                            : Container(),
+                                        const SizedBox(width: 20),
                                       ],
                                     ),
                                   ),
@@ -906,13 +921,32 @@ class _ContactInfoState extends State<ContactInfo> {
                 GroupChatApi().addAdmin(
                     widget.chatroom.id, memberSelectedForTheAction.user.userId);
               });
-               final memberName =
-                    (memberSelectedForTheAction.user.displayName == null)
-                        ? memberSelectedForTheAction.user.username
-                        : memberSelectedForTheAction.user.displayName!; 
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                  content: Text('Promoted $memberName as Admin'),
-                ));
+              //get newest info of member from server
+              GroupMember memberfromAPI = await GroupChatApi().getGroupMember(
+                  widget.chatroom.id, memberSelectedForTheAction.user.userId);
+              // GroupMemberStore().save(
+              //     widget.chatroom.id,
+              //     GroupMember(
+              //         id: memberSelectedForTheAction.id,
+              //         user: memberfromAPI.user,
+              //         role: memberfromAPI.role));
+              (widget.chatroom as GroupChat).members.removeWhere((element) =>
+                  (element.user.userId ==
+                      memberSelectedForTheAction.user.userId));
+              print(memberfromAPI.role);
+              setState(() {
+                (widget.chatroom as GroupChat).members.add(GroupMember(
+                    id: memberSelectedForTheAction.id,
+                    user: memberfromAPI.user,
+                    role: memberfromAPI.role));
+              });
+              final memberName =
+                  (memberSelectedForTheAction.user.displayName == null)
+                      ? memberSelectedForTheAction.user.username
+                      : memberSelectedForTheAction.user.displayName!;
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                content: Text('Promoted $memberName as Admin'),
+              ));
             },
             value: "Add admin",
           ),
@@ -923,14 +957,13 @@ class _ContactInfoState extends State<ContactInfo> {
                 GroupChatApi().removeAdmin(
                     widget.chatroom.id, memberSelectedForTheAction.user.userId);
               });
-               final memberName =
-                    (memberSelectedForTheAction.user.displayName == null)
-                        ? memberSelectedForTheAction.user.username
-                        : memberSelectedForTheAction.user.displayName!; 
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                  content: Text('Demoted $memberName as Admin'),
-                ));
-
+              final memberName =
+                  (memberSelectedForTheAction.user.displayName == null)
+                      ? memberSelectedForTheAction.user.username
+                      : memberSelectedForTheAction.user.displayName!;
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                content: Text('Demoted $memberName as Admin'),
+              ));
             },
             value: "Remove admin",
           ),
