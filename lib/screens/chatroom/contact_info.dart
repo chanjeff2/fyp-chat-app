@@ -951,8 +951,8 @@ class _ContactInfoState extends State<ContactInfo> {
         //return to home screen (delete if unnecessary)
         if (leaveGroupSuccess) {
           ChatroomStore().remove(widget.chatroom.id);
-          Navigator.of(context).pop();
-          Navigator.of(context).pop();
+          (widget.chatroom as GroupChat).members.clear();
+          Navigator.pop(context,widget.chatroom);
         } else {
           _leaveGroupFailedAlert(context);
         }
