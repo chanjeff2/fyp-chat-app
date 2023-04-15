@@ -4,6 +4,7 @@ import 'package:chewie/chewie.dart';
 import 'package:flutter/material.dart';
 import 'package:fyp_chat_app/components/palette.dart';
 import 'package:fyp_chat_app/models/chat_message.dart';
+import 'package:fyp_chat_app/models/media_message.dart';
 import 'package:fyp_chat_app/signal/signal_client.dart';
 import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
@@ -12,10 +13,15 @@ import '../../models/chatroom.dart';
 import '../../models/user_state.dart';
 
 class VideoPreview extends StatefulWidget {
-  const VideoPreview({Key? key, required this.video, required this.chatroom}) : super(key: key);
+  const VideoPreview({Key? key,
+                        required this.video,
+                        required this.chatroom,
+                        required this.sendCallback,
+                      }) : super(key: key);
 
   final File video;
   final Chatroom chatroom;
+  final Function(MediaMessage) sendCallback;
 
   @override
   State<VideoPreview> createState() => _VideoPreviewState();
@@ -231,13 +237,14 @@ class _VideoPreviewState extends State<VideoPreview> {
                   setState(() {
                     _isSending = true;
                   });
-                  await SignalClient().sendMediaToChatroom(
+                  final mediaMessage = await SignalClient().sendMediaToChatroom(
                     userState.me!,
                     widget.chatroom,
                     widget.video,
                     widget.video.path, 
                     MessageType.video,
                   );
+                  widget.sendCallback(mediaMessage);
                 } on Exception catch (e) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text("error: $e")));

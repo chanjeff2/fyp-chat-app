@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:fyp_chat_app/components/palette.dart';
 import 'package:fyp_chat_app/models/chat_message.dart';
 import 'package:fyp_chat_app/models/chatroom.dart';
+import 'package:fyp_chat_app/models/media_message.dart';
 import 'package:fyp_chat_app/signal/signal_client.dart';
 import 'package:provider/provider.dart';
 
@@ -13,12 +14,14 @@ class ImagePreview extends StatefulWidget {
   const ImagePreview({Key? key,
                       required this.image,
                       required this.chatroom,
+                      required this.sendCallback,
                       this.saveImage = false,
                     }) : super(key: key);
 
   final File image;
   final Chatroom chatroom;
   final bool saveImage;
+  final Function(MediaMessage) sendCallback;
 
   @override
   State<ImagePreview> createState() => _ImagePreviewState();
@@ -168,13 +171,14 @@ class _ImagePreviewState extends State<ImagePreview> {
                 setState(() {
                   _isSending = true;
                 });
-                await SignalClient().sendMediaToChatroom(
+                final mediaMessage = await SignalClient().sendMediaToChatroom(
                   userState.me!,
                   widget.chatroom,
                   widget.image,
                   widget.image.path, 
                   MessageType.image,
                 );
+                widget.sendCallback(mediaMessage);
               } on Exception catch (e) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text("error: $e")));

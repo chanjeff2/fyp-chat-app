@@ -41,7 +41,7 @@ class ChatRoomScreenGroup extends StatefulWidget {
   State<ChatRoomScreenGroup> createState() => _ChatRoomScreenGroupState();
 }
 
-class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> with WidgetsBindingObserver {
+class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   bool _textMessage = false;
@@ -95,14 +95,6 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> with WidgetsB
     // remove chatting with
     _state.chatroom = null;
     _messageSubscription.cancel();
-  }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) async {
-    if (state == AppLifecycleState.resumed) {
-      _page = 0;
-      await _loadMessageHistory();
-    }
   }
 
   Future<bool> _loadMessageHistory() async {
@@ -159,11 +151,29 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> with WidgetsB
     });
   }
 
+  void _updateMediaMessage(MediaMessage mediaMessage) async {
+    final localStorage = await getTemporaryDirectory();
+    final media = await MediaStore().getMediaById(mediaMessage.media.id);
+    final filePath = "${localStorage.path}/${media.id}${media.fileExtension}";
+    final file = File(filePath);
+    await file.writeAsBytes(media.content);
+    setState(() {
+      _mediaMap[media.id] = filePath;
+    });
+    setState(() {
+      _messages.insert(0, mediaMessage);
+    });
+  }
+
   // Selecting camera
   void _onCameraSelected() {
     Navigator.of(context).push(MaterialPageRoute(
         builder: (context) =>
-            CameraScreen(source: Source.chatroom, chatroom: widget.chatroom)));
+            CameraScreen(
+              source: Source.chatroom,
+              chatroom: widget.chatroom,
+              sendCallback: _updateMediaMessage,
+            )));
   }
 
   @override
@@ -744,7 +754,7 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> with WidgetsB
                               checkPlatformCompatibility: true,
                             ),
                           )
-                        : AttachmentMenu(chatroom: widget.chatroom),
+                        : AttachmentMenu(chatroom: widget.chatroom, sendCallback: _updateMediaMessage),
                   ),
                 ),
               ]),

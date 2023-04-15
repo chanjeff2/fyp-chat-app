@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:fyp_chat_app/components/palette.dart';
 import 'package:fyp_chat_app/models/chat_message.dart';
 import 'package:fyp_chat_app/models/chatroom.dart';
+import 'package:fyp_chat_app/models/media_message.dart';
 import 'package:fyp_chat_app/models/user_state.dart';
 import 'package:fyp_chat_app/screens/camera/camera_screen.dart';
 import 'package:fyp_chat_app/screens/camera/image_preview.dart';
@@ -15,10 +16,12 @@ import 'package:provider/provider.dart';
 class AttachmentMenu extends StatelessWidget {
   const AttachmentMenu({
     Key? key,
-    required this.chatroom
+    required this.chatroom,
+    required this.sendCallback
   }) : super(key: key);
 
   final Chatroom chatroom;
+  final Function(MediaMessage) sendCallback;
 
   Widget createIcon(IconData icons, Color color, String text, VoidCallback onTap) {
     return InkWell(
@@ -73,13 +76,14 @@ class AttachmentMenu extends StatelessWidget {
                       }
 
                       try {
-                        await SignalClient().sendMediaToChatroom(
+                        final mediaMessage = await SignalClient().sendMediaToChatroom(
                           userState.me!,
                           chatroom,
                           File(result.files.first.path!),
                           result.files.first.path, 
                           MessageType.document,
                         );
+                        sendCallback(mediaMessage);
                       } on Exception catch (e) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(content: Text("error: $e")));
@@ -95,7 +99,11 @@ class AttachmentMenu extends StatelessWidget {
                     "Camera",
                     () {
                       Navigator.push(context, MaterialPageRoute(builder: (context) => 
-                        CameraScreen(source: Source.chatroom, chatroom: chatroom)
+                        CameraScreen(
+                          source: Source.chatroom,
+                          chatroom: chatroom,
+                          sendCallback: sendCallback,
+                        )
                       ));
                     }
                   ),
@@ -110,7 +118,11 @@ class AttachmentMenu extends StatelessWidget {
                       final image = await ImagePicker().pickImage(source: ImageSource.gallery);
                       if (image == null) return;
                       Navigator.of(context).push(MaterialPageRoute(builder: (context) => 
-                        ImagePreview(image: File(image.path), chatroom: chatroom)
+                        ImagePreview(
+                          image: File(image.path),
+                          chatroom: chatroom,
+                          sendCallback: sendCallback,
+                        )
                       ));
                     }
                   ),
@@ -136,13 +148,14 @@ class AttachmentMenu extends StatelessWidget {
                       }
 
                       try {
-                        await SignalClient().sendMediaToChatroom(
+                        final mediaMessage = await SignalClient().sendMediaToChatroom(
                           userState.me!,
                           chatroom,
                           File(result.files.first.path!),
                           result.files.first.path, 
                           MessageType.audio,
                         );
+                        sendCallback(mediaMessage);
                       } on Exception catch (e) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(content: Text("error: $e")));

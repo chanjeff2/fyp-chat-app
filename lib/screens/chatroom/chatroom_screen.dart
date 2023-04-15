@@ -41,7 +41,7 @@ class ChatRoomScreen extends StatefulWidget {
   State<ChatRoomScreen> createState() => _ChatRoomScreenState();
 }
 
-class _ChatRoomScreenState extends State<ChatRoomScreen> with WidgetsBindingObserver {
+class _ChatRoomScreenState extends State<ChatRoomScreen> {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   bool _textMessage = false;
@@ -106,14 +106,6 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> with WidgetsBindingObse
     _messageSubscription.cancel();
   }
 
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) async {
-    if (state == AppLifecycleState.resumed) {
-      _page = 0;
-      await _loadMessageHistory();
-    }
-  }
-
   Future<bool> _loadMessageHistory() async {
     final messages = await MessageStore().getMessageByChatroomId(
       widget.chatroom.id,
@@ -160,11 +152,29 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> with WidgetsBindingObse
     });
   }
 
+  void _updateMediaMessage(MediaMessage mediaMessage) async {
+    final localStorage = await getTemporaryDirectory();
+    final media = await MediaStore().getMediaById(mediaMessage.media.id);
+    final filePath = "${localStorage.path}/${media.id}${media.fileExtension}";
+    final file = File(filePath);
+    await file.writeAsBytes(media.content);
+    setState(() {
+      _mediaMap[media.id] = filePath;
+    });
+    setState(() {
+      _messages.insert(0, mediaMessage);
+    });
+  }
+
   // Selecting camera in attachment menu (or directly next to text box)
   void _onCameraSelected() {
     Navigator.of(context).push(MaterialPageRoute(
         builder: (context) =>
-            CameraScreen(source: Source.chatroom, chatroom: widget.chatroom)));
+            CameraScreen(
+              source: Source.chatroom,
+              chatroom: widget.chatroom,
+              sendCallback: _updateMediaMessage,
+            )));
   }
 
   @override
@@ -700,7 +710,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> with WidgetsBindingObse
                                 checkPlatformCompatibility: true,
                               ),
                             )
-                          : AttachmentMenu(chatroom: widget.chatroom),
+                          : AttachmentMenu(chatroom: widget.chatroom, sendCallback: _updateMediaMessage),
                     ),
                   ),
                 ]),

@@ -22,11 +22,13 @@ class CameraScreen extends StatefulWidget {
                       required this.source,
                       this.id,
                       this.chatroom,
+                      this.sendCallback,
                     }) : super(key: key);
 
   final Source source;
   final String? id;
   final Chatroom? chatroom;
+  final sendCallback;
 
   @override
   State<CameraScreen> createState() => _CameraScreenState();
@@ -222,7 +224,12 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
       XFile image = await cameraController.takePicture();
       if (widget.source == Source.chatroom) {
         Navigator.push(context, MaterialPageRoute(builder: (builder) => 
-          ImagePreview(image: File(image.path), chatroom: widget.chatroom!, saveImage: true)
+          ImagePreview(
+            image: File(image.path),
+            chatroom: widget.chatroom!,
+            saveImage: true,
+            sendCallback: widget.sendCallback,
+          )
         ));
       }
       return; // do nothing for now
@@ -296,7 +303,11 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
       });
       if (widget.source == Source.chatroom) {
         Navigator.push(context, MaterialPageRoute(builder: (builder) => 
-          VideoPreview(video: File(video.path), chatroom: widget.chatroom!)
+          VideoPreview(
+            video: File(video.path),
+            chatroom: widget.chatroom!,
+            sendCallback: widget.sendCallback,
+          )
         ));
       }
     } on CameraException catch (e) {
@@ -494,7 +505,11 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
                                     // Redirect to cropping if for user/group icon
                                     if (widget.source == Source.chatroom) {
                                       Navigator.push(context, MaterialPageRoute(builder: (builder) => 
-                                        ImagePreview(image: File(image.path), chatroom: widget.chatroom!)
+                                        ImagePreview(
+                                          image: File(image.path),
+                                          chatroom: widget.chatroom!,
+                                          sendCallback: widget.sendCallback,
+                                        )
                                       ));
                                     }
                                   }
