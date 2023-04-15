@@ -41,13 +41,13 @@ Map<String, dynamic> _$SendMessageDtoToJson(SendMessageDto instance) =>
     };
 
 const _$FCMEventTypeEnumMap = {
-  FCMEventType.TextMessage: 'text-message',
-  FCMEventType.MediaMessage: 'media-message',
-  FCMEventType.PatchGroup: 'patch-group',
-  FCMEventType.AddMember: 'add-member',
-  FCMEventType.KickMember: 'kick-member',
-  FCMEventType.PromoteAdmin: 'promote-admin',
-  FCMEventType.DemoteAdmin: 'demote-admin',
-  FCMEventType.MemberJoin: 'member-join',
-  FCMEventType.MemberLeave: 'member-leave',
+  FCMEventType.textMessage: 'text-message',
+  FCMEventType.mediaMessage: 'media-message',
+  FCMEventType.patchGroup: 'patch-group',
+  FCMEventType.addMember: 'add-member',
+  FCMEventType.kickMember: 'kick-member',
+  FCMEventType.promoteAdmin: 'promote-admin',
+  FCMEventType.demoteAdmin: 'demote-admin',
+  FCMEventType.memberJoin: 'member-join',
+  FCMEventType.memberLeave: 'member-leave',
 };

@@ -5,7 +5,9 @@ import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:fyp_chat_app/components/music_player.dart';
 import 'package:fyp_chat_app/components/video_player.dart';
+import 'package:fyp_chat_app/models/access_change_event.dart';
 import 'package:fyp_chat_app/models/chatroom.dart';
+import 'package:fyp_chat_app/models/enum.dart';
 import 'package:fyp_chat_app/models/group_chat.dart';
 import 'package:fyp_chat_app/models/chat_message.dart';
 import 'package:fyp_chat_app/models/media_message.dart';
@@ -14,6 +16,7 @@ import 'package:fyp_chat_app/models/received_plain_message.dart';
 import 'package:fyp_chat_app/models/user_state.dart';
 import 'package:fyp_chat_app/screens/chatroom/contact_info.dart';
 import 'package:fyp_chat_app/signal/signal_client.dart';
+import 'package:fyp_chat_app/storage/group_member_store.dart';
 import 'package:fyp_chat_app/storage/media_store.dart';
 import 'package:fyp_chat_app/storage/message_store.dart';
 import 'package:fyp_chat_app/storage/block_store.dart';
@@ -35,7 +38,7 @@ class ChatRoomScreenGroup extends StatefulWidget {
     required this.chatroom,
   }) : super(key: key);
 
-  final Chatroom chatroom;
+  final GroupChat chatroom;
 
   @override
   State<ChatRoomScreenGroup> createState() => _ChatRoomScreenGroupState();
@@ -54,7 +57,7 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
   int _page = 0; // pagination
   bool _isLastPage = false;
   static const _pageSize = 100;
-  late StreamSubscription<ReceivedPlainMessage> _messageSubscription;
+  late StreamSubscription<ReceivedChatEvent> _messageSubscription;
   late final UserState _state;
   late Future<bool> blockedFuture;
   @override
@@ -69,23 +72,73 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
     // register new message listener
     _messageSubscription = Provider.of<UserState>(context, listen: false)
         .messageStream
-        .listen((receivedMessage) async {
-      if (receivedMessage.message.type.index > 2) {
-        final localStorage = await getTemporaryDirectory();
-        final media = await MediaStore()
-                      .getMediaById((receivedMessage.message as MediaMessage).media.id);
-        final filePath = "${localStorage.path}/${media.id}${media.fileExtension}";
-        final file = File(filePath);
-        await file.writeAsBytes(media.content);
-        setState(() {
-          _mediaMap.addAll({media.id: filePath});
-        });
+        .listen((receivedChatEvent) async {
+      if (receivedChatEvent.chatroom.id != widget.chatroom.id) {
+        // skip other chatroom event
+        return;
       }
-      setState(() {
-        if (receivedMessage.chatroom.id == widget.chatroom.id) {
-          _messages.insert(0, receivedMessage.message);
-        }
-      });
+      switch (receivedChatEvent.event.type) {
+        case FCMEventType.textMessage:
+          setState(() {
+            _messages.insert(0, receivedChatEvent.event as PlainMessage);
+          });
+          break;
+        case FCMEventType.mediaMessage:
+          final localStorage = await getTemporaryDirectory();
+          final media = await MediaStore()
+              .getMediaById((receivedChatEvent.event as MediaMessage).media.id);
+          final filePath =
+              "${localStorage.path}/${media.id}${media.fileExtension}";
+          final file = File(filePath);
+          await file.writeAsBytes(media.content);
+          setState(() {
+            _mediaMap.addAll({media.id: filePath});
+          });
+          _messages.insert(0, receivedChatEvent.event as MediaMessage);
+          break;
+        case FCMEventType.patchGroup:
+          // TODO: Handle this case.
+          break;
+        case FCMEventType.addMember:
+          final event = receivedChatEvent.event as AccessControlEvent;
+          final member = await GroupMemberStore()
+              .getbyChatroomIdAndUserId(widget.chatroom.id, event.targetUserId);
+          setState(() {
+            widget.chatroom.members.add(member!);
+          });
+          break;
+        case FCMEventType.kickMember:
+          final event = receivedChatEvent.event as AccessControlEvent;
+          setState(() {
+            widget.chatroom.members
+                .removeWhere((member) => member.user.id == event.targetUserId);
+          });
+          break;
+        case FCMEventType.promoteAdmin:
+        case FCMEventType.demoteAdmin:
+          final event = receivedChatEvent.event as AccessControlEvent;
+          final member = await GroupMemberStore()
+              .getbyChatroomIdAndUserId(widget.chatroom.id, event.targetUserId);
+          setState(() {
+            widget.chatroom.members
+                .removeWhere((member) => member.user.id == event.targetUserId);
+            widget.chatroom.members.add(member!);
+          });
+          break;
+        case FCMEventType.memberJoin:
+          final member = await GroupMemberStore().getbyChatroomIdAndUserId(
+              widget.chatroom.id, receivedChatEvent.event.senderUserId);
+          setState(() {
+            widget.chatroom.members.add(member!);
+          });
+          break;
+        case FCMEventType.memberLeave:
+          setState(() {
+            widget.chatroom.members.removeWhere((member) =>
+                member.user.id == receivedChatEvent.event.senderUserId);
+          });
+          break;
+      }
     });
   }
 
@@ -112,9 +165,11 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
     final localStorage = await getTemporaryDirectory();
     messages.forEach((msg) async {
       // Message > 2 => Not text, not system log, not media key
-      if (msg.type.index > 2 && !_mediaMap.containsKey(msg.id)) {
-        final media = await MediaStore().getMediaById((msg as MediaMessage).media.id);
-        final filePath = "${localStorage.path}/${media.id}${media.fileExtension}";
+      if (msg.messageType.index > 2 && !_mediaMap.containsKey(msg.id)) {
+        final media =
+            await MediaStore().getMediaById((msg as MediaMessage).media.id);
+        final filePath =
+            "${localStorage.path}/${media.id}${media.fileExtension}";
         final file = File(filePath);
         await file.writeAsBytes(media.content);
         setState(() {
@@ -123,7 +178,7 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
       }
     });
 
-    GroupChat room = widget.chatroom as GroupChat;
+    GroupChat room = widget.chatroom;
     final members = room.members;
     final names = <String, String>{
       for (var v in members) v.user.userId: v.user.name
@@ -168,8 +223,7 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
   // Selecting camera
   void _onCameraSelected() {
     Navigator.of(context).push(MaterialPageRoute(
-        builder: (context) =>
-            CameraScreen(
+        builder: (context) => CameraScreen(
               source: Source.chatroom,
               chatroom: widget.chatroom,
               sendCallback: _updateMediaMessage,
@@ -190,12 +244,12 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
                   context,
                   GroupChat(
                     id: widget.chatroom.id,
-                    members: (widget.chatroom as GroupChat).members,
+                    members: (widget.chatroom).members,
                     name: widget.chatroom.name,
                     unread: 0,
                     latestMessage: (_messages.isEmpty) ? null : _messages[0],
                     createdAt: widget.chatroom.createdAt,
-                    groupType: (widget.chatroom as GroupChat).groupType,
+                    groupType: (widget.chatroom).groupType,
                   ));
             },
             borderRadius: BorderRadius.circular(40.0),
@@ -241,49 +295,43 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
                   //showing top bars chatroom name and participant's name
                   Text(widget.chatroom.name),
                   Text(
-                    (widget.chatroom as GroupChat).members.isEmpty
+                    (widget.chatroom).members.isEmpty
                         //if empty, show no ppl in group
                         ? ""
-                        : (((widget.chatroom as GroupChat)
-                                        .members[0]
-                                        .user
-                                        .displayName ==
+                        : (((widget.chatroom).members[0].user.displayName ==
                                     null)
                                 //check first member have display name or not
-                                ? (widget.chatroom as GroupChat)
+                                ? (widget.chatroom)
                                     .members[0]
                                     .user
                                     .username
                                     .toString()
-                                : (widget.chatroom as GroupChat)
+                                : (widget.chatroom)
                                     .members[0]
                                     .user
                                     .displayName!
                                     .toString()) +
-                            (((widget.chatroom as GroupChat).members.length < 2)
+                            (((widget.chatroom).members.length < 2)
                                 //check there is second member or not
                                 ? ""
                                 : ', ' +
-                                    (((widget.chatroom as GroupChat)
+                                    (((widget.chatroom)
                                                 .members[1]
                                                 .user
                                                 .displayName ==
                                             null)
                                         //check second member have display name or not
-                                        ? (widget.chatroom as GroupChat)
+                                        ? (widget.chatroom)
                                             .members[1]
                                             .user
                                             .username
                                             .toString()
-                                        : (widget.chatroom as GroupChat)
+                                        : (widget.chatroom)
                                             .members[1]
                                             .user
                                             .displayName!
                                             .toString()) +
-                                    (((widget.chatroom as GroupChat)
-                                                .members
-                                                .length <
-                                            3)
+                                    (((widget.chatroom).members.length < 3)
                                         //check if there are more members
                                         ? ""
                                         : ", ...")),
@@ -353,7 +401,7 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
             }
             return Chat(
               messages: _messages.map((e) {
-                switch (e.type) {
+                switch (e.messageType) {
                   case MessageType.text:
                     return types.TextMessage(
                       id: e.id.toString(),
@@ -457,18 +505,16 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
                 padding: const BubbleEdges.all(0),
                 elevation: 1,
               ),
-              videoMessageBuilder: (p0, {required messageWidth}) =>
-                Container(
-                  constraints: BoxConstraints(
-                    maxWidth: MediaQuery.of(context).size.width * 0.7,
-                    maxHeight: MediaQuery.of(context).size.height * 0.5,
-                  ),
-                  child: VideoPlayer(
-                    video: File(p0.uri),
-                  ),
+              videoMessageBuilder: (p0, {required messageWidth}) => Container(
+                constraints: BoxConstraints(
+                  maxWidth: MediaQuery.of(context).size.width * 0.7,
+                  maxHeight: MediaQuery.of(context).size.height * 0.5,
                 ),
-              audioMessageBuilder: (p0, {required messageWidth}) => 
-                Container(
+                child: VideoPlayer(
+                  video: File(p0.uri),
+                ),
+              ),
+              audioMessageBuilder: (p0, {required messageWidth}) => Container(
                   constraints: BoxConstraints(
                     maxWidth: MediaQuery.of(context).size.width * 0.65,
                     maxHeight: MediaQuery.of(context).size.height * 0.1,
@@ -476,8 +522,7 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
                   child: MusicPlayer(
                     audio: p0.uri,
                     isSender: userState.me!.userId == p0.author.id,
-                  )
-                ),
+                  )),
               onSendPressed: (partialText) {
                 _sendMessage(partialText.text);
               },
@@ -496,9 +541,8 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
                         future: blockedFuture,
                         builder: (context, snapshot) {
                           if ((snapshot.hasData && snapshot.data == true) ||
-                              (widget.chatroom as GroupChat)
-                                      .members
-                                      .firstWhereOrNull((member) =>
+                              (widget.chatroom).members.firstWhereOrNull(
+                                      (member) =>
                                           member.user.userId ==
                                           userState.me?.userId) ==
                                   null) {
@@ -777,7 +821,9 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
                               checkPlatformCompatibility: true,
                             ),
                           )
-                        : AttachmentMenu(chatroom: widget.chatroom, sendCallback: _updateMediaMessage),
+                        : AttachmentMenu(
+                            chatroom: widget.chatroom,
+                            sendCallback: _updateMediaMessage),
                   ),
                 ),
               ]),

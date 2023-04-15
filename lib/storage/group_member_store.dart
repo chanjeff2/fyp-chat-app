@@ -51,12 +51,14 @@ class GroupMemberStore {
     return GroupMember(id: entity.id, user: user, role: entity.role);
   }
 
-  Future<GroupMember?> getbyUserID(String id) async {
+  Future<GroupMember?> getbyChatroomIdAndUserId(
+      String chatroomId, String userId) async {
     final db = await DiskStorage().db;
     final result = await db.query(
       table,
-      where: '${GroupMemberEntity.columnUserId} = ?',
-      whereArgs: [id],
+      where:
+          '${GroupMemberEntity.columnChatroomId} = ? AND ${GroupMemberEntity.columnUserId} = ?',
+      whereArgs: [chatroomId, userId],
     );
     if (result.isEmpty) {
       return null;

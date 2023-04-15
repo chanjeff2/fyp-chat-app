@@ -78,7 +78,7 @@ void main() {
       senderDeviceId: deviceId,
       recipientUserId: 'recipientUserId',
       chatroomId: 'recipientUserId', // TODO: handle group chat
-      messageType: FCMEventType.TextMessage,
+      messageType: FCMEventType.textMessage,
       messages: [
         MessageToServer(
           cipherTextType: ciphertext.getType(),

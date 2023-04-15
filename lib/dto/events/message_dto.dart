@@ -1,11 +1,11 @@
-import 'package:fyp_chat_app/dto/events/chatroom_event.dart';
-import 'package:fyp_chat_app/dto/events/fcm_event.dart';
+import 'package:fyp_chat_app/dto/events/chatroom_event_dto.dart';
+import 'package:fyp_chat_app/models/enum.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'message_dto.g.dart';
 
 @JsonSerializable()
-class MessageDto extends ChatroomEvent {
+class MessageDto extends ChatroomEventDto {
   @JsonKey(required: true)
   final String senderDeviceId;
 
@@ -23,12 +23,13 @@ class MessageDto extends ChatroomEvent {
     required this.cipherTextType,
     required this.content,
   }) : super(
-          type: EventType.textMessage,
+          type: FCMEventType.textMessage,
           senderUserId: senderUserId,
           chatroomId: chatroomId,
           sentAt: sentAt,
         );
 
+  @override
   Map<String, dynamic> toJson() => _$MessageDtoToJson(this);
 
   factory MessageDto.fromJson(Map<String, dynamic> json) =>

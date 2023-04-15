@@ -1,8 +1,8 @@
 import 'package:flutter/foundation.dart';
-import 'package:fyp_chat_app/dto/events/fcm_event.dart';
 import 'package:fyp_chat_app/extensions/signal_lib_extension.dart';
 
 import '../dto/events/message_dto.dart';
+import 'enum.dart';
 
 class Message {
   final String senderUserId;
@@ -10,7 +10,7 @@ class Message {
   final String chatroomId;
   final int cipherTextType;
   final Uint8List content;
-  final EventType type;
+  final FCMEventType type;
   final DateTime sentAt;
 
   Message({

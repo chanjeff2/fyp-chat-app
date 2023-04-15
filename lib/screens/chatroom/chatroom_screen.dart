@@ -29,6 +29,8 @@ import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
 
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../models/enum.dart';
+
 class ChatRoomScreen extends StatefulWidget {
   const ChatRoomScreen({
     Key? key,
@@ -53,7 +55,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
   int _page = 0; // pagination
   bool _isLastPage = false;
   static const _pageSize = 100;
-  late StreamSubscription<ReceivedPlainMessage> _messageSubscription;
+  late StreamSubscription<ReceivedChatEvent> _messageSubscription;
   late final UserState _state;
   late Future<bool> blockedFuture;
 
@@ -74,20 +76,31 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
     _messageSubscription = Provider.of<UserState>(context, listen: false)
         .messageStream
         .listen((receivedMessage) async {
-      if (receivedMessage.message.type.index > 2) {
-        final localStorage = await getTemporaryDirectory();
-        final media = await MediaStore()
-                      .getMediaById((receivedMessage.message as MediaMessage).media.id);
-        final filePath = "${localStorage.path}/${media.id}${media.fileExtension}";
-        final file = File(filePath);
-        await file.writeAsBytes(media.content);
-        setState(() {
-          _mediaMap.addAll({media.id: filePath});
-        });
+      if (receivedMessage.chatroom.id != widget.chatroom.id) {
+        return;
       }
-      setState(() {
-        _messages.insert(0, receivedMessage.message);
-      });
+      switch (receivedMessage.event.type) {
+        case FCMEventType.textMessage:
+          setState(() {
+            _messages.insert(0, receivedMessage.event as PlainMessage);
+          });
+          break;
+        case FCMEventType.mediaMessage:
+          final localStorage = await getTemporaryDirectory();
+          final media = await MediaStore()
+              .getMediaById((receivedMessage.event as MediaMessage).media.id);
+          final filePath =
+              "${localStorage.path}/${media.id}${media.fileExtension}";
+          final file = File(filePath);
+          await file.writeAsBytes(media.content);
+          setState(() {
+            _mediaMap.addAll({media.id: filePath});
+            _messages.insert(0, receivedMessage.event as MediaMessage);
+          });
+          break;
+        default:
+          break;
+      }
     });
   }
 
@@ -113,9 +126,11 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
     final localStorage = await getTemporaryDirectory();
     messages.forEach((msg) async {
       // Message > 2 => Not text, not system log, not media key
-      if (msg.type.index > 2 && !_mediaMap.containsKey(msg.id)) {
-        final media = await MediaStore().getMediaById((msg as MediaMessage).media.id);
-        final filePath = "${localStorage.path}/${media.id}${media.fileExtension}";
+      if (msg.messageType.index > 2 && !_mediaMap.containsKey(msg.id)) {
+        final media =
+            await MediaStore().getMediaById((msg as MediaMessage).media.id);
+        final filePath =
+            "${localStorage.path}/${media.id}${media.fileExtension}";
         final file = File(filePath);
         await file.writeAsBytes(media.content);
         setState(() {
@@ -123,7 +138,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
         });
       }
     });
-    
+
     setState(() {
       _messages.addAll(messages);
     });
@@ -162,8 +177,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
   // Selecting camera in attachment menu (or directly next to text box)
   void _onCameraSelected() {
     Navigator.of(context).push(MaterialPageRoute(
-        builder: (context) =>
-            CameraScreen(
+        builder: (context) => CameraScreen(
               source: Source.chatroom,
               chatroom: widget.chatroom,
               sendCallback: _updateMediaMessage,
@@ -296,7 +310,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
             return Stack(children: [
               Chat(
                 messages: _messages.map((e) {
-                  switch (e.type) {
+                  switch (e.messageType) {
                     case MessageType.text:
                       return types.TextMessage(
                         id: e.id.toString(),
@@ -383,7 +397,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                   required message,
                   required nextMessageInGroup,
                 }) =>
-                Bubble(
+                    Bubble(
                   child: child,
                   nip: (userState.me!.userId != message.author.id)
                       ? BubbleNip.leftBottom
@@ -395,8 +409,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                   padding: const BubbleEdges.all(0),
                   elevation: 1,
                 ),
-                videoMessageBuilder: (p0, {required messageWidth}) =>
-                Container(
+                videoMessageBuilder: (p0, {required messageWidth}) => Container(
                   constraints: BoxConstraints(
                     maxWidth: MediaQuery.of(context).size.width * 0.7,
                     maxHeight: MediaQuery.of(context).size.height * 0.5,
@@ -405,17 +418,15 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                     video: File(p0.uri),
                   ),
                 ),
-                audioMessageBuilder: (p0, {required messageWidth}) => 
-                Container(
-                  constraints: BoxConstraints(
-                    maxWidth: MediaQuery.of(context).size.width * 0.65,
-                    maxHeight: MediaQuery.of(context).size.height * 0.1,
-                  ),
-                  child: MusicPlayer(
-                    audio: p0.uri,
-                    isSender: userState.me!.userId == p0.author.id,
-                  )
-                ),
+                audioMessageBuilder: (p0, {required messageWidth}) => Container(
+                    constraints: BoxConstraints(
+                      maxWidth: MediaQuery.of(context).size.width * 0.65,
+                      maxHeight: MediaQuery.of(context).size.height * 0.1,
+                    ),
+                    child: MusicPlayer(
+                      audio: p0.uri,
+                      isSender: userState.me!.userId == p0.author.id,
+                    )),
                 onSendPressed: (partialText) {
                   _sendMessage(partialText.text);
                 },
@@ -717,7 +728,9 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                                 checkPlatformCompatibility: true,
                               ),
                             )
-                          : AttachmentMenu(chatroom: widget.chatroom, sendCallback: _updateMediaMessage),
+                          : AttachmentMenu(
+                              chatroom: widget.chatroom,
+                              sendCallback: _updateMediaMessage),
                     ),
                   ),
                 ]),

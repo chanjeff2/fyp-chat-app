@@ -2,15 +2,15 @@ import 'package:json_annotation/json_annotation.dart';
 
 @JsonEnum(alwaysCreate: true, fieldRename: FieldRename.kebab)
 enum FCMEventType {
-  TextMessage,
-  MediaMessage,
-  PatchGroup,
-  AddMember,
-  KickMember,
-  PromoteAdmin,
-  DemoteAdmin,
-  MemberJoin,
-  MemberLeave,
+  textMessage,
+  mediaMessage,
+  patchGroup,
+  addMember,
+  kickMember,
+  promoteAdmin,
+  demoteAdmin,
+  memberJoin,
+  memberLeave,
 }
 
 @JsonEnum(alwaysCreate: true, fieldRename: FieldRename.kebab)
