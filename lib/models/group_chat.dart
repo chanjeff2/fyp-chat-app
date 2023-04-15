@@ -16,7 +16,6 @@ class GroupChat extends Chatroom {
 
   @override
   ChatroomType get type => ChatroomType.group;
-  GroupType get groupType => GroupType.Basic;
 
   GroupChat({
     required String id,

@@ -1,6 +1,7 @@
 // import 'package:fyp_chat_app/dto/group_dto.dart';
 // import 'package:fyp_chat_app/entities/chatroom_entity.dart';
 // import 'package:fyp_chat_app/models/chatroom.dart';
+// import 'package:fyp_chat_app/models/enum.dart';
 // import 'package:fyp_chat_app/models/group_chat.dart';
 // import 'package:fyp_chat_app/models/plain_message.dart';
 
@@ -10,17 +11,24 @@
 //   @override
 //   ChatroomType get type => ChatroomType.group;
 //   @override
-//   GroupChatType get groupType => GroupChatType.course;
-//   @override
-//   List<GroupMember> members;
+//   GroupType get groupType => GroupType.Course;
+
+//   String courseCode;
+
+//   String year;
+
+//   Semester semester;
 
 //   CourseGroup({
 //     required String id,
-//     required this.members,
+//     required members,
 //     required name,
 //     PlainMessage? latestMessage,
 //     required int unread,
 //     required DateTime createdAt,
+//     required this.courseCode,
+//     required this.year,
+//     required this.semester
 //   }) : super(
 //             id: id,
 //             latestMessage: latestMessage,
@@ -38,16 +46,15 @@
 //       );
 
 //   CourseGroup.fromDto(GroupDto dto)
-//       : 
-//       super(
+//       : super(
 //           id: dto.id,
 //           createdAt: DateTime.parse(dto.createdAt),
 //           unread: 0,
-//           members: members = dto.members
-//             .map(
-//               (e) => GroupMember.fromDto(e),
-//             )
-//             .toList(),
+//           members: dto.members
+//               .map(
+//                 (e) => GroupMember.fromDto(e),
+//               )
+//               .toList(),
 //           name: dto.name,
 //         );
 // }

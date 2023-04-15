@@ -29,3 +29,8 @@ enum Semester {
   Spring,
   Summer,
 }
+
+enum ChatroomType {
+  oneToOne,
+  group,
+}
