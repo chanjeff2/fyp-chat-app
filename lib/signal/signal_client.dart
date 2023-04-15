@@ -278,13 +278,13 @@ class SignalClient {
     // Send media to server, and obtain the id for the key
     final mediaInfo = await MediaApi().uploadFile(file);
 
-    final mediaKeyToSend = MediaKeyItem(
+    final mediaKeyToSend = jsonEncode(MediaKeyItem(
       type: type,
       baseName: mediaInfo.name,
       aesKey: key.bytes,
       iv: iv.bytes,
       mediaId: mediaInfo.fileId
-    ).toDto().toJson().toString();
+    ).toDto().toJson());
 
     // check if already establish session
     final remotePrimaryAddress = SignalProtocolAddress(

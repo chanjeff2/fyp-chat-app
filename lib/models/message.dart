@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:fyp_chat_app/dto/events/fcm_event.dart';
+import 'package:fyp_chat_app/dto/events/media_message_dto.dart';
 import 'package:fyp_chat_app/extensions/signal_lib_extension.dart';
 
 import '../dto/events/message_dto.dart';
@@ -24,6 +25,15 @@ class Message {
   });
 
   Message.fromDto(MessageDto dto)
+      : senderUserId = dto.senderUserId,
+        senderDeviceId = int.parse(dto.senderDeviceId),
+        chatroomId = dto.chatroomId,
+        cipherTextType = int.parse(dto.cipherTextType),
+        content = CiphertextMessageExtension.decodeFromString(dto.content),
+        type = dto.type,
+        sentAt = DateTime.parse(dto.sentAt);
+
+  Message.fromMediaDto(MediaMessageDto dto)
       : senderUserId = dto.senderUserId,
         senderDeviceId = int.parse(dto.senderDeviceId),
         chatroomId = dto.chatroomId,
