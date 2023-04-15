@@ -1,3 +1,4 @@
+import 'package:fyp_chat_app/models/enum.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'join_course_dto.g.dart';
@@ -20,10 +21,4 @@ class JoinCourseDto {
       _$JoinCourseDtoFromJson(json);
 }
 
-@JsonEnum(alwaysCreate: true, fieldRename: FieldRename.pascal)
-enum Semester {
-  Fall,
-  Winter,
-  Spring,
-  Summer,
-}
+

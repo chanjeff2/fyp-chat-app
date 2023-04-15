@@ -3,6 +3,7 @@ import 'package:fyp_chat_app/dto/group_dto.dart';
 import 'package:fyp_chat_app/dto/group_member_dto.dart';
 import 'package:fyp_chat_app/dto/send_access_control_dto.dart';
 import 'package:fyp_chat_app/dto/send_invitation_dto.dart';
+import 'package:fyp_chat_app/models/enum.dart';
 import 'package:fyp_chat_app/models/group_chat.dart';
 import 'package:fyp_chat_app/models/group_member.dart';
 

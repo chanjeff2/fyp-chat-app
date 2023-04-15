@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fyp_chat_app/dto/group_member_dto.dart';
+import 'package:fyp_chat_app/models/enum.dart';
 import 'package:fyp_chat_app/models/group_chat.dart';
 import 'package:fyp_chat_app/models/group_member.dart';
 import 'package:fyp_chat_app/models/one_to_one_chat.dart';

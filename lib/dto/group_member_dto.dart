@@ -1,4 +1,5 @@
 import 'package:fyp_chat_app/dto/user_dto.dart';
+import 'package:fyp_chat_app/models/enum.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'group_member_dto.g.dart';
@@ -22,8 +23,4 @@ class GroupMemberDto {
       _$GroupMemberDtoFromJson(json);
 }
 
-@JsonEnum(fieldRename: FieldRename.pascal)
-enum Role {
-  member,
-  admin,
-}
+

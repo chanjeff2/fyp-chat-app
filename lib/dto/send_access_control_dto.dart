@@ -1,5 +1,5 @@
+import 'package:fyp_chat_app/models/enum.dart';
 import 'package:json_annotation/json_annotation.dart';
-
 part 'send_access_control_dto.g.dart';
 
 @JsonSerializable()
@@ -17,15 +17,3 @@ class SendAccessControlDto {
   Map<String, dynamic> toJson() => _$SendAccessControlDtoToJson(this);
 }
 
-@JsonEnum(alwaysCreate: true, fieldRename: FieldRename.kebab)
-enum FCMEventType {
-  TextMessage,
-  MediaMessage,
-  PatchGroup,
-  AddMember,
-  KickMember,
-  PromoteAdmin,
-  DemoteAdmin,
-  MemberJoin,
-  MemberLeave,
-}

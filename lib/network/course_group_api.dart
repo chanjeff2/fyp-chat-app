@@ -1,5 +1,6 @@
 import 'package:fyp_chat_app/dto/group_dto.dart';
 import 'package:fyp_chat_app/dto/join_course_dto.dart';
+import 'package:fyp_chat_app/models/enum.dart';
 import 'package:fyp_chat_app/models/group_chat.dart';
 
 import 'api.dart';
