@@ -125,14 +125,14 @@ class _ContactInfoState extends State<ContactInfo> {
         appBar: AppBar(
           leadingWidth: 24,
           leading: IconButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(context, widget.chatroom),
             icon: const Icon(Icons.arrow_back),
           ),
           title: Row(
             children: <Widget>[
-              const CircleAvatar(
+              CircleAvatar(
                 // child: profilePicture ? null : Icon(Icons.person, size: 20),
-                child: Icon(Icons.person, size: 20, color: Colors.white),
+                child: (widget.chatroom.type == ChatroomType.group)? const Icon(Icons.group, size: 20, color: Colors.white) : const Icon(Icons.person, size: 20, color: Colors.white),
                 radius: 20,
                 backgroundColor: Colors.blueGrey,
               ),
@@ -146,12 +146,12 @@ class _ContactInfoState extends State<ContactInfo> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const SizedBox(height: 20),
-              const Center(
+              Center(
                 child: CircleAvatar(
                   radius: 72,
                   // child: profilePicture ? null : Icon(Icons.person, size: 48),
                   // backgroundImage: profileImage,
-                  child: Icon(Icons.person, size: 72, color: Colors.white),
+                  child: (widget.chatroom.type == ChatroomType.group) ? const Icon(Icons.group, size: 72, color: Colors.white) : const Icon(Icons.person, size: 72, color: Colors.white),
                   backgroundColor: Colors.blueGrey,
                 ),
               ),
@@ -164,10 +164,10 @@ class _ContactInfoState extends State<ContactInfo> {
               Text(
                 // isGroup ? "Group - $participants participants" : "Known as $user.username"
                 widget.chatroom.type == ChatroomType.group
-                    ? widget.chatroom.name +
-                        " participants: " +
-                        ((widget.chatroom as GroupChat).members.length)
-                            .toString()
+                    ? ((widget.chatroom as GroupChat).members.length)
+                            .toString() +
+                        ((widget.chatroom as GroupChat).members.length > 1 ? " participants" : " participant")
+                        
                     : widget.chatroom.name,
                 textAlign: TextAlign.center,
                 style: const TextStyle(
@@ -544,7 +544,15 @@ class _ContactInfoState extends State<ContactInfo> {
                                   onTapDown: (position) =>
                                       {_getTapPosition(position)},
                                   onLongPress: () async {
-                                    if (checkIsAdmin(userState)) {
+                                    if (checkIsAdmin(userState) &&
+                                        !(await checkSelfAccount(
+                                            determineListViewIndexForCommonGroupList(
+                                                userState,
+                                                (snapshot.data
+                                                    as List<GroupMember>),
+                                                index),
+                                            index,
+                                            userState))) {
                                       await _showContextMenu(
                                           context,
                                           (snapshot.data
@@ -587,12 +595,13 @@ class _ContactInfoState extends State<ContactInfo> {
                                         );
                                         await ChatroomStore().save(pmChatroom);
                                       }
-                                      Navigator.of(context).push(
-                                          MaterialPageRoute(
-                                              builder: (context) => ChatRoomScreen(
-                                                chatroom: pmChatroom!),
-                                                settings: RouteSettings(name: "/chatroom/${pmChatroom.id}"),
-                                              ));
+                                      Navigator.of(context)
+                                          .push(MaterialPageRoute(
+                                        builder: (context) => ChatRoomScreen(
+                                            chatroom: pmChatroom!),
+                                        settings: RouteSettings(
+                                            name: "/chatroom/${pmChatroom.id}"),
+                                      ));
                                     }
                                   },
                                   child: Padding(
@@ -634,7 +643,22 @@ class _ContactInfoState extends State<ContactInfo> {
                                                         index)
                                                     .user
                                                     .displayName!,
-                                            style: const TextStyle(fontSize: 16))
+                                            style: const TextStyle(fontSize: 16)),
+                                        const Expanded(child: SizedBox()),
+                                        ((checkIsAdmin(userState)
+                                                        ? (snapshot.data as List<
+                                                                GroupMember>)[
+                                                            index - 1]
+                                                        : (snapshot.data as List<
+                                                                GroupMember>)[
+                                                            index])
+                                                    .role ==
+                                                Role.admin)
+                                            ? const Icon(Icons.verified,
+                                                size: 36,
+                                                color: Colors.blueGrey)
+                                            : Container(),
+                                        const SizedBox(width: 20),
                                       ],
                                     ),
                                   ),
@@ -687,15 +711,15 @@ class _ContactInfoState extends State<ContactInfo> {
                                 // Common groups
                                 return InkWell(
                                   onTap: () {
-                                    Navigator.of(context).push(
-                                        MaterialPageRoute(
-                                            builder: (context) =>
-                                                ChatRoomScreenGroup(
-                                                    chatroom: (snapshot.data as List<Chatroom>)[index]),
-                                            settings: RouteSettings(
-                                              name: "/chatroom-group/${(snapshot.data as List<Chatroom>)[index].id}"
-                                            ),            
-                                            ));
+                                    Navigator.of(context)
+                                        .push(MaterialPageRoute(
+                                      builder: (context) => ChatRoomScreenGroup(
+                                          chatroom: (snapshot.data
+                                              as List<Chatroom>)[index]),
+                                      settings: RouteSettings(
+                                          name:
+                                              "/chatroom-group/${(snapshot.data as List<Chatroom>)[index].id}"),
+                                    ));
                                   },
                                   child: Padding(
                                     padding:
@@ -906,16 +930,35 @@ class _ContactInfoState extends State<ContactInfo> {
             child: const Text('Promote admin'),
             onTap: () async {
               Future.delayed(const Duration(seconds: 0), () async {
-                GroupChatApi().addAdmin(
+                await GroupChatApi().addAdmin(
                     widget.chatroom.id, memberSelectedForTheAction.user.userId);
               });
-               final memberName =
-                    (memberSelectedForTheAction.user.displayName == null)
-                        ? memberSelectedForTheAction.user.username
-                        : memberSelectedForTheAction.user.displayName!; 
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                  content: Text('Promoted $memberName as Admin'),
-                ));
+              //get newest info of member from server
+              GroupMember memberfromAPI = await GroupChatApi().getGroupMember(
+                  widget.chatroom.id, memberSelectedForTheAction.user.userId);
+              await GroupMemberStore().save(
+                  widget.chatroom.id,
+                  GroupMember(
+                      id: memberSelectedForTheAction.id,
+                      user: memberfromAPI.user,
+                      role: Role.admin));
+              setState(() {
+                (widget.chatroom as GroupChat).members.removeWhere((element) =>
+                    (element.user.userId ==
+                        memberSelectedForTheAction.user.userId));
+                print(memberfromAPI.role);
+                (widget.chatroom as GroupChat).members.add(GroupMember(
+                    id: memberSelectedForTheAction.id,
+                    user: memberfromAPI.user,
+                    role: Role.admin));
+              });
+              final memberName =
+                  (memberSelectedForTheAction.user.displayName == null)
+                      ? memberSelectedForTheAction.user.username
+                      : memberSelectedForTheAction.user.displayName!;
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                content: Text('Promoted $memberName as Admin'),
+              ));
             },
             value: "Add admin",
           ),
@@ -923,17 +966,34 @@ class _ContactInfoState extends State<ContactInfo> {
             child: const Text('Demote admin'),
             onTap: () async {
               Future.delayed(const Duration(seconds: 0), () async {
-                GroupChatApi().removeAdmin(
+                await GroupChatApi().removeAdmin(
                     widget.chatroom.id, memberSelectedForTheAction.user.userId);
               });
-               final memberName =
-                    (memberSelectedForTheAction.user.displayName == null)
-                        ? memberSelectedForTheAction.user.username
-                        : memberSelectedForTheAction.user.displayName!; 
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                  content: Text('Demoted $memberName as Admin'),
-                ));
-
+              GroupMember memberfromAPI = await GroupChatApi().getGroupMember(
+                  widget.chatroom.id, memberSelectedForTheAction.user.userId);
+              await GroupMemberStore().save(
+                  widget.chatroom.id,
+                  GroupMember(
+                      id: memberSelectedForTheAction.id,
+                      user: memberfromAPI.user,
+                      role: Role.member));
+              setState(() {
+                (widget.chatroom as GroupChat).members.removeWhere((element) =>
+                    (element.user.userId ==
+                        memberSelectedForTheAction.user.userId));
+                print(memberfromAPI.role);
+                (widget.chatroom as GroupChat).members.add(GroupMember(
+                    id: memberSelectedForTheAction.id,
+                    user: memberfromAPI.user,
+                    role: Role.member));
+              });
+              final memberName =
+                  (memberSelectedForTheAction.user.displayName == null)
+                      ? memberSelectedForTheAction.user.username
+                      : memberSelectedForTheAction.user.displayName!;
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                content: Text('Demoted $memberName as Admin'),
+              ));
             },
             value: "Remove admin",
           ),
