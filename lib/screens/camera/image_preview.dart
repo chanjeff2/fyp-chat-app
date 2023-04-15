@@ -11,7 +11,7 @@ import 'package:provider/provider.dart';
 
 import '../../models/user_state.dart';
 
-class ImagePreview extends StatelessWidget {
+class ImagePreview extends StatefulWidget {
   const ImagePreview({Key? key,
                       required this.image,
                       required this.chatroom,
@@ -21,6 +21,15 @@ class ImagePreview extends StatelessWidget {
   final File image;
   final Chatroom chatroom;
   final bool saveImage;
+
+  @override
+  State<ImagePreview> createState() => _ImagePreviewState();
+}
+
+class _ImagePreviewState extends State<ImagePreview> {
+
+  bool _isSending = false;
+
 
   @override
   Widget build(BuildContext context) {
@@ -85,8 +94,8 @@ class ImagePreview extends StatelessWidget {
                 width: MediaQuery.of(context).size.width,
                 height: MediaQuery.of(context).size.height - 150,
                 child: Image.file(
-                  image,
-                  fit: BoxFit.cover,
+                  widget.image,
+                  fit: BoxFit.contain,
                 ),
               ),
               /* Comment out for now, if time allows to add caption to images
@@ -154,40 +163,45 @@ class ImagePreview extends StatelessWidget {
           ),
         ),
         floatingActionButton: FloatingActionButton(
-          backgroundColor: Palette.ustBlue[500],
+          backgroundColor: (_isSending) ? Colors.grey : Palette.ustBlue[500],
           onPressed: () async {
-            // TODO: Send message to chatroom
-            try {
-              await SignalClient().sendMediaToChatroom(
-                userState.me!,
-                chatroom,
-                image,
-                image.path, 
-                MessageType.image,
-              );
-            } on Exception catch (e) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text("error: $e")));
-            }
+            if (!_isSending) {
+              try {
+                setState(() {
+                  _isSending = true;
+                });
+                await SignalClient().sendMediaToChatroom(
+                  userState.me!,
+                  widget.chatroom,
+                  widget.image,
+                  widget.image.path, 
+                  MessageType.image,
+                );
+              } on Exception catch (e) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text("error: $e")));
+              }
 
-            // return to chatroom
-            switch (chatroom.type) {
-              case ChatroomType.oneToOne:
-                Navigator.of(context).pushAndRemoveUntil(
-                  MaterialPageRoute(builder: (context) => ChatRoomScreen(chatroom: chatroom)),
-                  (route) => false
-                );
-              break;
-              case ChatroomType.group:
-                Navigator.of(context).pushAndRemoveUntil(
-                  MaterialPageRoute(builder: (context) => ChatRoomScreenGroup(chatroom: chatroom)),
-                  (route) => false
-                );
-              break;
+              // return to chatroom
+              switch (widget.chatroom.type) {
+                case ChatroomType.oneToOne:
+                  Navigator.of(context).popUntil(
+                    (route) => route.settings.name == "/chatroom/${widget.chatroom.id}"
+                  );
+                break;
+                case ChatroomType.group:
+                  Navigator.of(context).popUntil(
+                    (route) => route.settings.name == "/chatroom-group/${widget.chatroom.id}"
+                  );
+                break;
+              }
+              setState(() {
+                  _isSending = false;
+              });
             }
           },
-          child: const Icon(
-            Icons.send,
+          child: Icon(
+            (_isSending) ? Icons.hourglass_top : Icons.send,
             color: Colors.white,
             size: 28,
           ),

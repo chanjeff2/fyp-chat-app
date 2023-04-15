@@ -20,7 +20,6 @@ class MediaApi extends Api {
 
   Future<FileDto> uploadFile(File media) async {
     final response = await postMedia("", file: media, useAuth: true);
-    print(response);
     return FileDto.fromJson(response); // Need to decrypt the JSON in actual case
   }
 

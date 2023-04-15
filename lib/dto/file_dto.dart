@@ -5,13 +5,13 @@ part 'file_dto.g.dart';
 @JsonSerializable()
 class FileDto {
   @JsonKey(required: true)
-  final String id;
+  final String fileId;
 
   @JsonKey(required: true)
   final String name;
 
   FileDto({
-    required this.id,
+    required this.fileId,
     required this.name,
   });
 

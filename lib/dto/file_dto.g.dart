@@ -9,15 +9,15 @@ part of 'file_dto.dart';
 FileDto _$FileDtoFromJson(Map<String, dynamic> json) {
   $checkKeys(
     json,
-    requiredKeys: const ['id', 'name'],
+    requiredKeys: const ['fileId', 'name'],
   );
   return FileDto(
-    id: json['id'] as String,
+    fileId: json['fileId'] as String,
     name: json['name'] as String,
   );
 }
 
 Map<String, dynamic> _$FileDtoToJson(FileDto instance) => <String, dynamic>{
-      'id': instance.id,
+      'fileId': instance.fileId,
       'name': instance.name,
     };

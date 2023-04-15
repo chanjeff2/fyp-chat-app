@@ -283,7 +283,7 @@ class SignalClient {
       baseName: mediaInfo.name,
       aesKey: key.bytes,
       iv: iv.bytes,
-      mediaId: mediaInfo.id
+      mediaId: mediaInfo.fileId
     ).toDto().toJson().toString();
 
     // check if already establish session
@@ -373,7 +373,7 @@ class SignalClient {
 
     await EventsApi().sendMessage(mediaSendingRetry);
 
-    return mediaInfo.id;
+    return mediaInfo.fileId;
   }
 
   Future<PlainMessage> sendMessageToChatroom(
@@ -446,8 +446,6 @@ class SignalClient {
     final path = mediaPath ?? media.path;
     final baseName = p.basename(path);
 
-    print(baseName);
-
     // Process to the media. Particularly, compression
     // Currently support only video and image
     final mediaInBytes = File(path).readAsBytesSync();
@@ -458,7 +456,7 @@ class SignalClient {
       case MessageType.image:
         processedContent = await FlutterImageCompress.compressWithList(
           mediaInBytes,
-          quality: 5,
+          quality: 75,
         );
         break;
       /*
@@ -510,7 +508,7 @@ class SignalClient {
         break;
       case ChatroomType.group:
         chatroom as GroupChat;
-        mediaId = await Future.wait(chatroom.members.map((e) async => await _sendMediaMessage(
+        final idList = await Future.wait(chatroom.members.map((e) async => await _sendMediaMessage(
               me.userId,
               senderDeviceId,
               e.user.userId,
@@ -520,6 +518,7 @@ class SignalClient {
               type,
               sentAt.toUtc(),
             )));
+        mediaId = idList.last;
         break;
     }
 

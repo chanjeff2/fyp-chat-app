@@ -469,7 +469,9 @@ class ContactInfo extends StatelessWidget {
                                           MaterialPageRoute(
                                               builder: (context) =>
                                                   ChatRoomScreen(
-                                                      chatroom: pmChatroom!)));
+                                                      chatroom: pmChatroom!),
+                                              settings: RouteSettings(name: "/chatroom/${pmChatroom!.id}"),
+                                              ));
                                     }
                                   },
                                   child: Padding(
@@ -561,7 +563,11 @@ class ContactInfo extends StatelessWidget {
                                                 ChatRoomScreenGroup(
                                                     chatroom: (snapshot.data
                                                             as List<Chatroom>)[
-                                                        index - 1])));
+                                                        index - 1]),
+                                            settings: RouteSettings(
+                                              name: "/chatroom-group/${(snapshot.data as List<Chatroom>)[index-1].id}"
+                                            ),            
+                                            ));
                                   },
                                   child: Padding(
                                     padding:

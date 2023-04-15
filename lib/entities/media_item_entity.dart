@@ -19,7 +19,7 @@ $columnType INTEGER NOT NULL
   @JsonKey(required: true)
   final List<int> content;
 
-  static const columnBaseName = "basename";
+  static const columnBaseName = "baseName";
   @JsonKey(required: true)
   final String baseName;
 

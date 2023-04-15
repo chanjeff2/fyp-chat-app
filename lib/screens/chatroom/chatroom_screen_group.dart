@@ -127,7 +127,7 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> with WidgetsB
       }
     });
 
-    GroupChat room = _state.chatroom as GroupChat;
+    GroupChat room = widget.chatroom as GroupChat;
     final members = room.members;
     final names = <String, String>{
       for (var v in members) v.user.userId: v.user.name
@@ -137,6 +137,7 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> with WidgetsB
       _messages.addAll(messages);
       _names.addAll(names);
     });
+    _messages.forEach((e) => print(e.id));
     return true;
   }
 
