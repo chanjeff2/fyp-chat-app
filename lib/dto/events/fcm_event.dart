@@ -15,7 +15,6 @@ abstract class FCMEvent {
 
   factory FCMEvent.fromJson(Map<String, dynamic> json) {
     // hardcoded field name
-    print(json);
     final type = $enumDecode(_$EventTypeEnumMap, json['type']);
     switch (type) {
       case EventType.textMessage:

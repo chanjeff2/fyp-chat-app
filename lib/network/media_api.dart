@@ -1,4 +1,5 @@
 
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
@@ -25,6 +26,6 @@ class MediaApi extends Api {
 
   Future<Uint8List> downloadFile(String mediaId) async {
     final response = await getMedia("/$mediaId", useAuth: true);
-    return response.bodyBytes; // assume what I obtained is a Uint8List
+    return Uint8List.fromList(utf8.encode(response)); // assume what I obtained is a Uint8List
   }
 }

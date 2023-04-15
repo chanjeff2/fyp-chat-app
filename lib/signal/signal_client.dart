@@ -264,7 +264,7 @@ class SignalClient {
     Key key = Key.fromSecureRandom(32); 
     IV iv = IV.fromSecureRandom(16);
 
-    Encrypter encrypter = Encrypter(AES(key, mode: AESMode.cbc));
+    Encrypter encrypter = Encrypter(AES(key, mode: AESMode.cbc, padding: 'PKCS7'));
 
     final encryptedData = encrypter.encryptBytes(content, iv: iv).bytes;
 
@@ -709,7 +709,7 @@ class SignalClient {
     final aesKey = Key(recoveredKeyItem.aesKey);
     final iv = IV(recoveredKeyItem.iv);
 
-    final encrypter =  Encrypter(AES(aesKey, mode: AESMode.cbc));
+    final encrypter =  Encrypter(AES(aesKey, mode: AESMode.cbc, padding: 'PKCS7'));
 
     final media = await MediaApi().downloadFile(recoveredKeyItem.mediaId);
     

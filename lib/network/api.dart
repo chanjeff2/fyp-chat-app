@@ -48,7 +48,7 @@ abstract class Api {
       log('ApiException: [${response.statusCode}] ${body["message"]}');
       throw ApiException(response.statusCode, body["message"], body["error"]);
     }
-    response.body;
+    return response.body;
   }
 
   Future<AccessToken> _getAccessToken() async {
