@@ -41,6 +41,16 @@ abstract class Api {
     return json.decode(response.body);
   }
 
+  //
+  dynamic _processJSONlessResponse(http.Response response) {
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      final body = json.decode(response.body);
+      log('ApiException: [${response.statusCode}] ${body["message"]}');
+      throw ApiException(response.statusCode, body["message"], body["error"]);
+    }
+    response.body;
+  }
+
   Future<AccessToken> _getAccessToken() async {
     AccessToken? accessToken = await CredentialStore().getToken();
     if (accessToken != null && !accessToken.isAccessTokenExpired()) {
@@ -89,6 +99,27 @@ abstract class Api {
       headers: headers,
     );
     return _processResponse(response);
+  }
+
+  @protected
+  Future<dynamic> getMedia(
+    String path, {
+    Map<String, String>? headers,
+    Map<String, String>? query,
+    bool useAuth = false,
+  }) async {
+    final url =
+        Uri.parse("$baseUrl$pathPrefix$path").replace(queryParameters: query);
+    if (useAuth) {
+      AccessToken accessToken = await _getAccessToken();
+      headers ??= {};
+      headers['Authorization'] = 'Bearer ${accessToken.accessToken}';
+    }
+    final response = await http.get(
+      url,
+      headers: headers,
+    );
+    return _processJSONlessResponse(response);
   }
 
   @protected

@@ -24,7 +24,7 @@ class MediaApi extends Api {
   }
 
   Future<Uint8List> downloadFile(String mediaId) async {
-    final response = await get("/$mediaId", useAuth: true);
+    final response = await getMedia("/$mediaId", useAuth: true);
     return response.bodyBytes; // assume what I obtained is a Uint8List
   }
 }
