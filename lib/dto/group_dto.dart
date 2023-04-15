@@ -1,3 +1,4 @@
+import 'package:fyp_chat_app/models/enum.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 import 'group_member_dto.dart';
@@ -18,11 +19,15 @@ class GroupDto {
   @JsonKey(required: true)
   String createdAt;
 
+  @JsonKey(required: true)
+  GroupType groupType;
+
   GroupDto({
     required this.id,
     required this.name,
     required this.members,
     required this.createdAt,
+    required this.groupType,
   });
 
   Map<String, dynamic> toJson() => _$GroupDtoToJson(this);

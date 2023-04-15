@@ -1,5 +1,6 @@
 import 'package:fyp_chat_app/entities/chatroom_entity.dart';
 import 'package:fyp_chat_app/models/chatroom.dart';
+import 'package:fyp_chat_app/models/enum.dart';
 import 'package:fyp_chat_app/models/group_chat.dart';
 import 'package:fyp_chat_app/models/one_to_one_chat.dart';
 import 'package:fyp_chat_app/storage/disk_storage.dart';

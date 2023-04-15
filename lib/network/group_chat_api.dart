@@ -1,7 +1,9 @@
 import 'package:fyp_chat_app/dto/create_group_dto.dart';
 import 'package:fyp_chat_app/dto/group_dto.dart';
 import 'package:fyp_chat_app/dto/group_member_dto.dart';
+import 'package:fyp_chat_app/dto/send_access_control_dto.dart';
 import 'package:fyp_chat_app/dto/send_invitation_dto.dart';
+import 'package:fyp_chat_app/models/enum.dart';
 import 'package:fyp_chat_app/models/group_chat.dart';
 import 'package:fyp_chat_app/models/group_member.dart';
 
@@ -49,18 +51,24 @@ class GroupChatApi extends Api {
 
   Future<void> inviteMember(
     String groupId,
-    SendInvitationDto sendInvitationDto,
+    String userId,
   ) async {
-    final json = await post(
-      "/$groupId/invite",
-      body: sendInvitationDto.toJson(),
-      useAuth: true,
-    );
+    try {
+      var sendAccessControlDto = SendAccessControlDto(
+          targetUserId: userId, type: FCMEventType.AddMember,sentAt: DateTime.now());
+      final json = await post("/$groupId/access-control",
+          body: sendAccessControlDto.toJson(), useAuth: true);
+    } catch (e) {
+      return;
+    }
   }
 
   Future<bool> kickMember(String groupId, String userId) async {
     try {
-      final json = await delete("/$groupId/member/$userId", useAuth: true);
+      var sendAccessControlDto =
+          SendAccessControlDto(targetUserId: userId, type: FCMEventType.KickMember,sentAt: DateTime.now());
+      final json = await post("/$groupId/access-control",
+          body: sendAccessControlDto.toJson(), useAuth: true);
       return true;
     } catch (e) {
       return false;
@@ -69,7 +77,7 @@ class GroupChatApi extends Api {
 
   Future<bool> leaveGroup(String groupId) async {
     try {
-      final json = await delete("/$groupId", useAuth: true);
+      final json = await post("/$groupId/leave", useAuth: true);
       return true;
     } catch (e) {
       return false;
@@ -78,7 +86,10 @@ class GroupChatApi extends Api {
 
   Future<bool> addAdmin(String groupId, String userId) async {
     try {
-      final json = await post("/$groupId/admin/$userId", useAuth: true);
+      var sendAccessControlDto = SendAccessControlDto(
+          targetUserId: userId, type: FCMEventType.PromoteAdmin,sentAt: DateTime.now());
+      final json = await post("/$groupId/access-control",
+          body: sendAccessControlDto.toJson(), useAuth: true);
       return true;
     } catch (e) {
       return false;
@@ -87,12 +98,25 @@ class GroupChatApi extends Api {
 
   Future<bool> removeAdmin(String groupId, String userId) async {
     try {
-      final json = await delete("/$groupId/admin/$userId", useAuth: true);
+      var sendAccessControlDto = SendAccessControlDto(
+          targetUserId: userId, type: FCMEventType.DemoteAdmin,sentAt: DateTime.now());
+      final json = await post("/$groupId/access-control",
+          body: sendAccessControlDto.toJson(), useAuth: true);
       return true;
     } catch (e) {
       return false;
     }
   }
 
-  //get admins can be done by get group->check admin
+  Future<bool> addMember(String groupId, String userId) async {
+    try {
+      var sendAccessControlDto =
+          SendAccessControlDto(targetUserId: userId, type: FCMEventType.AddMember,sentAt: DateTime.now());
+      final json = await post("/$groupId/access-control",
+          body: sendAccessControlDto.toJson(), useAuth: true);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
 }

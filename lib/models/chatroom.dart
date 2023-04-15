@@ -1,4 +1,5 @@
 import 'package:fyp_chat_app/entities/chatroom_entity.dart';
+import 'package:fyp_chat_app/models/enum.dart';
 import 'package:fyp_chat_app/models/group_chat.dart';
 import 'package:fyp_chat_app/models/one_to_one_chat.dart';
 // import 'package:fyp_chat_app/models/plain_message.dart';
@@ -6,11 +7,6 @@ import 'package:fyp_chat_app/models/chat_message.dart';
 import 'package:fyp_chat_app/storage/contact_store.dart';
 import 'package:fyp_chat_app/storage/group_member_store.dart';
 import 'package:fyp_chat_app/storage/message_store.dart';
-
-enum ChatroomType {
-  oneToOne,
-  group,
-}
 
 abstract class Chatroom {
   String id;
@@ -81,6 +77,7 @@ abstract class Chatroom {
           latestMessage: latestMessage,
           unread: unread,
           createdAt: DateTime.parse(e.createdAt),
+          groupType: GroupType.values[e.groupType!],
         );
     }
   }

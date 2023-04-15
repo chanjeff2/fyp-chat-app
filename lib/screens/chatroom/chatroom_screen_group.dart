@@ -4,7 +4,6 @@ import 'dart:io';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:fyp_chat_app/components/music_player.dart';
-import 'package:fyp_chat_app/components/palette.dart';
 import 'package:fyp_chat_app/components/video_player.dart';
 import 'package:fyp_chat_app/models/chatroom.dart';
 import 'package:fyp_chat_app/models/group_chat.dart';
@@ -20,6 +19,7 @@ import 'package:fyp_chat_app/storage/message_store.dart';
 import 'package:fyp_chat_app/storage/block_store.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:collection/collection.dart';
 
 import 'package:flutter_chat_ui/flutter_chat_ui.dart';
 import 'package:bubble/bubble.dart';
@@ -56,7 +56,7 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
   static const _pageSize = 100;
   late StreamSubscription<ReceivedPlainMessage> _messageSubscription;
   late final UserState _state;
-  late final Future<bool> blockedFuture;
+  late Future<bool> blockedFuture;
   @override
   void initState() {
     super.initState();
@@ -186,7 +186,17 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
           titleSpacing: 8,
           leading: InkWell(
             onTap: () {
-              Navigator.pop(context);
+              Navigator.pop(
+                  context,
+                  GroupChat(
+                    id: widget.chatroom.id,
+                    members: (widget.chatroom as GroupChat).members,
+                    name: widget.chatroom.name,
+                    unread: 0,
+                    latestMessage: (_messages.isEmpty) ? null : _messages[0],
+                    createdAt: widget.chatroom.createdAt,
+                    groupType: (widget.chatroom as GroupChat).groupType,
+                  ));
             },
             borderRadius: BorderRadius.circular(40.0),
             child: Row(
@@ -214,10 +224,17 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
           title: SizedBox(
             width: MediaQuery.of(context).size.width,
             child: InkWell(
-              onTap: () => Navigator.of(context).push(MaterialPageRoute(
-                  builder: (context) => ContactInfo(
-                      chatroom: widget.chatroom,
-                      blockedFuture: blockedFuture))),
+              onTap: () => Navigator.of(context)
+                  .push(MaterialPageRoute(
+                      builder: (context) => ContactInfo(
+                          chatroom: widget.chatroom,
+                          blockedFuture: blockedFuture)))
+                  .then((value) => {
+                        setState(() {
+                          blockedFuture =
+                              BlockStore().contain(widget.chatroom.id);
+                        })
+                      }),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -478,7 +495,13 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
                       FutureBuilder<bool>(
                         future: blockedFuture,
                         builder: (context, snapshot) {
-                          if (snapshot.hasData && snapshot.data == true) {
+                          if ((snapshot.hasData && snapshot.data == true) ||
+                              (widget.chatroom as GroupChat)
+                                      .members
+                                      .firstWhereOrNull((member) =>
+                                          member.user.userId ==
+                                          userState.me?.userId) ==
+                                  null) {
                             //blocked, cant input message
                             return Flexible(
                               child: Container(

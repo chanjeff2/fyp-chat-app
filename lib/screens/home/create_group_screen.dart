@@ -2,12 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:fyp_chat_app/components/palette.dart';
 import 'package:fyp_chat_app/dto/create_group_dto.dart';
 import 'package:fyp_chat_app/dto/group_member_dto.dart';
-import 'package:fyp_chat_app/dto/send_invitation_dto.dart';
-import 'package:fyp_chat_app/models/account.dart';
 import 'package:fyp_chat_app/models/chatroom.dart';
+import 'package:fyp_chat_app/models/enum.dart';
 import 'package:fyp_chat_app/models/group_member.dart';
 import 'package:fyp_chat_app/models/one_to_one_chat.dart';
-import 'package:fyp_chat_app/models/user.dart';
 import 'package:fyp_chat_app/models/user_state.dart';
 import 'package:fyp_chat_app/network/api.dart';
 import 'package:fyp_chat_app/network/group_chat_api.dart';
@@ -116,8 +114,7 @@ class _CreateGroupScreen extends State<CreateGroupScreen> {
       for (var element in members) {
         GroupChatApi().inviteMember(
             groupId,
-            SendInvitationDto(
-                target: element.id, sentAt: DateTime.now().toIso8601String()));
+            (element as OneToOneChat).target.userId);
         //print(element.name);
         //store the member added
         GroupMemberStore().save(
@@ -218,25 +215,6 @@ class _CreateGroupScreen extends State<CreateGroupScreen> {
                     Navigator.of(context).pop();
 
                     widget.onNewChatroom?.call(group);
-                    //------------------ add yourself to group member list ---------------------------
-                    // Account? myAcc = userState.me;
-                    // print(myAcc);
-                    // if (myAcc != null) {
-                    //   GroupMemberStore().save(
-                    //       group.id, GroupMember(user: (myAcc as User), role: Role.admin));
-                    //   //read the member stored and add the member to group member list
-                    //   // GroupMember? storedMember =
-                    //   //     await GroupMemberStore().getbyUserID(myAcc.userId);
-                    //   // print(storedMember);
-                    //   // group.members.add(storedMember!);
-                    //   List<GroupMember> yo =
-                    //       await GroupMemberStore().getByChatroomId(group.id);
-                    //   for (var i in yo) {
-                    //     print(i.user.name);
-                    //   }
-                    // }
-                    // ----------------- end of comment ---------------------------
-                    //print(outputArray);
                   } else {
                     Navigator.of(context).pop();
                     Navigator.of(context).pop();

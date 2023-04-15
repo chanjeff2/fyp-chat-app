@@ -1,5 +1,6 @@
 import 'package:fyp_chat_app/dto/group_member_dto.dart';
 import 'package:fyp_chat_app/entities/group_member_entity.dart';
+import 'package:fyp_chat_app/models/enum.dart';
 import 'package:fyp_chat_app/models/user.dart';
 
 class GroupMember {

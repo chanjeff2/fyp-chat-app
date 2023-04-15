@@ -9,7 +9,7 @@ part of 'group_dto.dart';
 GroupDto _$GroupDtoFromJson(Map<String, dynamic> json) {
   $checkKeys(
     json,
-    requiredKeys: const ['_id', 'name', 'members', 'createdAt'],
+    requiredKeys: const ['_id', 'name', 'members', 'createdAt', 'groupType'],
   );
   return GroupDto(
     id: json['_id'] as String,
@@ -18,6 +18,7 @@ GroupDto _$GroupDtoFromJson(Map<String, dynamic> json) {
         .map((e) => GroupMemberDto.fromJson(e as Map<String, dynamic>))
         .toList(),
     createdAt: json['createdAt'] as String,
+    groupType: $enumDecode(_$GroupTypeEnumMap, json['groupType']),
   );
 }
 
@@ -26,4 +27,10 @@ Map<String, dynamic> _$GroupDtoToJson(GroupDto instance) => <String, dynamic>{
       'name': instance.name,
       'members': instance.members.map((e) => e.toJson()).toList(),
       'createdAt': instance.createdAt,
+      'groupType': _$GroupTypeEnumMap[instance.groupType]!,
     };
+
+const _$GroupTypeEnumMap = {
+  GroupType.Basic: 'basic',
+  GroupType.Course: 'course',
+};

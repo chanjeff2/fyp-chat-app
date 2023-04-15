@@ -10,6 +10,7 @@ import 'package:fyp_chat_app/dto/update_keys_dto.dart';
 import 'package:fyp_chat_app/extensions/signal_lib_extension.dart';
 import 'package:fyp_chat_app/models/account.dart';
 import 'package:fyp_chat_app/models/chatroom.dart';
+import 'package:fyp_chat_app/models/enum.dart';
 import 'package:fyp_chat_app/models/group_chat.dart';
 import 'package:fyp_chat_app/models/key_bundle.dart';
 import 'package:fyp_chat_app/models/media_item.dart';
@@ -631,6 +632,7 @@ class SignalClient {
           unread: 1,
           latestMessage: plainMessage,
           createdAt: obtainedChatroom.createdAt,
+          groupType: obtainedChatroom.groupType,
         );
         await ChatroomStore().save(groupChatroom);
       } else {
@@ -744,6 +746,7 @@ class SignalClient {
           members: obtainedChatroom.members,
           name: obtainedChatroom.name,
           unread: 1,
+          groupType: obtainedChatroom.groupType,
           latestMessage: mediaMessage,
           createdAt: obtainedChatroom.createdAt,
         );

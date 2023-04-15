@@ -4,6 +4,7 @@ import 'package:chewie/chewie.dart';
 import 'package:flutter/material.dart';
 import 'package:fyp_chat_app/components/palette.dart';
 import 'package:fyp_chat_app/models/chat_message.dart';
+import 'package:fyp_chat_app/models/enum.dart';
 import 'package:fyp_chat_app/models/media_message.dart';
 import 'package:fyp_chat_app/signal/signal_client.dart';
 import 'package:provider/provider.dart';

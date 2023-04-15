@@ -8,6 +8,7 @@ import 'package:fyp_chat_app/dto/events/message_dto.dart';
 import 'package:fyp_chat_app/dto/events/received_media_key_dto.dart';
 import 'package:fyp_chat_app/models/chatroom.dart';
 import 'package:fyp_chat_app/models/chat_message.dart';
+import 'package:fyp_chat_app/models/enum.dart';
 import 'package:fyp_chat_app/models/received_plain_message.dart';
 import 'package:fyp_chat_app/models/user_state.dart';
 import 'package:fyp_chat_app/network/group_chat_api.dart';

@@ -55,9 +55,9 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
   static const _pageSize = 100;
   late StreamSubscription<ReceivedPlainMessage> _messageSubscription;
   late final UserState _state;
-  late final Future<bool> blockedFuture;
+  late Future<bool> blockedFuture;
 
-  late final Future<bool> trustworthyFuture;
+  late Future<bool> trustworthyFuture;
   late bool warningStatus =
       true; //just a variable to turn off the warning screen
   @override
@@ -95,13 +95,6 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
   void dispose() {
     super.dispose();
     // remove chatting with
-    ChatroomStore().save(
-      OneToOneChat(
-          target: (widget.chatroom as OneToOneChat).target,
-          unread: 0,
-          createdAt: widget.chatroom.createdAt,
-          latestMessage: (_messages.isEmpty) ? null : _messages[0]),
-    );
     _state.chatroom = null;
     _messageSubscription.cancel();
   }
@@ -187,7 +180,14 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
           titleSpacing: 8,
           leading: InkWell(
             onTap: () {
-              Navigator.pop(context);
+              Navigator.pop(
+                  context,
+                  OneToOneChat(
+                    target: (widget.chatroom as OneToOneChat).target,
+                    unread: 0,
+                    createdAt: widget.chatroom!.createdAt,
+                    latestMessage: (_messages.isEmpty) ? null : _messages[0],
+                  ));
             },
             borderRadius: BorderRadius.circular(40.0),
             child: Row(
@@ -215,11 +215,18 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
           title: SizedBox(
             width: MediaQuery.of(context).size.width,
             child: InkWell(
-              onTap: () => Navigator.of(context).push(MaterialPageRoute(
-                  builder: (context) => ContactInfo(
-                        chatroom: widget.chatroom,
-                        blockedFuture: blockedFuture,
-                      ))),
+              onTap: () => Navigator.of(context)
+                  .push(MaterialPageRoute(
+                      builder: (context) => ContactInfo(
+                            chatroom: widget.chatroom,
+                            blockedFuture: blockedFuture,
+                          )))
+                  .then((value) => {
+                        setState(() {
+                          blockedFuture =
+                              BlockStore().contain(widget.chatroom.id);
+                        })
+                      }),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [

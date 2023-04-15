@@ -3,14 +3,18 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:fyp_chat_app/components/contact_option.dart';
 import 'package:fyp_chat_app/models/chatroom.dart';
+import 'package:fyp_chat_app/models/enum.dart';
+import 'package:fyp_chat_app/models/group_chat.dart';
 import 'package:fyp_chat_app/models/received_plain_message.dart';
 import 'package:fyp_chat_app/models/user_state.dart';
 import 'package:fyp_chat_app/network/auth_api.dart';
+import 'package:fyp_chat_app/network/block_api.dart';
 import 'package:fyp_chat_app/network/devices_api.dart';
 import 'package:fyp_chat_app/screens/chatroom/chatroom_screen.dart';
 import 'package:fyp_chat_app/screens/chatroom/chatroom_screen_group.dart';
 import 'package:fyp_chat_app/screens/home/select_contact.dart';
 import 'package:fyp_chat_app/screens/settings/settings_screen.dart';
+import 'package:fyp_chat_app/storage/block_store.dart';
 import 'package:fyp_chat_app/storage/chatroom_store.dart';
 import 'package:fyp_chat_app/storage/credential_store.dart';
 import 'package:fyp_chat_app/storage/message_store.dart';
@@ -18,6 +22,7 @@ import 'package:provider/provider.dart';
 import 'package:fyp_chat_app/storage/disk_storage.dart';
 import 'package:fyp_chat_app/storage/secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:collection/collection.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -65,6 +70,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<bool> _loadChatroom() async {
     final chatroomList = await ChatroomStore().getAllChatroom();
     _chatroomMap.clear();
+    _filteredChatroomMap.clear();
     setState(() {
       _chatroomMap.addEntries(chatroomList.map((e) => MapEntry(e.id, e)));
       _filteredChatroomMap.addAll(_chatroomMap);
@@ -168,7 +174,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 onLongPress: () async {
                   chatroomListForDeleteToGestureDetector = chatroomList;
                   chatroomListForDeleteToGestureDetectorID = i;
-                  await _showContextMenu(context);
+                  await _showContextMenu(context, userState);
                 },
                 child: HomeContact(
                     chatroom: chatroomList[i],
@@ -181,8 +187,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                       chatroom: chatroomList[i]),
                                   settings: RouteSettings(name: "/chatroom/${chatroomList[i].id}"),
                                   ))
-                              .then(
-                                  (value) => setState(() => {_loadChatroom()}));
+                              .then((value) async {
+                            await ChatroomStore().save(value);
+                            await _loadChatroom();
+                          });
                           break;
                         case ChatroomType.group:
                           Navigator.of(context)
@@ -191,8 +199,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                       chatroom: chatroomList[i]),
                                   settings: RouteSettings(name: "/chatroom-group/${chatroomList[i].id}"),
                                   ))
-                              .then(
-                                  (value) => setState(() => {_loadChatroom()}));
+                              .then((value) async {
+                            await ChatroomStore().save(value);
+                            await _loadChatroom();
+                          });
                           break;
                       }
                     }),
@@ -221,8 +231,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     Navigator.of(context)
                         .push(MaterialPageRoute(
                             builder: (_) =>
-                                ChatRoomScreenGroup(chatroom: chatroom),
-                            settings: RouteSettings(name: "/chatroom-group/${chatroom.id}"),
+                              ChatRoomScreenGroup(chatroom: chatroom),
+                              settings: RouteSettings(name: "/chatroom-group/${chatroom.id}"),
                           ))
                         .then((value) => setState(() => {_loadChatroom()}));
                     break;
@@ -300,7 +310,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  _showContextMenu(BuildContext context) async {
+  _showContextMenu(BuildContext context, UserState userState) async {
     final RenderObject? overlay =
         Overlay.of(context)?.context.findRenderObject();
     final result = await showMenu(
@@ -317,7 +327,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 String chatroomId = chatroomListForDeleteToGestureDetector[
                         chatroomListForDeleteToGestureDetectorID]
                     .id;
-                if (_chatroomMap[chatroomId]?.type == ChatroomType.oneToOne) {
+                if (_filteredChatroomMap[chatroomId]?.type ==
+                    ChatroomType.oneToOne) {
                   //one to one chatroom deletion
                   bool status = await ChatroomStore().remove(chatroomId);
                   if (status) {
@@ -325,16 +336,38 @@ class _HomeScreenState extends State<HomeScreen> {
                         .removeAllMessageByChatroomId(chatroomId);
                     setState(() {
                       _chatroomMap.remove(chatroomId);
+                      _filteredChatroomMap.remove(chatroomId);
                     });
+                    await _loadChatroom();
                   } else {
                     throw Exception(
                         'Chatroom already has been deleted or chatroom not found');
                   }
-                } else if (_chatroomMap[chatroomId]?.type ==
+                } else if (_filteredChatroomMap[chatroomId]?.type ==
                     ChatroomType.group) {
                   //check whether the group is left, or blocked, if not, the user should not delete the group
-                  if (true) {
-                    //showdialog to alert user the group is not left or blocked
+                  if ((_filteredChatroomMap[chatroomId] as GroupChat)
+                              .members
+                              .firstWhereOrNull((element) =>
+                                  element.user.userId ==
+                                  userState.me!.userId) ==
+                          null ||
+                      await BlockStore()
+                          .contain(_filteredChatroomMap[chatroomId]!.id)) {
+                    //if the group is left or blocked, allow to delete the group
+                    bool status = await ChatroomStore().remove(chatroomId);
+                    if (status) {
+                      setState(() {
+                        _chatroomMap.remove(chatroomId);
+                        _filteredChatroomMap.remove(chatroomId);
+                      });
+                      await _loadChatroom();
+                    } else {
+                      throw Exception(
+                          'Chatroom already has been deleted or chatroom not found');
+                    }
+                  } else {
+                    //showdialog to alert user the group is not left or not blocked
                     showDialog(
                         context: context,
                         builder: (context) {
@@ -349,17 +382,6 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                               ]);
                         });
-                  } else {
-                    //if the group is left or blocked, delete the group
-                    bool status = await ChatroomStore().remove(chatroomId);
-                    if (status) {
-                      setState(() {
-                        _chatroomMap.remove(chatroomId);
-                      });
-                    } else {
-                      throw Exception(
-                          'Chatroom already has been deleted or chatroom not found');
-                    }
                   }
                 } else {
                   throw Exception('Chatroom type not found');

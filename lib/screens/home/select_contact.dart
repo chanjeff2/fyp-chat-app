@@ -6,6 +6,7 @@ import 'package:fyp_chat_app/models/one_to_one_chat.dart';
 import 'package:fyp_chat_app/models/user.dart';
 import 'package:fyp_chat_app/network/api.dart';
 import 'package:fyp_chat_app/network/users_api.dart';
+import 'package:fyp_chat_app/screens/chatroom/join_course_group_screen.dart';
 import 'package:fyp_chat_app/screens/home/create_group_screen.dart';
 import 'package:fyp_chat_app/storage/chatroom_store.dart';
 
@@ -63,7 +64,8 @@ class _SelectContactState extends State<SelectContact> {
                         Navigator.of(context).push(MaterialPageRoute(
                           builder: (context) => CreateGroupScreen(
                             onNewChatroom: widget.onNewChatroom,
-                            isCreateGroup: true, fromContactInfo: false,
+                            isCreateGroup: true,
+                            fromContactInfo: false,
                           ),
                         ));
                       },
@@ -117,24 +119,27 @@ class _SelectContactState extends State<SelectContact> {
                     //TODO: add to course group
                     return InkWell(
                       onTap: () async {
-                        final course = await inputDialog(
-                          "Join a course group",
-                          "Please enter course code",
-                        );
-                        if (course == null || course.isEmpty) return;
-                        //late final GroupChat group;
-                        try {
-                          //TODO: send join request to server
-                          // group = await GroupChatApi()
-                          //     .createGroup(CreateGroupDto(name: name));
-                        } on ApiException catch (e) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text("error: ${e.message}")));
-                        }
-                        // await ChatroomStore().save(group);
-                        // callback and return to home
-                        Navigator.of(context).pop();
-                        // widget.onNewChatroom?.call(group);
+                        // final course = await inputDialog(
+                        //   "Join a course group",
+                        //   "Please enter course code",
+                        // );
+                        // if (course == null || course.isEmpty) return;
+                        // //late final GroupChat group;
+                        // try {
+                        //   //TODO: send join request to server
+                        //   // group = await GroupChatApi()
+                        //   //     .createGroup(CreateGroupDto(name: name));
+                        // } on ApiException catch (e) {
+                        //   ScaffoldMessenger.of(context).showSnackBar(
+                        //       SnackBar(content: Text("error: ${e.message}")));
+                        // }
+                        // // await ChatroomStore().save(group);
+                        // // callback and return to home
+                        // Navigator.of(context).pop();
+                        // // widget.onNewChatroom?.call(group);
+                        Navigator.of(context).push(MaterialPageRoute(
+                          builder: (context) => JoinCourseGroupScreen(onNewChatroom: widget.onNewChatroom,),
+                        ));
                       },
                       child: const DefaultOption(
                         icon: Icons.group_add,
