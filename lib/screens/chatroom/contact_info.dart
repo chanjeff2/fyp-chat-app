@@ -589,9 +589,10 @@ class _ContactInfoState extends State<ContactInfo> {
                                       }
                                       Navigator.of(context).push(
                                           MaterialPageRoute(
-                                              builder: (context) =>
-                                                  ChatRoomScreen(
-                                                      chatroom: pmChatroom!)));
+                                              builder: (context) => ChatRoomScreen(
+                                                chatroom: pmChatroom!),
+                                                settings: RouteSettings(name: "/chatroom/${pmChatroom.id}"),
+                                              ));
                                     }
                                   },
                                   child: Padding(
@@ -705,9 +706,11 @@ class _ContactInfoState extends State<ContactInfo> {
                                         MaterialPageRoute(
                                             builder: (context) =>
                                                 ChatRoomScreenGroup(
-                                                    chatroom: (snapshot.data
-                                                            as List<Chatroom>)[
-                                                        index])));
+                                                    chatroom: (snapshot.data as List<Chatroom>)[index]),
+                                            settings: RouteSettings(
+                                              name: "/chatroom-group/${(snapshot.data as List<Chatroom>)[index].id}"
+                                            ),            
+                                            ));
                                   },
                                   child: Padding(
                                     padding:

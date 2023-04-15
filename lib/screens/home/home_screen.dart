@@ -184,7 +184,9 @@ class _HomeScreenState extends State<HomeScreen> {
                           Navigator.of(context)
                               .push(MaterialPageRoute(
                                   builder: (context) => ChatRoomScreen(
-                                      chatroom: chatroomList[i])))
+                                      chatroom: chatroomList[i]),
+                                  settings: RouteSettings(name: "/chatroom/${chatroomList[i].id}"),
+                                  ))
                               .then((value) async {
                             await ChatroomStore().save(value);
                             await _loadChatroom();
@@ -194,7 +196,9 @@ class _HomeScreenState extends State<HomeScreen> {
                           Navigator.of(context)
                               .push(MaterialPageRoute(
                                   builder: (context) => ChatRoomScreenGroup(
-                                      chatroom: chatroomList[i])))
+                                      chatroom: chatroomList[i]),
+                                  settings: RouteSettings(name: "/chatroom-group/${chatroomList[i].id}"),
+                                  ))
                               .then((value) async {
                             await ChatroomStore().save(value);
                             await _loadChatroom();
@@ -218,19 +222,19 @@ class _HomeScreenState extends State<HomeScreen> {
                   case ChatroomType.oneToOne:
                     Navigator.of(context)
                         .push(MaterialPageRoute(
-                            builder: (_) => ChatRoomScreen(chatroom: chatroom)))
-                        .then((value) {
-                      setState(() => {_loadChatroom()});
-                    });
+                            builder: (_) => ChatRoomScreen(chatroom: chatroom),
+                            settings: RouteSettings(name: "/chatroom/${chatroom.id}"),
+                          ))
+                        .then((value) => setState(() => {_loadChatroom()}));
                     break;
                   case ChatroomType.group:
                     Navigator.of(context)
                         .push(MaterialPageRoute(
                             builder: (_) =>
-                                ChatRoomScreenGroup(chatroom: chatroom)))
-                        .then((value) {
-                      setState(() => {_loadChatroom()});
-                    });
+                              ChatRoomScreenGroup(chatroom: chatroom),
+                              settings: RouteSettings(name: "/chatroom-group/${chatroom.id}"),
+                          ))
+                        .then((value) => setState(() => {_loadChatroom()}));
                     break;
                   default:
                     ScaffoldMessenger.of(context).showSnackBar(SnackBar(

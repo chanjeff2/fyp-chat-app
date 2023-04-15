@@ -2,7 +2,8 @@ import 'package:fyp_chat_app/entities/chatroom_entity.dart';
 import 'package:fyp_chat_app/models/enum.dart';
 import 'package:fyp_chat_app/models/group_chat.dart';
 import 'package:fyp_chat_app/models/one_to_one_chat.dart';
-import 'package:fyp_chat_app/models/plain_message.dart';
+// import 'package:fyp_chat_app/models/plain_message.dart';
+import 'package:fyp_chat_app/models/chat_message.dart';
 import 'package:fyp_chat_app/storage/contact_store.dart';
 import 'package:fyp_chat_app/storage/group_member_store.dart';
 import 'package:fyp_chat_app/storage/message_store.dart';
@@ -11,7 +12,7 @@ abstract class Chatroom {
   String id;
   ChatroomType get type;
   String get name;
-  final PlainMessage? latestMessage;
+  final ChatMessage? latestMessage;
   final int unread;
   final DateTime createdAt; // exist if read from db
 

@@ -3,7 +3,8 @@ import 'package:fyp_chat_app/entities/chatroom_entity.dart';
 import 'package:fyp_chat_app/models/chatroom.dart';
 import 'package:fyp_chat_app/models/enum.dart';
 import 'package:fyp_chat_app/models/group_member.dart';
-import 'package:fyp_chat_app/models/plain_message.dart';
+// import 'package:fyp_chat_app/models/plain_message.dart';
+import 'package:fyp_chat_app/models/chat_message.dart';
 
 class GroupChat extends Chatroom {
   final List<GroupMember> members;
@@ -20,7 +21,7 @@ class GroupChat extends Chatroom {
     required String id,
     required this.members,
     required this.name,
-    PlainMessage? latestMessage,
+    ChatMessage? latestMessage,
     required int unread,
     required DateTime createdAt,
     required this.groupType

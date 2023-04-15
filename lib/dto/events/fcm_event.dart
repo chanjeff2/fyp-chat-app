@@ -2,6 +2,7 @@ import 'package:fyp_chat_app/dto/events/permission_update_dto.dart';
 import 'package:fyp_chat_app/dto/events/member_invitation_dto.dart';
 import 'package:fyp_chat_app/dto/events/member_removal_dto.dart';
 import 'package:fyp_chat_app/dto/events/message_dto.dart';
+import 'package:fyp_chat_app/dto/events/received_media_key_dto.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'fcm_event.g.dart';
@@ -17,6 +18,7 @@ abstract class FCMEvent {
     final type = $enumDecode(_$EventTypeEnumMap, json['type']);
     switch (type) {
       case EventType.textMessage:
+      case EventType.mediaMessage:
         return MessageDto.fromJson(json);
       case EventType.memberInvitation:
         return MemberInvitationDto.fromJson(json);
@@ -34,4 +36,5 @@ enum EventType {
   memberInvitation,
   memberRemoval,
   permissionUpdate,
+  mediaMessage,
 }

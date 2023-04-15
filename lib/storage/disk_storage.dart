@@ -1,7 +1,8 @@
 import 'package:fyp_chat_app/entities/blocklist_entity.dart';
+import 'package:fyp_chat_app/entities/chat_message_entity.dart';
 import 'package:fyp_chat_app/entities/chatroom_entity.dart';
 import 'package:fyp_chat_app/entities/group_member_entity.dart';
-import 'package:fyp_chat_app/entities/plain_message_entity.dart';
+import 'package:fyp_chat_app/entities/media_item_entity.dart';
 import 'package:fyp_chat_app/entities/pre_key_pair_entity.dart';
 import 'package:fyp_chat_app/entities/session_entity.dart';
 import 'package:fyp_chat_app/entities/signed_pre_key_pair_entity.dart';
@@ -14,6 +15,7 @@ import 'package:fyp_chat_app/storage/disk_pre_key_store.dart';
 import 'package:fyp_chat_app/storage/disk_session_store.dart';
 import 'package:fyp_chat_app/storage/disk_signed_pre_key_store.dart';
 import 'package:fyp_chat_app/storage/group_member_store.dart';
+import 'package:fyp_chat_app/storage/media_store.dart';
 import 'package:fyp_chat_app/storage/message_store.dart';
 import 'package:fyp_chat_app/storage/block_store.dart';
 import 'package:fyp_chat_app/storage/secure_storage.dart';
@@ -50,7 +52,7 @@ class DiskStorage {
     return await openDatabase(
       join(await getDatabasesPath(), databasePath),
       password: password,
-      version: 12,
+      version: 13,
       onCreate: (db, version) {
         db.execute(
           "CREATE TABLE ${DiskIdentityKeyStore.table}(${TheirIdentityKeyEntity.createTableCommandFields});",
@@ -68,7 +70,10 @@ class DiskStorage {
           "CREATE TABLE ${ContactStore.table}(${UserEntity.createTableCommandFields});",
         );
         db.execute(
-          "CREATE TABLE ${MessageStore.table}(${PlainMessageEntity.createTableCommandFields});",
+          "CREATE TABLE ${MessageStore.table}(${ChatMessageEntity.createTableCommandFields});",
+        );
+        db.execute(
+          "CREATE TABLE ${MediaStore.table}(${MediaItemEntity.createTableCommandFields});",
         );
         db.execute(
           "CREATE TABLE ${ChatroomStore.table}(${ChatroomEntity.createTableCommandFields});",

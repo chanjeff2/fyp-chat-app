@@ -1,7 +1,8 @@
 import 'package:fyp_chat_app/entities/chatroom_entity.dart';
 import 'package:fyp_chat_app/models/chatroom.dart';
+// import 'package:fyp_chat_app/models/plain_message.dart';
+import 'package:fyp_chat_app/models/chat_message.dart';
 import 'package:fyp_chat_app/models/enum.dart';
-import 'package:fyp_chat_app/models/plain_message.dart';
 import 'package:fyp_chat_app/models/user.dart';
 
 class OneToOneChat extends Chatroom {
@@ -15,7 +16,7 @@ class OneToOneChat extends Chatroom {
 
   OneToOneChat({
     required this.target,
-    PlainMessage? latestMessage,
+    ChatMessage? latestMessage,
     required int unread,
     required DateTime createdAt,
   }) : super(

@@ -3,16 +3,21 @@ import 'dart:io';
 
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/material.dart';
+import 'package:fyp_chat_app/components/music_player.dart';
+import 'package:fyp_chat_app/components/video_player.dart';
 import 'package:fyp_chat_app/models/chatroom.dart';
 import 'package:fyp_chat_app/models/group_chat.dart';
+import 'package:fyp_chat_app/models/chat_message.dart';
+import 'package:fyp_chat_app/models/media_message.dart';
 import 'package:fyp_chat_app/models/plain_message.dart';
 import 'package:fyp_chat_app/models/received_plain_message.dart';
 import 'package:fyp_chat_app/models/user_state.dart';
 import 'package:fyp_chat_app/screens/chatroom/contact_info.dart';
 import 'package:fyp_chat_app/signal/signal_client.dart';
-import 'package:fyp_chat_app/storage/contact_store.dart';
+import 'package:fyp_chat_app/storage/media_store.dart';
 import 'package:fyp_chat_app/storage/message_store.dart';
 import 'package:fyp_chat_app/storage/block_store.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:collection/collection.dart';
 
@@ -21,6 +26,8 @@ import 'package:bubble/bubble.dart';
 import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
 
 import 'package:url_launcher/url_launcher.dart';
+import '../../components/attachment_menu.dart';
+import '../camera/camera_screen.dart';
 
 class ChatRoomScreenGroup extends StatefulWidget {
   const ChatRoomScreenGroup({
@@ -39,9 +46,11 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
   final ScrollController _scrollController = ScrollController();
   bool _textMessage = false;
   bool _emojiBoardShown = false;
+  bool _attachmentMenuShown = false;
   late final Future<bool> _messageHistoryFuture;
-  final List<PlainMessage> _messages = [];
+  final List<ChatMessage> _messages = [];
   final Map<String, String> _names = {};
+  final Map<String, String> _mediaMap = {};
   int _page = 0; // pagination
   bool _isLastPage = false;
   static const _pageSize = 100;
@@ -60,7 +69,18 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
     // register new message listener
     _messageSubscription = Provider.of<UserState>(context, listen: false)
         .messageStream
-        .listen((receivedMessage) {
+        .listen((receivedMessage) async {
+      if (receivedMessage.message.type.index > 2) {
+        final localStorage = await getTemporaryDirectory();
+        final media = await MediaStore()
+                      .getMediaById((receivedMessage.message as MediaMessage).media.id);
+        final filePath = "${localStorage.path}/${media.id}${media.fileExtension}";
+        final file = File(filePath);
+        await file.writeAsBytes(media.content);
+        setState(() {
+          _mediaMap.addAll({media.id: filePath});
+        });
+      }
       setState(() {
         if (receivedMessage.chatroom.id == widget.chatroom.id) {
           _messages.insert(0, receivedMessage.message);
@@ -87,7 +107,23 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
     if (messages.length < _pageSize) {
       _isLastPage = true;
     }
-    GroupChat room = _state.chatroom as GroupChat;
+    // Extract media from database, and put to temporary storage
+    late final media;
+    final localStorage = await getTemporaryDirectory();
+    messages.forEach((msg) async {
+      // Message > 2 => Not text, not system log, not media key
+      if (msg.type.index > 2 && !_mediaMap.containsKey(msg.id)) {
+        final media = await MediaStore().getMediaById((msg as MediaMessage).media.id);
+        final filePath = "${localStorage.path}/${media.id}${media.fileExtension}";
+        final file = File(filePath);
+        await file.writeAsBytes(media.content);
+        setState(() {
+          _mediaMap[media.id] = filePath;
+        });
+      }
+    });
+
+    GroupChat room = widget.chatroom as GroupChat;
     final members = room.members;
     final names = <String, String>{
       for (var v in members) v.user.userId: v.user.name
@@ -113,6 +149,31 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
     setState(() {
       _messages.insert(0, sentMessage);
     });
+  }
+
+  void _updateMediaMessage(MediaMessage mediaMessage) async {
+    final localStorage = await getTemporaryDirectory();
+    final media = await MediaStore().getMediaById(mediaMessage.media.id);
+    final filePath = "${localStorage.path}/${media.id}${media.fileExtension}";
+    final file = File(filePath);
+    await file.writeAsBytes(media.content);
+    setState(() {
+      _mediaMap[media.id] = filePath;
+    });
+    setState(() {
+      _messages.insert(0, mediaMessage);
+    });
+  }
+
+  // Selecting camera
+  void _onCameraSelected() {
+    Navigator.of(context).push(MaterialPageRoute(
+        builder: (context) =>
+            CameraScreen(
+              source: Source.chatroom,
+              chatroom: widget.chatroom,
+              sendCallback: _updateMediaMessage,
+            )));
   }
 
   @override
@@ -291,16 +352,90 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
               return const Center(child: CircularProgressIndicator());
             }
             return Chat(
-              messages: _messages
-                  .map(
-                    (e) => types.TextMessage(
+              messages: _messages.map((e) {
+                switch (e.type) {
+                  case MessageType.text:
+                    return types.TextMessage(
                       id: e.id.toString(),
                       author: types.User(id: e.senderUserId),
-                      text: e.content,
+                      text: (e as PlainMessage).content,
                       createdAt: e.sentAt.millisecondsSinceEpoch,
-                    ),
-                  )
-                  .toList(),
+                    );
+                  case MessageType.image:
+                    if (_mediaMap[(e as MediaMessage).media.id] == null) {
+                      return types.TextMessage(
+                        id: e.id.toString(),
+                        author: types.User(id: e.senderUserId),
+                        text: "Loading Image...",
+                        createdAt: e.sentAt.millisecondsSinceEpoch,
+                      );
+                    }
+                    return types.ImageMessage(
+                      id: e.id.toString(),
+                      author: types.User(id: e.senderUserId),
+                      name: (e).media.baseName,
+                      size: (e).media.content.lengthInBytes,
+                      uri: _mediaMap[e.media.id]!,
+                    );
+                  case MessageType.video:
+                    if (_mediaMap[(e as MediaMessage).media.id] == null) {
+                      return types.TextMessage(
+                        id: e.id.toString(),
+                        author: types.User(id: e.senderUserId),
+                        text: "Loading Video...",
+                        createdAt: e.sentAt.millisecondsSinceEpoch,
+                      );
+                    }
+                    return types.VideoMessage(
+                      id: e.id.toString(),
+                      author: types.User(id: e.senderUserId),
+                      name: (e).media.baseName,
+                      size: (e).media.content.lengthInBytes,
+                      uri: _mediaMap[e.media.id]!,
+                    );
+                  case MessageType.audio:
+                    if (_mediaMap[(e as MediaMessage).media.id] == null) {
+                      return types.TextMessage(
+                        id: e.id.toString(),
+                        author: types.User(id: e.senderUserId),
+                        text: "Loading Audio...",
+                        createdAt: e.sentAt.millisecondsSinceEpoch,
+                      );
+                    }
+                    return types.AudioMessage(
+                      id: e.id.toString(),
+                      author: types.User(id: e.senderUserId),
+                      name: (e).media.baseName,
+                      size: (e).media.content.lengthInBytes,
+                      duration: const Duration(seconds: 2),
+                      uri: _mediaMap[e.media.id]!,
+                    );
+                  case MessageType.document:
+                    if (_mediaMap[(e as MediaMessage).media.id] == null) {
+                      return types.TextMessage(
+                        id: e.id.toString(),
+                        author: types.User(id: e.senderUserId),
+                        text: "Loading Document...",
+                        createdAt: e.sentAt.millisecondsSinceEpoch,
+                      );
+                    }
+                    return types.FileMessage(
+                      id: e.id.toString(),
+                      author: types.User(id: e.senderUserId),
+                      name: (e).media.baseName,
+                      size: (e).media.content.lengthInBytes,
+                      uri: _mediaMap[e.media.id]!,
+                    );
+
+                  default:
+                    return types.TextMessage(
+                      id: e.id.toString(),
+                      author: types.User(id: e.senderUserId),
+                      text: "Undefined Message",
+                      createdAt: e.sentAt.millisecondsSinceEpoch,
+                    );
+                }
+              }).toList(),
               showUserNames: true,
               nameBuilder: (userId) => UserName(
                   author: types.User(
@@ -322,6 +457,27 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
                 padding: const BubbleEdges.all(0),
                 elevation: 1,
               ),
+              videoMessageBuilder: (p0, {required messageWidth}) =>
+                Container(
+                  constraints: BoxConstraints(
+                    maxWidth: MediaQuery.of(context).size.width * 0.7,
+                    maxHeight: MediaQuery.of(context).size.height * 0.5,
+                  ),
+                  child: VideoPlayer(
+                    video: File(p0.uri),
+                  ),
+                ),
+              audioMessageBuilder: (p0, {required messageWidth}) => 
+                Container(
+                  constraints: BoxConstraints(
+                    maxWidth: MediaQuery.of(context).size.width * 0.65,
+                    maxHeight: MediaQuery.of(context).size.height * 0.1,
+                  ),
+                  child: MusicPlayer(
+                    audio: p0.uri,
+                    isSender: userState.me!.userId == p0.author.id,
+                  )
+                ),
               onSendPressed: (partialText) {
                 _sendMessage(partialText.text);
               },
@@ -373,7 +529,7 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
                                         isCollapsed: true,
                                         filled: true,
                                         fillColor: Colors.white70,
-                                        hintText: 'Message',
+                                        hintText: 'You blocked this group',
                                         hintStyle: TextStyle(
                                             color: Colors.grey.shade600),
                                         border: InputBorder.none,
@@ -488,6 +644,7 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
                                             FocusManager.instance.primaryFocus
                                                 ?.unfocus();
                                             setState(() {
+                                              _attachmentMenuShown = false;
                                               _emojiBoardShown =
                                                   !_emojiBoardShown;
                                             });
@@ -505,7 +662,15 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
                                                           Colors.grey.shade600,
                                                     ),
                                                     onPressed: () {
-                                                      print("attachment");
+                                                      FocusManager
+                                                          .instance.primaryFocus
+                                                          ?.unfocus();
+                                                      setState(() {
+                                                        _attachmentMenuShown =
+                                                            !_attachmentMenuShown;
+                                                        _emojiBoardShown =
+                                                            false;
+                                                      });
                                                     },
                                                   ),
                                                   IconButton(
@@ -515,12 +680,7 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
                                                           Colors.grey.shade600,
                                                     ),
                                                     onPressed: () {
-                                                      print("camera");
-                                                      // Navigator.push(
-                                                      //     context,
-                                                      //     MaterialPageRoute(
-                                                      //         builder: (builder) =>
-                                                      //             CameraApp()));
+                                                      _onCameraSelected();
                                                     },
                                                   ),
                                                 ],
@@ -568,57 +728,60 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
                   ),
                 ),
                 Offstage(
-                  offstage: !_emojiBoardShown,
+                  offstage: !_emojiBoardShown && !_attachmentMenuShown,
                   child: SizedBox(
-                      height: 250,
-                      child: EmojiPicker(
-                        textEditingController: _messageController,
-                        onEmojiSelected: (category, emoji) {
-                          setState(() {
-                            _textMessage = message.trim().isNotEmpty;
-                          });
-                        },
-                        onBackspacePressed: () {
-                          setState(() {
-                            _textMessage = message.trim().isNotEmpty;
-                          });
-                        },
-                        config: Config(
-                          columns: 8,
-                          emojiSizeMax: 32 * (Platform.isIOS ? 1.30 : 1.0),
-                          verticalSpacing: 0,
-                          horizontalSpacing: 0,
-                          gridPadding: EdgeInsets.zero,
-                          initCategory: Category.RECENT,
-                          bgColor: const Color(0xFFF2F2F2),
-                          indicatorColor: Theme.of(context).primaryColor,
-                          iconColor: Colors.grey,
-                          iconColorSelected: Theme.of(context).primaryColor,
-                          backspaceColor: Theme.of(context).primaryColor,
-                          skinToneDialogBgColor: Colors.white,
-                          skinToneIndicatorColor: Colors.grey,
-                          enableSkinTones: true,
-                          showRecentsTab: true,
-                          recentsLimit: 28,
-                          replaceEmojiOnLimitExceed: false,
-                          noRecents: const Text(
-                            'No Recents',
-                            style: TextStyle(
-                              fontSize: 20,
-                              color: Colors.black26,
+                    height: 250,
+                    child: _emojiBoardShown
+                        ? EmojiPicker(
+                            textEditingController: _messageController,
+                            onEmojiSelected: (category, emoji) {
+                              setState(() {
+                                _textMessage = message.trim().isNotEmpty;
+                              });
+                            },
+                            onBackspacePressed: () {
+                              setState(() {
+                                _textMessage = message.trim().isNotEmpty;
+                              });
+                            },
+                            config: Config(
+                              columns: 8,
+                              emojiSizeMax: 32 * (Platform.isIOS ? 1.30 : 1.0),
+                              verticalSpacing: 0,
+                              horizontalSpacing: 0,
+                              gridPadding: EdgeInsets.zero,
+                              initCategory: Category.RECENT,
+                              bgColor: const Color(0xFFF2F2F2),
+                              indicatorColor: Theme.of(context).primaryColor,
+                              iconColor: Colors.grey,
+                              iconColorSelected: Theme.of(context).primaryColor,
+                              backspaceColor: Theme.of(context).primaryColor,
+                              skinToneDialogBgColor: Colors.white,
+                              skinToneIndicatorColor: Colors.grey,
+                              enableSkinTones: true,
+                              showRecentsTab: true,
+                              recentsLimit: 28,
+                              replaceEmojiOnLimitExceed: false,
+                              noRecents: const Text(
+                                'No Recents',
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  color: Colors.black26,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                              loadingIndicator: const SizedBox.shrink(),
+                              tabIndicatorAnimDuration: kTabScrollDuration,
+                              categoryIcons: const CategoryIcons(),
+                              buttonMode: ButtonMode.MATERIAL,
+                              checkPlatformCompatibility: true,
                             ),
-                            textAlign: TextAlign.center,
-                          ),
-                          loadingIndicator: const SizedBox.shrink(),
-                          tabIndicatorAnimDuration: kTabScrollDuration,
-                          categoryIcons: const CategoryIcons(),
-                          buttonMode: ButtonMode.MATERIAL,
-                          checkPlatformCompatibility: true,
-                        ),
-                      )),
+                          )
+                        : AttachmentMenu(chatroom: widget.chatroom, sendCallback: _updateMediaMessage),
+                  ),
                 ),
               ]),
-              onMessageTap: _handleMessageTap,
+              onMessageTap: (context, p1) => _handleMessageTap(context, p1),
             );
           },
         ),

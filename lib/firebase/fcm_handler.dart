@@ -5,7 +5,9 @@ import 'package:fyp_chat_app/dto/events/fcm_event.dart';
 import 'package:fyp_chat_app/dto/events/member_invitation_dto.dart';
 import 'package:fyp_chat_app/dto/events/member_removal_dto.dart';
 import 'package:fyp_chat_app/dto/events/message_dto.dart';
+import 'package:fyp_chat_app/dto/events/received_media_key_dto.dart';
 import 'package:fyp_chat_app/models/chatroom.dart';
+import 'package:fyp_chat_app/models/chat_message.dart';
 import 'package:fyp_chat_app/models/enum.dart';
 import 'package:fyp_chat_app/models/received_plain_message.dart';
 import 'package:fyp_chat_app/models/user_state.dart';
@@ -58,6 +60,11 @@ class FCMHandler {
         final message = message_model.Message.fromDto(messageDto);
         final plainMessage = await SignalClient().processMessage(message);
         return plainMessage;
+      case EventType.mediaMessage:
+        final messageDto = event as MessageDto;
+        final message = message_model.Message.fromDto(messageDto);
+        final plainMessage = await SignalClient().processMediaMessage(message);
+        return plainMessage;
       case EventType.memberInvitation:
         final dto = event as MemberInvitationDto;
         if (await ChatroomStore().contains(dto.chatroomId)) {
@@ -91,6 +98,7 @@ class FCMHandler {
         await GroupMemberStore().save(dto.chatroomId, updatedMember);
         break;
     }
+    return null;
   }
 
   static void _showNotification(ReceivedPlainMessage message) {
@@ -107,7 +115,7 @@ class FCMHandler {
     FlutterLocalNotificationsPlugin().show(
         message.message.id!,
         notificationTitle,
-        message.message.content,
+        message.message.notificationContent,
         const NotificationDetails(
           android: AndroidNotificationDetails(
             channelId,
