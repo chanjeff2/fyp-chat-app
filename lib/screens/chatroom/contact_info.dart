@@ -926,8 +926,14 @@ class _ContactInfoState extends State<ContactInfo> {
                 GroupChatApi().kickMember(
                     widget.chatroom.id, memberSelectedForTheAction.user.userId);
               });
-              GroupChatApi()
-                  .getGroupMember(widget.chatroom.id, userState.me!.id);
+              GroupMemberStore().remove(
+                  widget.chatroom.id, memberSelectedForTheAction.user.userId);
+              var newMembers =
+                  (await GroupChatApi().getGroup(widget.chatroom.id)).members;
+              setState(() {
+                (widget.chatroom as GroupChat).members.clear();
+                (widget.chatroom as GroupChat).members.addAll(newMembers);
+              });
             },
             value: "Remove member",
           ),
@@ -952,7 +958,7 @@ class _ContactInfoState extends State<ContactInfo> {
         if (leaveGroupSuccess) {
           ChatroomStore().remove(widget.chatroom.id);
           (widget.chatroom as GroupChat).members.clear();
-          Navigator.pop(context,widget.chatroom);
+          Navigator.pop(context, widget.chatroom);
         } else {
           _leaveGroupFailedAlert(context);
         }
