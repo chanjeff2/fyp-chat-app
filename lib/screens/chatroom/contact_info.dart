@@ -906,6 +906,13 @@ class _ContactInfoState extends State<ContactInfo> {
                 GroupChatApi().addAdmin(
                     widget.chatroom.id, memberSelectedForTheAction.user.userId);
               });
+               final memberName =
+                    (memberSelectedForTheAction.user.displayName == null)
+                        ? memberSelectedForTheAction.user.username
+                        : memberSelectedForTheAction.user.displayName!; 
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                  content: Text('Promoted $memberName as Admin'),
+                ));
             },
             value: "Add admin",
           ),
@@ -916,6 +923,14 @@ class _ContactInfoState extends State<ContactInfo> {
                 GroupChatApi().removeAdmin(
                     widget.chatroom.id, memberSelectedForTheAction.user.userId);
               });
+               final memberName =
+                    (memberSelectedForTheAction.user.displayName == null)
+                        ? memberSelectedForTheAction.user.username
+                        : memberSelectedForTheAction.user.displayName!; 
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                  content: Text('Demoted $memberName as Admin'),
+                ));
+
             },
             value: "Remove admin",
           ),
@@ -923,7 +938,7 @@ class _ContactInfoState extends State<ContactInfo> {
             child: const Text('Remove member'),
             onTap: () async {
               Future.delayed(const Duration(seconds: 0), () async {
-                GroupChatApi().kickMember(
+                await GroupChatApi().kickMember(
                     widget.chatroom.id, memberSelectedForTheAction.user.userId);
               });
               GroupMemberStore().remove(
