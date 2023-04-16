@@ -149,6 +149,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         subtitle: Text(
                           (userState.me!.displayName ?? userState.me!.username),
                           style: const TextStyle(fontSize: 18),
+                          maxLines: 1,
                         ),
                         trailing: Icon(Icons.edit,
                             color: Theme.of(context).primaryColor),
@@ -194,8 +195,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               fontWeight: FontWeight.w500, fontSize: 16),
                         ),
                         subtitle: Text(
-                          userState.me!.status.toString(),
+                          (userState.me!.status ?? "Hi! I'm using USTalk."),
                           style: const TextStyle(fontSize: 18),
+                          maxLines: 1,
                         ),
                         trailing: Icon(Icons.edit,
                             color: Theme.of(context).primaryColor),

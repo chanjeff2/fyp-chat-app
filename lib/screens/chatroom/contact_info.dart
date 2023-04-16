@@ -136,7 +136,9 @@ class _ContactInfoState extends State<ContactInfo> {
           final member = await GroupMemberStore()
               .getbyChatroomIdAndUserId(widget.chatroom.id, event.targetUserId);
           setState(() {
-            // (widget.chatroom as GroupChat).members.add(member!);
+            if (!(widget.chatroom as GroupChat).members.contains(member)) {
+              (widget.chatroom as GroupChat).members.add(member!);
+            } 
           });
           break;
         case FCMEventType.kickMember:
@@ -163,7 +165,9 @@ class _ContactInfoState extends State<ContactInfo> {
           final member = await GroupMemberStore().getbyChatroomIdAndUserId(
               widget.chatroom.id, receivedChatEvent.event.senderUserId);
           setState(() {
-            (widget.chatroom as GroupChat).members.add(member!);
+            if (!(widget.chatroom as GroupChat).members.contains(member)) {
+              (widget.chatroom as GroupChat).members.add(member!);
+            }
           });
           break;
         case FCMEventType.memberLeave:
@@ -444,14 +448,14 @@ class _ContactInfoState extends State<ContactInfo> {
                       ),
                       subtitle: (widget.chatroom.type == ChatroomType.group)
                           ? Text(
-                              "All messages are end-to-end encrypted.Tap to see your key.",
+                              "All messages are end-to-end encrypted.",
                               style: TextStyle(
                                 fontSize: 14,
                                 color: Colors.grey.shade600,
                               ),
                             )
                           : Text(
-                              "All messages are end-to-end encrypted.Tap to see your group key.",
+                              "All messages are end-to-end encrypted.",
                               style: TextStyle(
                                 fontSize: 14,
                                 color: Colors.grey.shade600,

@@ -225,6 +225,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 name: "/chatroom-group/${chatroomList[i].id}"),
                           ))
                               .then((value) async {
+                            print((value as GroupChat).members.length);
                             await ChatroomStore().save(value);
                             await _loadChatroom();
                           });

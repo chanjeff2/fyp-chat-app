@@ -15,6 +15,13 @@ class GroupMember {
     required this.role,
   });
 
+  @override
+  bool operator ==(Object other) => 
+    identical(this, other)
+    || other is GroupMember 
+       && runtimeType == other.runtimeType
+       && user.id == other.user.id;
+
   GroupMember.fromDto(GroupMemberDto dto)
       : id = null,
         user = User.fromDto(dto.user),

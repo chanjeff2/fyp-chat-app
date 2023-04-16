@@ -104,7 +104,9 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
           final member = await GroupMemberStore()
               .getbyChatroomIdAndUserId(widget.chatroom.id, event.targetUserId);
           setState(() {
-            widget.chatroom.members.add(member!);
+            if (!widget.chatroom.members.contains(member)) {
+              widget.chatroom.members.add(member!);
+            }
           });
           break;
         case FCMEventType.kickMember:
@@ -129,7 +131,9 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
           final member = await GroupMemberStore().getbyChatroomIdAndUserId(
               widget.chatroom.id, receivedChatEvent.event.senderUserId);
           setState(() {
-            widget.chatroom.members.add(member!);
+            if (!widget.chatroom.members.contains(member)) {
+              widget.chatroom.members.add(member!);
+            }
           });
           break;
         case FCMEventType.memberLeave:
@@ -283,11 +287,12 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
                       builder: (context) => ContactInfo(
                           chatroom: widget.chatroom,
                           blockedFuture: blockedFuture)))
-                  .then((value) => {
+                  .then((value) {
+                        print((value as GroupChat).members.length);
                         setState(() {
                           blockedFuture =
                               BlockStore().contain(widget.chatroom.id);
-                        })
+                        });
                       }),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
