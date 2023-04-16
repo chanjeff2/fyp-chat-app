@@ -741,7 +741,7 @@ class SignalClient {
 
     final media = await MediaApi().downloadFile(recoveredKeyItem.mediaId);
 
-    // Temporarily write file into cache and upload
+    // Temporarily write file into cache and decrypt
     final cachePath = await getTemporaryDirectory();
     final path = "${cachePath.path}/${recoveredKeyItem.baseName}";
     final file = File(path);

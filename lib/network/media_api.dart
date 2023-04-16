@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:fyp_chat_app/dto/file_dto.dart';
 
 import 'api.dart';
@@ -21,7 +22,7 @@ class MediaApi extends Api {
     return FileDto.fromJson(response); // Need to decrypt the JSON in actual case
   }
 
-  Future<dynamic> downloadFile(String mediaId) async {
+  Future<Uint8List> downloadFile(String mediaId) async {
     final response = await getMedia("/$mediaId", useAuth: true);
     return response;
   }
