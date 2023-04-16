@@ -199,6 +199,7 @@ class _CreateGroupScreen extends State<CreateGroupScreen> {
                           SnackBar(content: Text("error: ${e.message}")));
                     }
                     await ChatroomStore().save(group);
+                    
                     // callback and return to home
                     Navigator.of(context).pop();
                     Navigator.of(context).pop();

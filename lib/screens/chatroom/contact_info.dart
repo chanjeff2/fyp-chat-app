@@ -138,7 +138,7 @@ class _ContactInfoState extends State<ContactInfo> {
           setState(() {
             if (!(widget.chatroom as GroupChat).members.contains(member)) {
               (widget.chatroom as GroupChat).members.add(member!);
-            } 
+            }
           });
           break;
         case FCMEventType.kickMember:
@@ -602,8 +602,15 @@ class _ContactInfoState extends State<ContactInfo> {
                         }
                         // Group members
                         return InkWell(
-                          onTapDown: (position) {
+                          onTapDown: (position) async {
                             print(chatroom.members.length);
+                            print((await GroupMemberStore()
+                                    .getByChatroomId(chatroom.id))
+                                .length);
+                            print((checkIsAdmin(userState)
+                                    ? chatroom.members[index - 1]
+                                    : chatroom.members[index])
+                                .id);
                             return _getTapPosition(position);
                           },
                           onLongPress: () async {
@@ -948,12 +955,12 @@ class _ContactInfoState extends State<ContactInfo> {
               //get newest info of member from server
               GroupMember memberfromAPI = await GroupChatApi().getGroupMember(
                   widget.chatroom.id, memberSelectedForTheAction.user.userId);
-              await GroupMemberStore().save(
-                  widget.chatroom.id,
-                  GroupMember(
-                      id: memberSelectedForTheAction.id,
-                      user: memberfromAPI.user,
-                      role: Role.admin));
+              // await GroupMemberStore().save(
+              //     widget.chatroom.id,
+              //     GroupMember(
+              //         id: memberSelectedForTheAction.id,
+              //         user: memberfromAPI.user,
+              //         role: Role.admin));
               setState(() {
                 (widget.chatroom as GroupChat).members.removeWhere((element) =>
                     (element.user.userId ==
@@ -981,12 +988,12 @@ class _ContactInfoState extends State<ContactInfo> {
                   widget.chatroom.id, memberSelectedForTheAction.user.userId);
               GroupMember memberfromAPI = await GroupChatApi().getGroupMember(
                   widget.chatroom.id, memberSelectedForTheAction.user.userId);
-              await GroupMemberStore().save(
-                  widget.chatroom.id,
-                  GroupMember(
-                      id: memberSelectedForTheAction.id,
-                      user: memberfromAPI.user,
-                      role: Role.member));
+              // await GroupMemberStore().save(
+              //     widget.chatroom.id,
+              //     GroupMember(
+              //         id: memberSelectedForTheAction.id,
+              //         user: memberfromAPI.user,
+              //         role: Role.member));
               setState(() {
                 (widget.chatroom as GroupChat).members.removeWhere((element) =>
                     (element.user.userId ==

@@ -9,6 +9,7 @@ import 'package:fyp_chat_app/models/access_change_event.dart';
 import 'package:fyp_chat_app/models/chat_event.dart';
 import 'package:fyp_chat_app/models/chat_message.dart';
 import 'package:fyp_chat_app/models/enum.dart';
+import 'package:fyp_chat_app/models/group_member.dart';
 import 'package:fyp_chat_app/models/received_plain_message.dart';
 import 'package:fyp_chat_app/models/user.dart';
 import 'package:fyp_chat_app/models/user_state.dart';
@@ -114,7 +115,15 @@ class FCMHandler {
         // already in chatroom, update member
         final updatedMember = await GroupChatApi()
             .getGroupMember(dto.chatroomId, dto.targetUserId);
-        await GroupMemberStore().save(dto.chatroomId, updatedMember);
+        final groupUserId = (await GroupMemberStore()
+                .getbyChatroomIdAndUserId(dto.chatroomId, dto.targetUserId))!
+            .id;
+        await GroupMemberStore().save(
+            dto.chatroomId,
+            GroupMember(
+                id: groupUserId,
+                user: updatedMember.user,
+                role: updatedMember.role));
         return ReceivedChatEvent(
           sender: sender,
           chatroom: chatroom,
