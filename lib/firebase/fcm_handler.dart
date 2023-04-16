@@ -8,6 +8,7 @@ import 'package:fyp_chat_app/dto/events/message_dto.dart';
 import 'package:fyp_chat_app/models/access_change_event.dart';
 import 'package:fyp_chat_app/models/chat_event.dart';
 import 'package:fyp_chat_app/models/chat_message.dart';
+import 'package:fyp_chat_app/models/chatroom.dart';
 import 'package:fyp_chat_app/models/enum.dart';
 import 'package:fyp_chat_app/models/group_member.dart';
 import 'package:fyp_chat_app/models/received_plain_message.dart';
@@ -63,11 +64,11 @@ class FCMHandler {
       sender = await UsersApi().getUserById(event.senderUserId);
       await ContactStore().storeContact(sender);
     }
-    var chatroom = await ChatroomStore().get(event.chatroomId);
-    if (chatroom == null) {
-      chatroom = await GroupChatApi().getGroup(event.chatroomId);
+    if (!await ChatroomStore().contains(event.chatroomId)) {
+      final chatroom = await GroupChatApi().getGroup(event.chatroomId);
       await ChatroomStore().save(chatroom);
     }
+    final chatroom = await ChatroomStore().get(event.chatroomId);
     switch (event.type) {
       case FCMEventType.textMessage:
         final messageDto = event as MessageDto;
@@ -85,7 +86,9 @@ class FCMHandler {
           // already in chatroom, add new member
           final newMember = await GroupChatApi()
               .getGroupMember(dto.chatroomId, dto.targetUserId);
-          if ((await GroupMemberStore().getbyChatroomIdAndUserId(dto.chatroomId,dto.targetUserId)) == null){
+          if ((await GroupMemberStore().getbyChatroomIdAndUserId(
+                  dto.chatroomId, dto.targetUserId)) ==
+              null) {
             await GroupMemberStore().save(dto.chatroomId, newMember);
           }
           // if not in chatroom, above code already fetch chatroom from server
