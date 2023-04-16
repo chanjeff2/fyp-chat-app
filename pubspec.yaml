@@ -62,6 +62,7 @@ dependencies:
   file_picker: ^5.2.8
   chewie: ^1.4.0
   audioplayers: ^4.0.1
+  pointycastle: ^3.7.3
 
 dev_dependencies:
   flutter_test:

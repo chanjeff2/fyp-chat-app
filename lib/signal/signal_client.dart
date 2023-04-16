@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:encrypt/encrypt.dart';
@@ -44,6 +45,7 @@ import 'package:libsignal_protocol_dart/libsignal_protocol_dart.dart';
 import 'package:fyp_chat_app/models/send_message_dao.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
+import 'package:pointycastle/export.dart';
 // import 'package:video_compress/video_compress.dart';
 
 class SignalClient {
@@ -126,6 +128,15 @@ class SignalClient {
       // store session
       await sessionBuilder.processPreKeyBundle(retrievedPreKey);
     }));
+  }
+
+  Uint8List _generateRandomVector(int length) {
+    Uint8List bytes = Uint8List(length);
+    Random.secure().nextInt(256); // Discard the first value to avoid modulo bias
+    for (int i = 0; i < length; i++) {
+      bytes[i] = Random.secure().nextInt(256);
+    }
+    return bytes;
   }
 
   Future<MessageToServer> generateMessageToServer(
@@ -261,12 +272,17 @@ class SignalClient {
      * */
 
     // 32 bytes = 256 bits, equivalent to common chat apps like WhatsApp
-    Key key = Key.fromSecureRandom(16);
-    IV iv = IV.fromSecureRandom(16);
+    Uint8List key = _generateRandomVector(32);
+    Uint8List iv = _generateRandomVector(16);
 
-    Encrypter encrypter = Encrypter(AES(key, mode: AESMode.cbc, padding: 'PKCS7'));
-
-    final encryptedData = encrypter.encryptBytes(content, iv: iv).bytes;
+    final CBCBlockCipher cbcCipher = CBCBlockCipher(AESEngine());
+    final paddedCipher = PaddedBlockCipherImpl(PKCS7Padding(), cbcCipher);
+    final ivParam = ParametersWithIV<KeyParameter>(KeyParameter(key), iv);
+    final paddingParam = PaddedBlockCipherParameters(ivParam, null);
+    paddedCipher.init(true, paddingParam);
+  
+    final encryptedData = paddedCipher.process(content);
+    // encrypter.encryptBytes(content, iv: iv).bytes;
 
     // Temporarily write file into cache and upload
     final cachePath = await getTemporaryDirectory();
@@ -282,8 +298,8 @@ class SignalClient {
       MediaKeyItem(
         type: type,
         baseName: mediaInfo.name,
-        aesKey: key.bytes,
-        iv: iv.bytes,
+        aesKey: key,
+        iv: iv,
         mediaId: mediaInfo.fileId)
       .toDto()
       .toJson()
@@ -712,17 +728,22 @@ class SignalClient {
     final recoveredDto = MediaKeyItemDto.fromJson(jsonDecode(plaintext));
     final recoveredKeyItem = MediaKeyItem.fromDto(recoveredDto);
 
-    final aesKey = Key(recoveredKeyItem.aesKey);
-    final iv = IV(recoveredKeyItem.iv);
+    final aesKey = recoveredKeyItem.aesKey;
+    final iv = recoveredKeyItem.iv;
 
-    final encrypter = 
-      Encrypter(AES(aesKey, mode: AESMode.cbc, padding: 'PKCS7'));
+    final CBCBlockCipher cbcCipher = CBCBlockCipher(AESEngine());
+    final paddedCipher = PaddedBlockCipherImpl(PKCS7Padding(), cbcCipher);
+    final ivParam = ParametersWithIV<KeyParameter>(KeyParameter(aesKey), iv);
+    final paddingParam = PaddedBlockCipherParameters(ivParam, null);
+    paddedCipher.init(false, paddingParam);
+
+    // final encrypter = Encrypter(AES(aesKey, mode: AESMode.cbc, padding: 'PKCS7'));
 
     final media = await MediaApi().downloadFile(recoveredKeyItem.mediaId);
     final formattedMedia = Uint8List.fromList(utf8.encode(media));
 
-    final decryptedMedia =
-        Uint8List.fromList(encrypter.decryptBytes(Encrypted(formattedMedia), iv: iv));
+    final decryptedMedia = paddedCipher.process(formattedMedia);
+    // Uint8List.fromList(encrypter.decryptBytes(formattedMedia, iv: iv));
 
     final reconstructedMediaItem = MediaItem(
         id: recoveredKeyItem.mediaId,
