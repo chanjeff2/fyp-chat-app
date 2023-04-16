@@ -56,6 +56,7 @@ class FCMHandler {
 
   static Future<ReceivedChatEvent?> _handleMessage(
       RemoteMessage remoteMessage) async {
+    final me = (await AccountStore().getAccount())!;
     final event = ChatroomEventDto.fromJson(remoteMessage.data);
     var sender = await ContactStore().getContactById(event.senderUserId);
     if (sender == null) {
@@ -80,16 +81,11 @@ class FCMHandler {
         return plainMessage;
       case FCMEventType.addMember:
         final dto = event as AccessControlEventDto;
-        if (await ChatroomStore().contains(dto.chatroomId)) {
-          // already in chatroom, add new member
+        // if I am the new member, already fetched chatroom above
+        if (dto.targetUserId != me.id) {
           final newMember = await GroupChatApi()
               .getGroupMember(dto.chatroomId, dto.targetUserId);
-          if ((await GroupMemberStore().getbyChatroomIdAndUserId(
-                  dto.chatroomId, dto.targetUserId)) ==
-              null) {
-            await GroupMemberStore().save(dto.chatroomId, newMember);
-          }
-          // if not in chatroom, above code already fetch chatroom from server
+          await GroupMemberStore().save(dto.chatroomId, newMember);
         }
         return ReceivedChatEvent(
           sender: sender,
@@ -99,8 +95,7 @@ class FCMHandler {
       case FCMEventType.kickMember:
         // ofc you are in the chatroom
         final dto = event as AccessControlEventDto;
-        final me = await AccountStore().getAccount();
-        if (me != null && me.userId == dto.targetUserId) {
+        if (me.userId == dto.targetUserId) {
           // me got kicked
           await ChatroomStore().remove(dto.chatroomId);
         } else {
@@ -136,11 +131,33 @@ class FCMHandler {
         // TODO: Handle this case.
         break;
       case FCMEventType.memberJoin:
-        // TODO: Handle this case.
-        break;
+        final dto = event;
+        // if I am the new member, already fetched chatroom when join
+        if (dto.senderUserId != me.id) {
+          final newMember = await GroupChatApi()
+              .getGroupMember(dto.chatroomId, dto.senderUserId);
+          await GroupMemberStore().save(dto.chatroomId, newMember);
+        }
+        return ReceivedChatEvent(
+          sender: sender,
+          chatroom: chatroom,
+          event: ChatroomEvent.from(dto),
+        );
       case FCMEventType.memberLeave:
-        // TODO: Handle this case.
-        break;
+        // ofc you are in the chatroom
+        final dto = event;
+        if (me.userId == dto.senderUserId) {
+          // me left
+          await ChatroomStore().remove(dto.chatroomId);
+        } else {
+          // someone else left
+          await GroupMemberStore().remove(dto.chatroomId, dto.senderUserId);
+        }
+        return ReceivedChatEvent(
+          sender: sender,
+          chatroom: chatroom,
+          event: ChatroomEvent.from(dto),
+        );
     }
     return null;
   }
