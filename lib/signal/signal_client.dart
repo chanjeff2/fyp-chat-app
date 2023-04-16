@@ -254,7 +254,7 @@ class SignalClient {
   ) async {
     /**
      * Encryption of file:
-     * 1. Generate random IV, AES256 and encryptor
+     * 1. Generate random IV, AES256
      * 2. Generate encryptor
      * 3. Encrypt message
      * 4. Send message and media key separately

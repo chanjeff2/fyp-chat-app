@@ -29,6 +29,7 @@ class MediaMessageDto extends ChatroomEventDto {
           sentAt: sentAt,
         );
 
+  @override
   Map<String, dynamic> toJson() => _$MediaMessageDtoToJson(this);
 
   factory MediaMessageDto.fromJson(Map<String, dynamic> json) =>

@@ -256,50 +256,6 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
               ),
             ),
           ),
-          actions: [
-            PopupMenuButton(
-              onSelected: (value) {
-                _onMenuItemSelected(value as int, userState);
-              },
-              itemBuilder: (context) => [
-                _buildPopupMenuItem("Add to Contact", 0),
-                _buildPopupMenuItem("Search", 1),
-                _buildPopupMenuItem("Mute Notifications", 2),
-                PopupMenuItem(
-                  value: 3,
-                  child: PopupMenuButton(
-                    padding: EdgeInsets.zero,
-                    child: Container(
-                      alignment: Alignment.center,
-                      height: 48.0, //default height
-                      width: double.infinity,
-                      child: Row(
-                        children: const <Widget>[
-                          Text("More"),
-                          Spacer(),
-                          Icon(
-                            Icons.keyboard_arrow_right,
-                            color: Colors.grey,
-                          ),
-                        ],
-                      ),
-                    ),
-                    itemBuilder: (innerContext) {
-                      return [
-                        PopupMenuItem(
-                          value: 102,
-                          child: const Text("Report User"),
-                          onTap: () {
-                            Navigator.of(innerContext).pop();
-                          },
-                        ),
-                      ];
-                    },
-                  ),
-                ),
-              ],
-            )
-          ],
         ),
         body: FutureBuilder(
           future: _messageHistoryFuture,
@@ -764,29 +720,6 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
         ),
       ),
     );
-  }
-
-  PopupMenuItem _buildPopupMenuItem(String title, int positon) {
-    return PopupMenuItem(
-      value: positon,
-      child: Text(title),
-    );
-  }
-
-  _onMenuItemSelected(int value, UserState userState) {
-    switch (value) {
-      case 0:
-        break;
-
-      case 1:
-        break;
-
-      case 2:
-        break;
-
-      case 3:
-        break;
-    }
   }
 
   void _handleMessageTap(BuildContext _, types.Message message) async {

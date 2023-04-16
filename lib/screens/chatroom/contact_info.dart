@@ -665,7 +665,7 @@ class _ContactInfoState extends State<ContactInfo> {
                                                     : chatroom.members[index])
                                                 .user
                                                 .displayName ==
-                                            null)
+                                            userState.me!.userId)
                                         ? "You"
                                         : ((checkIsAdmin(userState)
                                                           ? chatroom.members[index - 1] 
