@@ -85,7 +85,6 @@ class _ContactInfoState extends State<ContactInfo> {
     final RenderBox referenceBox = context.findRenderObject() as RenderBox;
     setState(() {
       _tapPosition = referenceBox.globalToLocal(tapPosition.globalPosition);
-      print(_tapPosition);
     });
   }
 
@@ -569,10 +568,6 @@ class _ContactInfoState extends State<ContactInfo> {
                         if (index == 0 && checkIsAdmin(userState)) {
                           return InkWell(
                             onTap: () {
-                              // for (var i in (snapshot.data
-                              //     as List<GroupMember>)) {
-                              //   print(i.user.name);
-                              // }
                               Navigator.of(context).push(MaterialPageRoute(
                                 builder: (context) => CreateGroupScreen(
                                   isCreateGroup: false,
@@ -611,6 +606,10 @@ class _ContactInfoState extends State<ContactInfo> {
                                     ? chatroom.members[index - 1]
                                     : chatroom.members[index])
                                 .id);
+                            print((await GroupMemberStore()
+                                    .getbyChatroomIdAndUserId(chatroom.id, ((checkIsAdmin(userState)
+                                ? chatroom.members[index - 1]
+                                : chatroom.members[index]).user.userId)))!.id);
                             return _getTapPosition(position);
                           },
                           onLongPress: () async {
@@ -965,7 +964,6 @@ class _ContactInfoState extends State<ContactInfo> {
                 (widget.chatroom as GroupChat).members.removeWhere((element) =>
                     (element.user.userId ==
                         memberSelectedForTheAction.user.userId));
-                print(memberfromAPI.role);
                 (widget.chatroom as GroupChat).members.add(GroupMember(
                     id: memberSelectedForTheAction.id,
                     user: memberfromAPI.user,
@@ -998,7 +996,6 @@ class _ContactInfoState extends State<ContactInfo> {
                 (widget.chatroom as GroupChat).members.removeWhere((element) =>
                     (element.user.userId ==
                         memberSelectedForTheAction.user.userId));
-                print(memberfromAPI.role);
                 (widget.chatroom as GroupChat).members.add(GroupMember(
                     id: memberSelectedForTheAction.id,
                     user: memberfromAPI.user,
