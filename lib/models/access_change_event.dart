@@ -1,5 +1,5 @@
 import 'package:fyp_chat_app/dto/events/access_control_event_dto.dart';
-import 'package:fyp_chat_app/models/chat_event.dart';
+import 'package:fyp_chat_app/models/chatroom_event.dart';
 import 'package:fyp_chat_app/models/enum.dart';
 
 class AccessControlEvent extends ChatroomEvent {

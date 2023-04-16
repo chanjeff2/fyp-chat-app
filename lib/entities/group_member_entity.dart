@@ -1,4 +1,3 @@
-import 'package:fyp_chat_app/dto/group_member_dto.dart';
 import 'package:fyp_chat_app/models/enum.dart';
 import 'package:json_annotation/json_annotation.dart';
 

@@ -4,7 +4,7 @@ import 'package:fyp_chat_app/models/media_message.dart';
 import 'package:fyp_chat_app/models/plain_message.dart';
 import 'package:fyp_chat_app/storage/media_store.dart';
 
-import 'chat_event.dart';
+import 'chatroom_event.dart';
 
 enum MessageType {
   text,

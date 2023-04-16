@@ -1,7 +1,7 @@
 import 'package:fyp_chat_app/models/chatroom.dart';
 import 'package:fyp_chat_app/models/user.dart';
 
-import 'chat_event.dart';
+import 'chatroom_event.dart';
 
 class ReceivedChatEvent {
   final User sender;
