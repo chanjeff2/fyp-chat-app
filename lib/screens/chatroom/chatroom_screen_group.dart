@@ -199,7 +199,6 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
 
   void _sendMessage(String message) async {
     _messageController.clear();
-    _textMessage = false;
     final sentMessage = await SignalClient().sendMessageToChatroom(
       _state.me!,
       widget.chatroom,
@@ -207,6 +206,7 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
     );
     setState(() {
       _messages.insert(0, sentMessage);
+      _textMessage = false;
     });
   }
 
@@ -707,15 +707,14 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
                         style: ElevatedButton.styleFrom(
                           shape: const CircleBorder(),
                           padding: const EdgeInsets.all(12),
-                          backgroundColor: Theme.of(context)
-                              .primaryColor, // <-- Button color
+                          backgroundColor: _textMessage
+                                          ? Theme.of(context).primaryColor
+                                          : Colors.grey, // <-- Button color
                           foregroundColor: Theme.of(context)
                               .highlightColor, // <-- Splash color
                           minimumSize: const Size(0, 0),
                         ),
-                        child: _textMessage
-                            ? const Icon(Icons.send, color: Colors.white)
-                            : const Icon(Icons.mic, color: Colors.white),
+                        child: const Icon(Icons.send, color: Colors.white),
                         onPressed: () {
                           if (message.trim().isNotEmpty) {
                             _sendMessage(message);
