@@ -24,7 +24,7 @@ class _VideoPlayerState extends State<VideoPlayer> {
     super.initState();
     _controller = VideoPlayerController.file(
       widget.video,
-      videoPlayerOptions: VideoPlayerOptions(mixWithOthers: true),
+      videoPlayerOptions: VideoPlayerOptions(mixWithOthers: false),
     );
     _future = initVideoPlayer();
   }

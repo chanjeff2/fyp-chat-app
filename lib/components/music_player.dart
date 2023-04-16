@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:fyp_chat_app/components/palette.dart';
@@ -21,33 +23,43 @@ class _MusicPlayerState extends State<MusicPlayer> {
   Duration duration = Duration.zero;
   Duration position = Duration.zero;
 
+  late StreamSubscription<PlayerState> _stateChangedSubscription;
+  late StreamSubscription<Duration> _durationChangedSubscription;
+  late StreamSubscription<Duration> _positionChangedSubscription;
+
   @override
   void initState() {
     super.initState();
 
     setAudio();
 
-    audioPlayer.onPlayerStateChanged.listen((state) {
-      setState(() {
-        _isPlaying = (state == PlayerState.playing);
+    _stateChangedSubscription =
+      audioPlayer.onPlayerStateChanged.listen((state) {
+        setState(() {
+          _isPlaying = (state == PlayerState.playing);
+        });
       });
-    });
 
-    audioPlayer.onDurationChanged.listen((newDuration) {
-      setState(() {
-        duration = newDuration;
+    _durationChangedSubscription =
+      audioPlayer.onDurationChanged.listen((newDuration) {
+        setState(() {
+          duration = newDuration;
+        });
       });
-    });
 
-    audioPlayer.onPositionChanged.listen((newPosition) {
-      setState(() {
-        position = newPosition;
+    _positionChangedSubscription =
+      audioPlayer.onPositionChanged.listen((newPosition) {
+        setState(() {
+          position = newPosition;
+        });
       });
-    });
   }
 
   @override
   void dispose() {
+    _stateChangedSubscription.cancel();
+    _durationChangedSubscription.cancel();
+    _positionChangedSubscription.cancel();
     audioPlayer.dispose();
     super.dispose();
   }

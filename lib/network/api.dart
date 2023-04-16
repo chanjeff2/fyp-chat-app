@@ -42,13 +42,13 @@ abstract class Api {
   }
 
   //
-  dynamic _processJSONlessResponse(http.Response response) {
+  Uint8List _processJSONlessResponse(http.Response response) {
     if (response.statusCode < 200 || response.statusCode >= 300) {
       final body = json.decode(response.body);
       log('ApiException: [${response.statusCode}] ${body["message"]}');
       throw ApiException(response.statusCode, body["message"], body["error"]);
     }
-    return response.body;
+    return response.bodyBytes;
   }
 
   Future<AccessToken> _getAccessToken() async {
@@ -102,7 +102,7 @@ abstract class Api {
   }
 
   @protected
-  Future<dynamic> getMedia(
+  Future<Uint8List> getMedia(
     String path, {
     Map<String, String>? headers,
     Map<String, String>? query,

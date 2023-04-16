@@ -1,5 +1,3 @@
-
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
@@ -24,7 +22,7 @@ class MediaApi extends Api {
     return FileDto.fromJson(response); // Need to decrypt the JSON in actual case
   }
 
-  Future<String> downloadFile(String mediaId) async {
+  Future<Uint8List> downloadFile(String mediaId) async {
     final response = await getMedia("/$mediaId", useAuth: true);
     return response;
   }
