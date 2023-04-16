@@ -85,7 +85,9 @@ class FCMHandler {
           // already in chatroom, add new member
           final newMember = await GroupChatApi()
               .getGroupMember(dto.chatroomId, dto.targetUserId);
-          await GroupMemberStore().save(dto.chatroomId, newMember);
+          if ((await GroupMemberStore().getbyChatroomIdAndUserId(dto.chatroomId,dto.targetUserId)) == null){
+            await GroupMemberStore().save(dto.chatroomId, newMember);
+          }
           // if not in chatroom, above code already fetch chatroom from server
         }
         return ReceivedChatEvent(
