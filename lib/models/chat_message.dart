@@ -1,8 +1,10 @@
 import 'package:fyp_chat_app/entities/chat_message_entity.dart';
-import 'package:fyp_chat_app/models/media_item.dart';
+import 'package:fyp_chat_app/models/enum.dart';
 import 'package:fyp_chat_app/models/media_message.dart';
 import 'package:fyp_chat_app/models/plain_message.dart';
 import 'package:fyp_chat_app/storage/media_store.dart';
+
+import 'chat_event.dart';
 
 enum MessageType {
   text,
@@ -14,25 +16,28 @@ enum MessageType {
   document,
 }
 
-abstract class ChatMessage {
+abstract class ChatMessage extends ChatroomEvent {
   int? id;
-  final String senderUserId;
-  final String chatroomId;
-  final MessageType type;
-  final DateTime sentAt;
+  final MessageType messageType;
   final bool isRead;
 
   ChatMessage({
+    required FCMEventType type,
+    required String senderUserId,
+    required String chatroomId,
+    required DateTime sentAt,
     this.id,
-    required this.senderUserId,
-    required this.chatroomId,
-    required this.type,
-    required this.sentAt,
+    required this.messageType,
     this.isRead = false,
-  });
+  }) : super(
+          type: type,
+          senderUserId: senderUserId,
+          chatroomId: chatroomId,
+          sentAt: sentAt,
+        );
 
   String get notificationContent {
-    switch (type) {
+    switch (messageType) {
       case MessageType.text:
         return (this as PlainMessage).content;
       case MessageType.image:

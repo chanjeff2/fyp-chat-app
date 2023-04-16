@@ -55,7 +55,9 @@ class GroupChatApi extends Api {
   ) async {
     try {
       var sendAccessControlDto = SendAccessControlDto(
-          targetUserId: userId, type: FCMEventType.AddMember,sentAt: DateTime.now());
+          targetUserId: userId,
+          type: FCMEventType.addMember,
+          sentAt: DateTime.now());
       final json = await post("/$groupId/access-control",
           body: sendAccessControlDto.toJson(), useAuth: true);
     } catch (e) {
@@ -65,8 +67,10 @@ class GroupChatApi extends Api {
 
   Future<bool> kickMember(String groupId, String userId) async {
     try {
-      var sendAccessControlDto =
-          SendAccessControlDto(targetUserId: userId, type: FCMEventType.KickMember,sentAt: DateTime.now());
+      var sendAccessControlDto = SendAccessControlDto(
+          targetUserId: userId,
+          type: FCMEventType.kickMember,
+          sentAt: DateTime.now());
       final json = await post("/$groupId/access-control",
           body: sendAccessControlDto.toJson(), useAuth: true);
       return true;
@@ -87,7 +91,9 @@ class GroupChatApi extends Api {
   Future<bool> addAdmin(String groupId, String userId) async {
     try {
       var sendAccessControlDto = SendAccessControlDto(
-          targetUserId: userId, type: FCMEventType.PromoteAdmin,sentAt: DateTime.now());
+          targetUserId: userId,
+          type: FCMEventType.promoteAdmin,
+          sentAt: DateTime.now());
       final json = await post("/$groupId/access-control",
           body: sendAccessControlDto.toJson(), useAuth: true);
       return true;
@@ -99,7 +105,9 @@ class GroupChatApi extends Api {
   Future<bool> removeAdmin(String groupId, String userId) async {
     try {
       var sendAccessControlDto = SendAccessControlDto(
-          targetUserId: userId, type: FCMEventType.DemoteAdmin,sentAt: DateTime.now());
+          targetUserId: userId,
+          type: FCMEventType.demoteAdmin,
+          sentAt: DateTime.now());
       final json = await post("/$groupId/access-control",
           body: sendAccessControlDto.toJson(), useAuth: true);
       return true;
@@ -110,8 +118,10 @@ class GroupChatApi extends Api {
 
   Future<bool> addMember(String groupId, String userId) async {
     try {
-      var sendAccessControlDto =
-          SendAccessControlDto(targetUserId: userId, type: FCMEventType.AddMember,sentAt: DateTime.now());
+      var sendAccessControlDto = SendAccessControlDto(
+          targetUserId: userId,
+          type: FCMEventType.addMember,
+          sentAt: DateTime.now());
       final json = await post("/$groupId/access-control",
           body: sendAccessControlDto.toJson(), useAuth: true);
       return true;

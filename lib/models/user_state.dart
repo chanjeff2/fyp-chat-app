@@ -19,13 +19,13 @@ class UserState extends ChangeNotifier {
 
   Chatroom? chatroom;
 
-  final StreamController<ReceivedPlainMessage> _messageStreamController =
+  final StreamController<ReceivedChatEvent> _messageStreamController =
       StreamController();
 
-  late final Stream<ReceivedPlainMessage> _messageStream;
+  late final Stream<ReceivedChatEvent> _messageStream;
 
-  Stream<ReceivedPlainMessage> get messageStream => _messageStream;
-  StreamSink<ReceivedPlainMessage> get messageSink =>
+  Stream<ReceivedChatEvent> get messageStream => _messageStream;
+  StreamSink<ReceivedChatEvent> get messageSink =>
       _messageStreamController.sink;
 
   UserState() {

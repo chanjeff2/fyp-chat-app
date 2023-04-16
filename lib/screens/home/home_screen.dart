@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:fyp_chat_app/components/contact_option.dart';
+import 'package:fyp_chat_app/models/access_change_event.dart';
 import 'package:fyp_chat_app/models/chatroom.dart';
 import 'package:fyp_chat_app/models/enum.dart';
 import 'package:fyp_chat_app/models/group_chat.dart';
@@ -36,8 +37,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final Map<String, Chatroom> _chatroomMap = {};
   final Map<String, Chatroom> _filteredChatroomMap = {};
   late final Future<bool> _loadChatroomFuture;
-  late final StreamSubscription<ReceivedPlainMessage>
-      _messageStreamSubscription;
+  late final StreamSubscription<ReceivedChatEvent> _messageStreamSubscription;
   Offset _tapPosition = Offset.zero;
   List<Chatroom> chatroomListForDeleteToGestureDetector = [];
   int chatroomListForDeleteToGestureDetectorID = 0;
@@ -52,12 +52,35 @@ class _HomeScreenState extends State<HomeScreen> {
     _messageStreamSubscription = Provider.of<UserState>(context, listen: false)
         .messageStream
         .listen((receivedMessage) {
-      setState(() {
-        // update contact on receive new message
-        _chatroomMap[receivedMessage.chatroom.id] = receivedMessage.chatroom;
-        _filteredChatroomMap[receivedMessage.chatroom.id] =
-            receivedMessage.chatroom;
-      });
+      switch (receivedMessage.event.type) {
+        case FCMEventType.textMessage:
+        case FCMEventType.mediaMessage:
+        case FCMEventType.patchGroup:
+        case FCMEventType.addMember:
+        case FCMEventType.promoteAdmin:
+        case FCMEventType.demoteAdmin:
+        case FCMEventType.memberJoin:
+        case FCMEventType.memberLeave: // me leave handled onClick
+          setState(() {
+            // update contact on receive new message
+            _chatroomMap[receivedMessage.chatroom.id] =
+                receivedMessage.chatroom;
+            _filteredChatroomMap[receivedMessage.chatroom.id] =
+                receivedMessage.chatroom;
+          });
+          break;
+        case FCMEventType.kickMember:
+          final me = Provider.of<UserState>(context, listen: false).me!;
+          final event = receivedMessage.event as AccessControlEvent;
+          if (me.id == event.targetUserId) {
+            // I got kicked
+            setState(() {
+              _chatroomMap.remove(receivedMessage.chatroom.id);
+              _filteredChatroomMap.remove(receivedMessage.chatroom.id);
+            });
+          }
+          break;
+      }
     });
   }
 
@@ -183,10 +206,11 @@ class _HomeScreenState extends State<HomeScreen> {
                         case ChatroomType.oneToOne:
                           Navigator.of(context)
                               .push(MaterialPageRoute(
-                                  builder: (context) => ChatRoomScreen(
-                                      chatroom: chatroomList[i]),
-                                  settings: RouteSettings(name: "/chatroom/${chatroomList[i].id}"),
-                                  ))
+                            builder: (context) =>
+                                ChatRoomScreen(chatroom: chatroomList[i]),
+                            settings: RouteSettings(
+                                name: "/chatroom/${chatroomList[i].id}"),
+                          ))
                               .then((value) async {
                             await ChatroomStore().save(value);
                             await _loadChatroom();
@@ -195,10 +219,11 @@ class _HomeScreenState extends State<HomeScreen> {
                         case ChatroomType.group:
                           Navigator.of(context)
                               .push(MaterialPageRoute(
-                                  builder: (context) => ChatRoomScreenGroup(
-                                      chatroom: chatroomList[i]),
-                                  settings: RouteSettings(name: "/chatroom-group/${chatroomList[i].id}"),
-                                  ))
+                            builder: (context) => ChatRoomScreenGroup(
+                                chatroom: chatroomList[i] as GroupChat),
+                            settings: RouteSettings(
+                                name: "/chatroom-group/${chatroomList[i].id}"),
+                          ))
                               .then((value) async {
                             await ChatroomStore().save(value);
                             await _loadChatroom();
@@ -222,18 +247,20 @@ class _HomeScreenState extends State<HomeScreen> {
                   case ChatroomType.oneToOne:
                     Navigator.of(context)
                         .push(MaterialPageRoute(
-                            builder: (_) => ChatRoomScreen(chatroom: chatroom),
-                            settings: RouteSettings(name: "/chatroom/${chatroom.id}"),
-                          ))
+                          builder: (_) => ChatRoomScreen(chatroom: chatroom),
+                          settings:
+                              RouteSettings(name: "/chatroom/${chatroom.id}"),
+                        ))
                         .then((value) => setState(() => {_loadChatroom()}));
                     break;
                   case ChatroomType.group:
                     Navigator.of(context)
                         .push(MaterialPageRoute(
-                            builder: (_) =>
-                              ChatRoomScreenGroup(chatroom: chatroom),
-                              settings: RouteSettings(name: "/chatroom-group/${chatroom.id}"),
-                          ))
+                          builder: (_) => ChatRoomScreenGroup(
+                              chatroom: chatroom as GroupChat),
+                          settings: RouteSettings(
+                              name: "/chatroom-group/${chatroom.id}"),
+                        ))
                         .then((value) => setState(() => {_loadChatroom()}));
                     break;
                   default:

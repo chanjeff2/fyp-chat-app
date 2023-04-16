@@ -1,29 +1,40 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'send_access_control_dto.dart';
+part of 'access_control_event_dto.dart';
 
 // **************************************************************************
 // JsonSerializableGenerator
 // **************************************************************************
 
-SendAccessControlDto _$SendAccessControlDtoFromJson(Map<String, dynamic> json) {
+AccessControlEventDto _$AccessControlEventDtoFromJson(
+    Map<String, dynamic> json) {
   $checkKeys(
     json,
-    requiredKeys: const ['targetUserId', 'type', 'sentAt'],
+    requiredKeys: const [
+      'type',
+      'senderUserId',
+      'chatroomId',
+      'sentAt',
+      'targetUserId'
+    ],
   );
-  return SendAccessControlDto(
-    targetUserId: json['targetUserId'] as String,
+  return AccessControlEventDto(
     type: $enumDecode(_$FCMEventTypeEnumMap, json['type']),
-    sentAt: DateTime.parse(json['sentAt'] as String),
+    senderUserId: json['senderUserId'] as String,
+    chatroomId: json['chatroomId'] as String,
+    sentAt: json['sentAt'] as String,
+    targetUserId: json['targetUserId'] as String,
   );
 }
 
-Map<String, dynamic> _$SendAccessControlDtoToJson(
-        SendAccessControlDto instance) =>
+Map<String, dynamic> _$AccessControlEventDtoToJson(
+        AccessControlEventDto instance) =>
     <String, dynamic>{
-      'targetUserId': instance.targetUserId,
       'type': _$FCMEventTypeEnumMap[instance.type]!,
-      'sentAt': instance.sentAt.toIso8601String(),
+      'senderUserId': instance.senderUserId,
+      'chatroomId': instance.chatroomId,
+      'sentAt': instance.sentAt,
+      'targetUserId': instance.targetUserId,
     };
 
 const _$FCMEventTypeEnumMap = {

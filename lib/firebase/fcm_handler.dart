@@ -1,18 +1,23 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:fyp_chat_app/dto/events/media_message_dto.dart';
-import 'package:fyp_chat_app/dto/events/permission_update_dto.dart';
+import 'package:fyp_chat_app/dto/events/access_control_event_dto.dart';
+import 'package:fyp_chat_app/dto/events/chatroom_event_dto.dart';
 import 'package:fyp_chat_app/dto/events/fcm_event.dart';
-import 'package:fyp_chat_app/dto/events/member_invitation_dto.dart';
-import 'package:fyp_chat_app/dto/events/member_removal_dto.dart';
 import 'package:fyp_chat_app/dto/events/message_dto.dart';
+import 'package:fyp_chat_app/models/access_change_event.dart';
+import 'package:fyp_chat_app/models/chat_event.dart';
+import 'package:fyp_chat_app/models/chat_message.dart';
 import 'package:fyp_chat_app/models/enum.dart';
 import 'package:fyp_chat_app/models/received_plain_message.dart';
+import 'package:fyp_chat_app/models/user.dart';
 import 'package:fyp_chat_app/models/user_state.dart';
 import 'package:fyp_chat_app/network/group_chat_api.dart';
+import 'package:fyp_chat_app/network/users_api.dart';
 import 'package:fyp_chat_app/signal/signal_client.dart';
 import 'package:fyp_chat_app/storage/account_store.dart';
 import 'package:fyp_chat_app/storage/chatroom_store.dart';
+import 'package:fyp_chat_app/storage/contact_store.dart';
 import 'package:fyp_chat_app/storage/group_member_store.dart';
 
 import '../models/message.dart' as message_model;
@@ -49,57 +54,86 @@ class FCMHandler {
     _handleMessage(message);
   }
 
-  static Future<ReceivedPlainMessage?> _handleMessage(
+  static Future<ReceivedChatEvent?> _handleMessage(
       RemoteMessage remoteMessage) async {
-    final event = FCMEvent.fromJson(remoteMessage.data);
+    final event = ChatroomEventDto.fromJson(remoteMessage.data);
+    var sender = await ContactStore().getContactById(event.senderUserId);
+    if (sender == null) {
+      sender = await UsersApi().getUserById(event.senderUserId);
+      await ContactStore().storeContact(sender);
+    }
+    var chatroom = await ChatroomStore().get(event.chatroomId);
+    if (chatroom == null) {
+      chatroom = await GroupChatApi().getGroup(event.chatroomId);
+      await ChatroomStore().save(chatroom);
+    }
     switch (event.type) {
-      case EventType.textMessage:
+      case FCMEventType.textMessage:
         final messageDto = event as MessageDto;
         final message = message_model.Message.fromDto(messageDto);
         final plainMessage = await SignalClient().processMessage(message);
         return plainMessage;
-      case EventType.memberInvitation:
-        final dto = event as MemberInvitationDto;
-        if (await ChatroomStore().contains(dto.chatroomId)) {
-          // already in chatroom, add new member
-          final newMember = await GroupChatApi()
-              .getGroupMember(dto.chatroomId, dto.recipientUserId);
-          await GroupMemberStore().save(dto.chatroomId, newMember);
-        } else {
-          // not yet in chatroom
-          final chatroom = await GroupChatApi().getGroup(dto.chatroomId);
-          await ChatroomStore().save(chatroom);
-        }
-        break;
-      case EventType.memberRemoval:
-        // ofc you are in the chatroom
-        final dto = event as MemberRemovalDto;
-        final me = await AccountStore().getAccount();
-        if (me != null && me.userId == dto.recipientUserId) {
-          // me got kicked
-          await ChatroomStore().remove(dto.chatroomId);
-        } else {
-          // someone else got kicked
-          await GroupMemberStore().remove(dto.chatroomId, dto.recipientUserId);
-        }
-        break;
-      case EventType.permissionUpdate:
-        final dto = event as PermissionUpdateDto;
-        // already in chatroom, update member
-        final updatedMember = await GroupChatApi()
-            .getGroupMember(dto.chatroomId, dto.recipientUserId);
-        await GroupMemberStore().save(dto.chatroomId, updatedMember);
-        break;
-      case EventType.mediaMessage:
+      case FCMEventType.mediaMessage:
         final messageDto = event as MediaMessageDto;
         final message = message_model.Message.fromMediaDto(messageDto);
         final plainMessage = await SignalClient().processMediaMessage(message);
         return plainMessage;
+      case FCMEventType.addMember:
+        final dto = event as AccessControlEventDto;
+        if (await ChatroomStore().contains(dto.chatroomId)) {
+          // already in chatroom, add new member
+          final newMember = await GroupChatApi()
+              .getGroupMember(dto.chatroomId, dto.targetUserId);
+          await GroupMemberStore().save(dto.chatroomId, newMember);
+          // if not in chatroom, above code already fetch chatroom from server
+        }
+        return ReceivedChatEvent(
+          sender: sender,
+          chatroom: chatroom,
+          event: AccessControlEvent.fromDto(dto),
+        );
+      case FCMEventType.kickMember:
+        // ofc you are in the chatroom
+        final dto = event as AccessControlEventDto;
+        final me = await AccountStore().getAccount();
+        if (me != null && me.userId == dto.targetUserId) {
+          // me got kicked
+          await ChatroomStore().remove(dto.chatroomId);
+        } else {
+          // someone else got kicked
+          await GroupMemberStore().remove(dto.chatroomId, dto.targetUserId);
+        }
+        return ReceivedChatEvent(
+          sender: sender,
+          chatroom: chatroom,
+          event: AccessControlEvent.fromDto(dto),
+        );
+      case FCMEventType.promoteAdmin:
+      case FCMEventType.demoteAdmin:
+        final dto = event as AccessControlEventDto;
+        // already in chatroom, update member
+        final updatedMember = await GroupChatApi()
+            .getGroupMember(dto.chatroomId, dto.targetUserId);
+        await GroupMemberStore().save(dto.chatroomId, updatedMember);
+        return ReceivedChatEvent(
+          sender: sender,
+          chatroom: chatroom,
+          event: AccessControlEvent.fromDto(dto),
+        );
+      case FCMEventType.patchGroup:
+        // TODO: Handle this case.
+        break;
+      case FCMEventType.memberJoin:
+        // TODO: Handle this case.
+        break;
+      case FCMEventType.memberLeave:
+        // TODO: Handle this case.
+        break;
     }
     return null;
   }
 
-  static void _showNotification(ReceivedPlainMessage message) {
+  static void _showNotification(ReceivedChatEvent message) {
     late final String notificationTitle;
     switch (message.chatroom.type) {
       case ChatroomType.oneToOne:
@@ -109,20 +143,46 @@ class FCMHandler {
         notificationTitle = message.chatroom.name;
         break;
     }
-    
-    FlutterLocalNotificationsPlugin().show(
-        message.message.id!,
-        notificationTitle,
-        message.message.notificationContent,
-        const NotificationDetails(
-          android: AndroidNotificationDetails(
-            channelId,
-            channelName,
-            icon: 'app_icon',
-            channelDescription: channelDescription,
-            importance: Importance.max,
-            priority: Priority.max,
-          ),
-        ));
+    switch (message.event.type) {
+      case FCMEventType.textMessage:
+      case FCMEventType.mediaMessage:
+        final msg = message.event as ChatMessage;
+        FlutterLocalNotificationsPlugin().show(
+            msg.id!,
+            notificationTitle,
+            msg.notificationContent,
+            const NotificationDetails(
+              android: AndroidNotificationDetails(
+                channelId,
+                channelName,
+                icon: 'app_icon',
+                channelDescription: channelDescription,
+                importance: Importance.max,
+                priority: Priority.max,
+              ),
+            ));
+        break;
+      case FCMEventType.patchGroup:
+        // TODO: Handle this case.
+        break;
+      case FCMEventType.addMember:
+        // TODO: Handle this case.
+        break;
+      case FCMEventType.kickMember:
+        // TODO: Handle this case.
+        break;
+      case FCMEventType.promoteAdmin:
+        // TODO: Handle this case.
+        break;
+      case FCMEventType.demoteAdmin:
+        // TODO: Handle this case.
+        break;
+      case FCMEventType.memberJoin:
+        // TODO: Handle this case.
+        break;
+      case FCMEventType.memberLeave:
+        // TODO: Handle this case.
+        break;
+    }
   }
 }

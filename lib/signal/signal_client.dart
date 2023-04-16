@@ -200,7 +200,7 @@ class SignalClient {
       recipientUserId: recipientUserId,
       chatroomId: chatroomId,
       messages: messages,
-      messageType: FCMEventType.TextMessage,
+      messageType: FCMEventType.textMessage,
       sentAt: sentAt,
     ).toDto();
 
@@ -235,7 +235,7 @@ class SignalClient {
       recipientUserId: recipientUserId,
       chatroomId: chatroomId,
       messages: messagesRetry,
-      messageType: FCMEventType.TextMessage,
+      messageType: FCMEventType.textMessage,
       sentAt: sentAt,
     ).toDto();
 
@@ -258,10 +258,10 @@ class SignalClient {
      * 2. Generate encryptor
      * 3. Encrypt message
      * 4. Send message and media key separately
-     * */ 
-    
+     * */
+
     // 32 bytes = 256 bits, equivalent to common chat apps like WhatsApp
-    Key key = Key.fromSecureRandom(32); 
+    Key key = Key.fromSecureRandom(32);
     IV iv = IV.fromSecureRandom(16);
 
     Encrypter encrypter = Encrypter(AES(key, mode: AESMode.cbc, padding: 'PKCS7'));
@@ -278,13 +278,16 @@ class SignalClient {
     // Send media to server, and obtain the id for the key
     final mediaInfo = await MediaApi().uploadFile(file);
 
-    final mediaKeyToSend = jsonEncode(MediaKeyItem(
-      type: type,
-      baseName: mediaInfo.name,
-      aesKey: key.bytes,
-      iv: iv.bytes,
-      mediaId: mediaInfo.fileId
-    ).toDto().toJson());
+    final mediaKeyToSend = jsonEncode(
+      MediaKeyItem(
+        type: type,
+        baseName: mediaInfo.name,
+        aesKey: key.bytes,
+        iv: iv.bytes,
+        mediaId: mediaInfo.fileId)
+      .toDto()
+      .toJson()
+    );
 
     // check if already establish session
     final remotePrimaryAddress = SignalProtocolAddress(
@@ -320,7 +323,7 @@ class SignalClient {
       recipientUserId: recipientUserId,
       chatroomId: chatroomId,
       messages: mediaKeyMsg,
-      messageType: FCMEventType.MediaMessage,
+      messageType: FCMEventType.mediaMessage,
       sentAt: sentAt,
     ).toDto();
 
@@ -358,7 +361,8 @@ class SignalClient {
             await KeysApi().getKeyBundle(recipientUserId, deviceId);
         await _establishSession(recipientUserId, keyBundle);
 
-        return generateMessageToServer(recipientUserId, deviceId, mediaKeyToSend);
+        return generateMessageToServer(
+            recipientUserId, deviceId, mediaKeyToSend);
       }),
     );
 
@@ -367,7 +371,7 @@ class SignalClient {
       recipientUserId: recipientUserId,
       chatroomId: chatroomId,
       messages: mediaKeyMsgRetry,
-      messageType: FCMEventType.MediaMessage,
+      messageType: FCMEventType.mediaMessage,
       sentAt: sentAt,
     ).toDto();
 
@@ -403,14 +407,15 @@ class SignalClient {
         break;
       case ChatroomType.group:
         chatroom as GroupChat;
-        await Future.wait(chatroom.members.map((e) async => await _sendTextMessage(
-              me.userId,
-              senderDeviceId,
-              e.user.userId,
-              chatroom.id,
-              content,
-              sentAt.toUtc(),
-            )));
+        await Future.wait(
+            chatroom.members.map((e) async => await _sendTextMessage(
+                  me.userId,
+                  senderDeviceId,
+                  e.user.userId,
+                  chatroom.id,
+                  content,
+                  sentAt.toUtc(),
+                )));
         break;
     }
 
@@ -442,7 +447,7 @@ class SignalClient {
     if (senderDeviceId == null) {
       throw Exception('Sender Device Id is null');
     }
-    
+
     final path = mediaPath ?? media.path;
     final baseName = p.basename(path);
 
@@ -508,16 +513,17 @@ class SignalClient {
         break;
       case ChatroomType.group:
         chatroom as GroupChat;
-        final idList = await Future.wait(chatroom.members.map((e) async => await _sendMediaMessage(
-              me.userId,
-              senderDeviceId,
-              e.user.userId,
-              chatroom.id,
-              processedContent,
-              baseName,
-              type,
-              sentAt.toUtc(),
-            )));
+        final idList = await Future.wait(
+            chatroom.members.map((e) async => await _sendMediaMessage(
+                  me.userId,
+                  senderDeviceId,
+                  e.user.userId,
+                  chatroom.id,
+                  processedContent,
+                  baseName,
+                  type,
+                  sentAt.toUtc(),
+                )));
         mediaId = idList.last;
         break;
     }
@@ -547,7 +553,7 @@ class SignalClient {
     return mediaMessage;
   }
 
-  Future<ReceivedPlainMessage?> processMessage(Message message) async {
+  Future<ReceivedChatEvent?> processMessage(Message message) async {
     final me = await AccountStore().getAccount();
     if (me == null) {
       return null; // user not yet login (tho it should not happen)
@@ -646,15 +652,15 @@ class SignalClient {
     }
     final chatroom = await ChatroomStore().get(message.chatroomId);
 
-    final receivedPlainMessage = ReceivedPlainMessage(
+    final receivedPlainMessage = ReceivedChatEvent(
       sender: sender,
       chatroom: chatroom!,
-      message: plainMessage,
+      event: plainMessage,
     );
     return receivedPlainMessage;
   }
 
-  Future<ReceivedPlainMessage?> processMediaMessage(Message message) async {
+  Future<ReceivedChatEvent?> processMediaMessage(Message message) async {
     final me = await AccountStore().getAccount();
     if (me == null) {
       return null; // user not yet login (tho it should not happen)
@@ -709,18 +715,19 @@ class SignalClient {
     final aesKey = Key(recoveredKeyItem.aesKey);
     final iv = IV(recoveredKeyItem.iv);
 
-    final encrypter =  Encrypter(AES(aesKey, mode: AESMode.cbc, padding: 'PKCS7'));
+    final encrypter = 
+      Encrypter(AES(aesKey, mode: AESMode.cbc, padding: 'PKCS7'));
 
     final media = await MediaApi().downloadFile(recoveredKeyItem.mediaId);
-    
-    final decryptedMedia = Uint8List.fromList(encrypter.decryptBytes(Encrypted(media), iv: iv));
+
+    final decryptedMedia =
+        Uint8List.fromList(encrypter.decryptBytes(Encrypted(media), iv: iv));
 
     final reconstructedMediaItem = MediaItem(
-      id: recoveredKeyItem.mediaId,
-      content: decryptedMedia,
-      type: recoveredKeyItem.type,
-      baseName: recoveredKeyItem.baseName
-    );
+        id: recoveredKeyItem.mediaId,
+        content: decryptedMedia,
+        type: recoveredKeyItem.type,
+        baseName: recoveredKeyItem.baseName);
 
     final mediaMessage = MediaMessage(
       senderUserId: message.senderUserId,
@@ -761,11 +768,11 @@ class SignalClient {
       }
     }
     final chatroom = await ChatroomStore().get(message.chatroomId);
-    
-    final receivedPlainMessage = ReceivedPlainMessage(
+
+    final receivedPlainMessage = ReceivedChatEvent(
       sender: sender,
       chatroom: chatroom!,
-      message: mediaMessage,
+      event: mediaMessage,
     );
     return receivedPlainMessage;
   }

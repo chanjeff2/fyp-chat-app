@@ -159,10 +159,7 @@ abstract class Api {
       AccessToken accessToken = await _getAccessToken();
       headers['Authorization'] = 'Bearer ${accessToken.accessToken}';
     }
-    final request = http.MultipartRequest(
-      'POST',
-      url
-    );
+    final request = http.MultipartRequest('POST', url);
     final fileToUpload = await http.MultipartFile.fromPath('file', file.path);
     request.files.add(fileToUpload);
     request.headers.addAll(headers); // Replace headers

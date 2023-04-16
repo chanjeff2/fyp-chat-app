@@ -112,9 +112,8 @@ class _CreateGroupScreen extends State<CreateGroupScreen> {
       List<Chatroom> members, String groupId) async {
     try {
       for (var element in members) {
-        GroupChatApi().inviteMember(
-            groupId,
-            (element as OneToOneChat).target.userId);
+        GroupChatApi()
+            .inviteMember(groupId, (element as OneToOneChat).target.userId);
         //print(element.name);
         //store the member added
         GroupMemberStore().save(
@@ -122,8 +121,8 @@ class _CreateGroupScreen extends State<CreateGroupScreen> {
             GroupMember(
                 user: (element as OneToOneChat).target, role: Role.member));
         //read the member stored and add the member to group member list
-        GroupMember? storedMember =
-            await GroupMemberStore().getbyUserID(groupId,element.target.userId);
+        GroupMember? storedMember = await GroupMemberStore()
+            .getbyChatroomIdAndUserId(groupId, element.target.userId);
         group.members.add(storedMember!);
       }
     } on ApiException catch (e) {
