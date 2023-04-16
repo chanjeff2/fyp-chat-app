@@ -261,7 +261,7 @@ class SignalClient {
      * */
 
     // 32 bytes = 256 bits, equivalent to common chat apps like WhatsApp
-    Key key = Key.fromSecureRandom(32);
+    Key key = Key.fromSecureRandom(16);
     IV iv = IV.fromSecureRandom(16);
 
     Encrypter encrypter = Encrypter(AES(key, mode: AESMode.cbc, padding: 'PKCS7'));
@@ -719,7 +719,7 @@ class SignalClient {
       Encrypter(AES(aesKey, mode: AESMode.cbc, padding: 'PKCS7'));
 
     final media = await MediaApi().downloadFile(recoveredKeyItem.mediaId);
-    final formattedMedia = base64Decode(media);
+    final formattedMedia = Uint8List.fromList(utf8.encode(media));
 
     final decryptedMedia =
         Uint8List.fromList(encrypter.decryptBytes(Encrypted(formattedMedia), iv: iv));
