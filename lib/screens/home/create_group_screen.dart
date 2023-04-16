@@ -114,16 +114,6 @@ class _CreateGroupScreen extends State<CreateGroupScreen> {
       for (var element in members) {
         GroupChatApi()
             .inviteMember(groupId, (element as OneToOneChat).target.userId);
-        //print(element.name);
-        //store the member added
-        GroupMemberStore().save(
-            groupId,
-            GroupMember(
-                user: (element as OneToOneChat).target, role: Role.member));
-        //read the member stored and add the member to group member list
-        GroupMember? storedMember = await GroupMemberStore()
-            .getbyChatroomIdAndUserId(groupId, element.target.userId);
-        group.members.add(storedMember!);
       }
     } on ApiException catch (e) {
       ScaffoldMessenger.of(context)

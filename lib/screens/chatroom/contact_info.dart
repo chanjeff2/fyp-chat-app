@@ -136,7 +136,7 @@ class _ContactInfoState extends State<ContactInfo> {
           final member = await GroupMemberStore()
               .getbyChatroomIdAndUserId(widget.chatroom.id, event.targetUserId);
           setState(() {
-            (widget.chatroom as GroupChat).members.add(member!);
+            // (widget.chatroom as GroupChat).members.add(member!);
           });
           break;
         case FCMEventType.kickMember:
@@ -598,7 +598,10 @@ class _ContactInfoState extends State<ContactInfo> {
                         }
                         // Group members
                         return InkWell(
-                          onTapDown: (position) => {_getTapPosition(position)},
+                          onTapDown: (position) {
+                            print(chatroom.members.length);
+                            return _getTapPosition(position);
+                          },
                           onLongPress: () async {
                             if (checkIsAdmin(userState) &&
                                 !(await checkSelfAccount(
@@ -664,28 +667,30 @@ class _ContactInfoState extends State<ContactInfo> {
                                                         .members[index - 1]
                                                     : chatroom.members[index])
                                                 .user
-                                                .displayName ==
+                                                .userId ==
                                             userState.me!.userId)
                                         ? "You"
                                         : ((checkIsAdmin(userState)
-                                                          ? chatroom.members[index - 1] 
-                                                          : chatroom.members[index])
-                                            .user
-                                            .displayName == null)
-                                        ? determineListViewIndexForCommonGroupList(
-                                                userState,
-                                                chatroom.members,
-                                                index)
-                                            .user
-                                            .username
-                                        : determineListViewIndexForCommonGroupList(
-                                                userState,
-                                                chatroom.members,
-                                                index)
-                                            .user
-                                            .displayName!,
-                                  style: const TextStyle(fontSize: 16)
-                                ),
+                                                        ? chatroom
+                                                            .members[index - 1]
+                                                        : chatroom
+                                                            .members[index])
+                                                    .user
+                                                    .displayName ==
+                                                null)
+                                            ? determineListViewIndexForCommonGroupList(
+                                                    userState,
+                                                    chatroom.members,
+                                                    index)
+                                                .user
+                                                .username
+                                            : determineListViewIndexForCommonGroupList(
+                                                    userState,
+                                                    chatroom.members,
+                                                    index)
+                                                .user
+                                                .displayName!,
+                                    style: const TextStyle(fontSize: 16)),
                                 const Expanded(child: SizedBox()),
                                 ((checkIsAdmin(userState)
                                                 ? chatroom.members[index - 1]
@@ -693,8 +698,7 @@ class _ContactInfoState extends State<ContactInfo> {
                                             .role ==
                                         Role.admin)
                                     ? const Icon(Icons.manage_accounts,
-                                        size: 36,
-                                        color: Colors.blueGrey)
+                                        size: 36, color: Colors.blueGrey)
                                     : Container(),
                                 const SizedBox(width: 20),
                               ],
@@ -994,7 +998,7 @@ class _ContactInfoState extends State<ContactInfo> {
                       ? memberSelectedForTheAction.user.username
                       : memberSelectedForTheAction.user.displayName!;
               ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                content: Text('Demoted $memberName as Admin'),
+                content: Text('Demoted $memberName as Member'),
               ));
             },
             value: "Remove admin",
