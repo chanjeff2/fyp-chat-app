@@ -24,8 +24,8 @@ class MediaApi extends Api {
     return FileDto.fromJson(response); // Need to decrypt the JSON in actual case
   }
 
-  Future<String> downloadFile(String mediaId) async {
+  Future<File> downloadFile(String mediaId) async {
     final response = await getMedia("/$mediaId", useAuth: true);
-    return response;
+    return File(response);
   }
 }
