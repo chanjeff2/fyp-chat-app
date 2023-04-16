@@ -68,7 +68,7 @@ class FCMHandler {
       final chatroom = await GroupChatApi().getGroup(event.chatroomId);
       await ChatroomStore().save(chatroom);
     }
-    final chatroom = await ChatroomStore().get(event.chatroomId);
+    final Chatroom chatroom = (await ChatroomStore().get(event.chatroomId))!;
     switch (event.type) {
       case FCMEventType.textMessage:
         final messageDto = event as MessageDto;
