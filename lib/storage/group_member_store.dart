@@ -102,6 +102,8 @@ class GroupMemberStore {
   }
 
   Future<void> save(String chatroomId, GroupMember member) async {
+    // save user to contact in case haven't
+    await ContactStore().storeContact(member.user);
     final entity = GroupMemberEntity(
       id: member.id,
       chatroomId: chatroomId,
