@@ -1,5 +1,6 @@
 import 'package:fyp_chat_app/dto/events/access_control_event_dto.dart';
 import 'package:fyp_chat_app/dto/events/fcm_event.dart';
+import 'package:fyp_chat_app/dto/events/media_message_dto.dart';
 import 'package:fyp_chat_app/dto/events/message_dto.dart';
 import 'package:fyp_chat_app/models/enum.dart';
 import 'package:json_annotation/json_annotation.dart';
@@ -29,8 +30,9 @@ class ChatroomEventDto extends FCMEvent {
     final type = $enumDecode(_$FCMEventTypeEnumMap, json['type']);
     switch (type) {
       case FCMEventType.textMessage:
-      case FCMEventType.mediaMessage:
         return MessageDto.fromJson(json);
+      case FCMEventType.mediaMessage:
+        return MediaMessageDto.fromJson(json);
       case FCMEventType.addMember:
       case FCMEventType.kickMember:
       case FCMEventType.promoteAdmin:

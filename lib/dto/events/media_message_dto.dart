@@ -1,11 +1,11 @@
-import 'package:fyp_chat_app/dto/events/chatroom_event.dart';
-import 'package:fyp_chat_app/dto/events/fcm_event.dart';
+import 'package:fyp_chat_app/dto/events/chatroom_event_dto.dart';
+import 'package:fyp_chat_app/models/enum.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'media_message_dto.g.dart';
 
 @JsonSerializable()
-class MediaMessageDto extends ChatroomEvent {
+class MediaMessageDto extends ChatroomEventDto {
   @JsonKey(required: true)
   final String senderDeviceId;
 
@@ -23,7 +23,7 @@ class MediaMessageDto extends ChatroomEvent {
     required this.cipherTextType,
     required this.content,
   }) : super(
-          type: EventType.mediaMessage,
+          type: FCMEventType.mediaMessage,
           senderUserId: senderUserId,
           chatroomId: chatroomId,
           sentAt: sentAt,
