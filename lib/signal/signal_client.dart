@@ -719,9 +719,10 @@ class SignalClient {
       Encrypter(AES(aesKey, mode: AESMode.cbc, padding: 'PKCS7'));
 
     final media = await MediaApi().downloadFile(recoveredKeyItem.mediaId);
+    final formattedMedia = base64Decode(media);
 
     final decryptedMedia =
-        Uint8List.fromList(encrypter.decryptBytes(Encrypted(media), iv: iv));
+        Uint8List.fromList(encrypter.decryptBytes(Encrypted(formattedMedia), iv: iv));
 
     final reconstructedMediaItem = MediaItem(
         id: recoveredKeyItem.mediaId,
