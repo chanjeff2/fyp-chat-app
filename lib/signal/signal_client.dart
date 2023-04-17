@@ -3,7 +3,6 @@ import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
 
-import 'package:encrypt/encrypt.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:fyp_chat_app/dto/media_key_item_dto.dart';
 import 'package:fyp_chat_app/dto/update_keys_dto.dart';
@@ -46,7 +45,6 @@ import 'package:fyp_chat_app/models/send_message_dao.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:pointycastle/export.dart';
-// import 'package:video_compress/video_compress.dart';
 
 class SignalClient {
   SignalClient._();
@@ -282,7 +280,6 @@ class SignalClient {
     paddedCipher.init(true, paddingParam);
   
     final encryptedData = paddedCipher.process(content);
-    // encrypter.encryptBytes(content, iv: iv).bytes;
 
     // Temporarily write file into cache and upload
     final cachePath = await getTemporaryDirectory();
@@ -737,11 +734,9 @@ class SignalClient {
     final paddingParam = PaddedBlockCipherParameters(ivParam, null);
     paddedCipher.init(false, paddingParam);
 
-    // final encrypter = Encrypter(AES(aesKey, mode: AESMode.cbc, padding: 'PKCS7'));
-
     final media = await MediaApi().downloadFile(recoveredKeyItem.mediaId);
 
-    // Temporarily write file into cache and decrypt
+    /*
     final cachePath = await getTemporaryDirectory();
     final path = "${cachePath.path}/${recoveredKeyItem.baseName}";
     final file = File(path);
@@ -749,9 +744,9 @@ class SignalClient {
     await file.writeAsBytes(media);
 
     final formattedMedia = file.readAsBytesSync();
+    */
 
-    final decryptedMedia = paddedCipher.process(formattedMedia);
-    // Uint8List.fromList(encrypter.decryptBytes(formattedMedia, iv: iv));
+    final decryptedMedia = paddedCipher.process(media);
 
     final reconstructedMediaItem = MediaItem(
         id: recoveredKeyItem.mediaId,

@@ -7,7 +7,7 @@ import 'package:fyp_chat_app/components/palette.dart';
 class MusicPlayer extends StatefulWidget {
   const MusicPlayer({Key? key,
                       required this.audio,
-                      required this.isSender
+                      required this.isSender,
                     }) : super(key: key);
 
   final String audio;
@@ -81,12 +81,12 @@ class _MusicPlayerState extends State<MusicPlayer> {
   Widget build(BuildContext context) {
     return Container(
       constraints: BoxConstraints(
-        maxWidth: MediaQuery.of(context).size.width * 0.65,
-        maxHeight: MediaQuery.of(context).size.height * 0.1,
+        maxWidth: MediaQuery.of(context).size.width * 0.7,
+        maxHeight: 100,
       ),
       child: 
       Padding(
-        padding: const EdgeInsets.all(8),
+        padding: const EdgeInsets.only(left: 8, top: 8, bottom: 8),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -105,6 +105,7 @@ class _MusicPlayerState extends State<MusicPlayer> {
                 )
               ),
             ),
+            const SizedBox(width: 10),
             Column(
               children: [
                 Slider(
@@ -129,9 +130,7 @@ class _MusicPlayerState extends State<MusicPlayer> {
                         color: (widget.isSender) ? Colors.white : Colors.black,
                       ),
                     ),
-                    SizedBox(
-                      width: MediaQuery.of(context).size.width * 0.2,
-                    ),
+                    const SizedBox(width: 50),
                     Text(
                       formatTime(duration),
                       style: TextStyle(
@@ -142,9 +141,8 @@ class _MusicPlayerState extends State<MusicPlayer> {
                 )
               ],
             )
-            
           ],
-        )
+        ),
       ),
     );
   }

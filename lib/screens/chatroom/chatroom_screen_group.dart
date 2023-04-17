@@ -470,8 +470,8 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
               ),
               audioMessageBuilder: (p0, {required messageWidth}) => Container(
                   constraints: BoxConstraints(
-                    maxWidth: MediaQuery.of(context).size.width * 0.65,
-                    maxHeight: MediaQuery.of(context).size.height * 0.1,
+                    maxWidth: MediaQuery.of(context).size.width * 0.7,
+                    maxHeight: 100,
                   ),
                   child: MusicPlayer(
                     audio: p0.uri,
