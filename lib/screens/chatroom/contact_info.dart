@@ -240,7 +240,7 @@ class _ContactInfoState extends State<ContactInfo> {
                         ((widget.chatroom as GroupChat).members.length > 1
                             ? " participants"
                             : " participant")
-                    : widget.chatroom.name,
+                    : "Known as ${(widget.chatroom as OneToOneChat).target.username}",
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                   fontSize: 24,
