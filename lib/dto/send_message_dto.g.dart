@@ -12,18 +12,20 @@ SendMessageDto _$SendMessageDtoFromJson(Map<String, dynamic> json) {
     requiredKeys: const [
       'senderDeviceId',
       'recipientUserId',
-      'recipientDeviceId',
-      'cipherTextType',
-      'content',
+      'chatroomId',
+      'messages',
+      'messageType',
       'sentAt'
     ],
   );
   return SendMessageDto(
     senderDeviceId: json['senderDeviceId'] as int,
     recipientUserId: json['recipientUserId'] as String,
-    recipientDeviceId: json['recipientDeviceId'] as int,
-    cipherTextType: json['cipherTextType'] as int,
-    content: json['content'] as String,
+    chatroomId: json['chatroomId'] as String,
+    messages: (json['messages'] as List<dynamic>)
+        .map((e) => MessageToServerDto.fromJson(e as Map<String, dynamic>))
+        .toList(),
+    messageType: $enumDecode(_$FCMEventTypeEnumMap, json['messageType']),
     sentAt: json['sentAt'] as String,
   );
 }
@@ -32,8 +34,20 @@ Map<String, dynamic> _$SendMessageDtoToJson(SendMessageDto instance) =>
     <String, dynamic>{
       'senderDeviceId': instance.senderDeviceId,
       'recipientUserId': instance.recipientUserId,
-      'recipientDeviceId': instance.recipientDeviceId,
-      'cipherTextType': instance.cipherTextType,
-      'content': instance.content,
+      'chatroomId': instance.chatroomId,
+      'messages': instance.messages,
+      'messageType': _$FCMEventTypeEnumMap[instance.messageType]!,
       'sentAt': instance.sentAt,
     };
+
+const _$FCMEventTypeEnumMap = {
+  FCMEventType.textMessage: 'text-message',
+  FCMEventType.mediaMessage: 'media-message',
+  FCMEventType.patchGroup: 'patch-group',
+  FCMEventType.addMember: 'add-member',
+  FCMEventType.kickMember: 'kick-member',
+  FCMEventType.promoteAdmin: 'promote-admin',
+  FCMEventType.demoteAdmin: 'demote-admin',
+  FCMEventType.memberJoin: 'member-join',
+  FCMEventType.memberLeave: 'member-leave',
+};

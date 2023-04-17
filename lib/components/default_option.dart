@@ -1,11 +1,9 @@
-import 'package:flutter/src/foundation/key.dart';
-import 'package:flutter/src/widgets/container.dart';
-import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter/material.dart';
 
 // Class for default options
 class DefaultOption extends StatelessWidget {
-  const DefaultOption({Key? key, required this.name, required this.icon}) : super(key: key);
+  const DefaultOption({Key? key, required this.name, required this.icon})
+      : super(key: key);
   final String name;
   final IconData icon;
 

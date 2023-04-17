@@ -1,40 +1,39 @@
-import 'package:json_annotation/json_annotation.dart';
+import 'package:fyp_chat_app/entities/user_entity.dart';
 
 import '../dto/user_dto.dart';
 
-part 'user.g.dart';
-
-@JsonSerializable()
 class User {
-  static const String createTableCommandFields =
-      "$columnUserId TEXT PRIMARY KEY, $columnUsername TEXT UNIQUE, $columnDisplayName TEXT";
-
-  static const columnUserId = "userId";
-  @JsonKey(required: true, name: columnUserId)
   final String userId;
-
-  static const columnUsername = "username";
-  @JsonKey(required: true, name: columnUsername)
   final String username;
-
-  static const columnDisplayName = "displayName";
-  @JsonKey(name: columnDisplayName)
   final String? displayName;
+  final String? status;
 
   String get name => displayName ?? username;
+  String get id => userId;
 
   User({
     required this.userId,
     required this.username,
     this.displayName,
+    this.status,
   });
-
-  Map<String, dynamic> toJson() => _$UserToJson(this);
-
-  factory User.fromJson(Map<String, dynamic> json) => _$UserFromJson(json);
 
   User.fromDto(UserDto dto)
       : userId = dto.userId,
         username = dto.username,
-        displayName = dto.displayName;
+        displayName = dto.displayName,
+        status = dto.status;
+
+  User.fromEntity(UserEntity entity)
+      : userId = entity.userId,
+        username = entity.username,
+        displayName = entity.displayName,
+        status = entity.status;
+
+  UserEntity toEntity() => UserEntity(
+        userId: userId,
+        username: username,
+        displayName: displayName,
+        status: status,
+      );
 }

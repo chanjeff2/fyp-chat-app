@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:fyp_chat_app/models/user.dart';
-import 'package:fyp_chat_app/screens/chatroom/chatroom.dart';
+import 'package:fyp_chat_app/models/chatroom.dart';
+import 'package:fyp_chat_app/models/enum.dart';
+import 'package:intl/intl.dart';
 
 // Contact in selecting user, which shows status
 class ContactOption extends StatelessWidget {
@@ -39,12 +40,10 @@ class ContactOption extends StatelessWidget {
 class HomeContact extends StatelessWidget {
   const HomeContact({
     Key? key,
-    required this.user,
-    required this.unread,
+    required this.chatroom,
     this.onClick,
   }) : super(key: key); // Require session?
-  final int unread;
-  final User user;
+  final Chatroom chatroom;
   final VoidCallback? onClick;
 
   String updateDateTime(DateTime latestActivityTime) {
@@ -70,62 +69,76 @@ class HomeContact extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 8.0),
         child: ListTile(
-          leading: const CircleAvatar(
-            child: Icon(Icons.person, size: 28, color: Colors.white),
+          leading: CircleAvatar(
+            child: chatroom.type == ChatroomType.group
+                ? const Icon(Icons.group, size: 28, color: Colors.white)
+                : const Icon(Icons.person, size: 28, color: Colors.white),
             radius: 28,
             backgroundColor: Colors.blueGrey,
           ),
           title: Row(
             children: [
               Text(
-                user.name,
+                chatroom.name,
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              Spacer(),
-              Text(
-                '12:34', // time
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: (unread > 0) ? Colors.redAccent : Colors.black,
+              const Spacer(),
+              if (chatroom.latestMessage != null)
+                Text(
+                  DateFormat.Hm()
+                      .format(chatroom.latestMessage!.sentAt), // time
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: (chatroom.unread > 0)
+                        ? FontWeight.bold
+                        : FontWeight.normal,
+                    color:
+                        (chatroom.unread > 0) ? Colors.redAccent : Colors.black,
+                  ),
                 ),
-              ),
             ],
           ),
           subtitle: Row(
             children: [
-              const Text(
-                "Hello!", // Latest message
-                style: TextStyle(
-                  fontSize: 14,
+              if (chatroom.latestMessage != null)
+                Expanded(
+                  child: Text(
+                    chatroom
+                        .latestMessage!.notificationContent, // Latest message
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: (chatroom.unread > 0)
+                            ? FontWeight.w700
+                            : FontWeight.normal),
+                  ),
                 ),
-              ),
-              Spacer(),
-              Container(
-                width: 20,
-                height: 20,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: (unread > 0)
-                      ? Colors.redAccent
-                      : null, // Theme.of(context).primaryColor,
+              const Spacer(),
+              Visibility(
+                visible: chatroom.unread > 0,
+                child: Container(
+                  width: 20,
+                  height: 20,
+                  alignment: Alignment.center,
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.redAccent, // Theme.of(context).primaryColor,
+                  ),
+                  child: Text(
+                    chatroom.unread > 9 ? '9+' : chatroom.unread.toString(),
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: Colors.white,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
                 ),
-                child: (unread > 0)
-                    ? Text(
-                        unread > 9 ? '9+' : unread.toString(),
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          color: Colors.white,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      )
-                    : null,
-              ),
+              )
             ],
           ),
         ),

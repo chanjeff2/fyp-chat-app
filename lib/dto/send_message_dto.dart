@@ -1,3 +1,5 @@
+import 'package:fyp_chat_app/dto/message_to_server_dto.dart';
+import 'package:fyp_chat_app/models/enum.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'send_message_dto.g.dart';
@@ -11,13 +13,13 @@ class SendMessageDto {
   final String recipientUserId;
 
   @JsonKey(required: true)
-  final int recipientDeviceId;
+  final String chatroomId;
 
   @JsonKey(required: true)
-  final int cipherTextType;
+  final List<MessageToServerDto> messages;
 
   @JsonKey(required: true)
-  final String content;
+  final FCMEventType messageType;
 
   @JsonKey(required: true)
   final String sentAt; // iso string
@@ -25,9 +27,9 @@ class SendMessageDto {
   SendMessageDto({
     required this.senderDeviceId,
     required this.recipientUserId,
-    required this.recipientDeviceId,
-    required this.cipherTextType,
-    required this.content,
+    required this.chatroomId,
+    required this.messages,
+    required this.messageType,
     required this.sentAt,
   });
 

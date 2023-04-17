@@ -1,14 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:fyp_chat_app/dto/login_dto.dart';
+import 'package:fyp_chat_app/models/access_token.dart';
+import 'package:fyp_chat_app/models/group_chat.dart';
+import 'package:fyp_chat_app/models/group_member.dart';
 import 'package:fyp_chat_app/models/user_state.dart';
 import 'package:fyp_chat_app/network/account_api.dart';
 import 'package:fyp_chat_app/network/api.dart';
+import 'package:fyp_chat_app/network/block_api.dart';
+import 'package:fyp_chat_app/network/group_chat_api.dart';
 import 'package:fyp_chat_app/screens/register_or_login/loading_screen.dart';
 import 'package:fyp_chat_app/signal/signal_client.dart';
-import 'package:fyp_chat_app/storage/credential_store.dart';
+import 'package:fyp_chat_app/storage/block_store.dart';
+import 'package:fyp_chat_app/storage/chatroom_store.dart';
+import 'package:fyp_chat_app/storage/contact_store.dart';
 import 'package:provider/provider.dart';
 
-import '../../dto/access_token_dto.dart';
 import '../../dto/register_dto.dart';
 import '../../network/auth_api.dart';
 
@@ -29,7 +35,6 @@ class _RegisterOrLoginScreenState extends State<RegisterOrLoginScreen> {
   bool _isConfirmPasswordVisible = false;
   bool _isRegister = false;
   bool _isLoading = false;
-
   String get username => _usernameController.text;
   String get password => _passwordController.text;
 
@@ -124,7 +129,7 @@ class _RegisterOrLoginScreenState extends State<RegisterOrLoginScreen> {
                           )),
                       validator: (username) {
                         if (username?.isEmpty ?? true) {
-                          return "username cannot be empty";
+                          return "confirm password cannot be empty";
                         }
                         return null;
                       },
@@ -141,7 +146,8 @@ class _RegisterOrLoginScreenState extends State<RegisterOrLoginScreen> {
                           _isLoading = true;
                         });
                         try {
-                          late final AccessTokenDto accessToken;
+                          late final AccessToken accessToken;
+                          Future? restoreFuture;
                           if (_isRegister) {
                             // register
                             accessToken = await AuthApi().register(
@@ -155,17 +161,27 @@ class _RegisterOrLoginScreenState extends State<RegisterOrLoginScreen> {
                             accessToken = await AuthApi().login(
                               LoginDto(username: username, password: password),
                             );
+                            // start restore chatroom
+                            restoreFuture = restoreGroupChat();
+                            // fetch blocklist of chatroom
+                            await BlockStore().storeBlockedByBlockList(
+                                await BlockApi().getBlockedListRequest());
                           }
-                          // store credential
-                          await CredentialStore()
-                              .storeCredential(username, password);
-                          await CredentialStore().storeToken(accessToken);
-                          Provider.of<UserState>(context, listen: false)
-                              .setAccessTokenStatus(true);
                           // init signal stuffs
                           await SignalClient().initialize();
+
+                          Provider.of<UserState>(context, listen: false)
+                              .setAccessTokenStatus(true);
+
+                          // wait restore chatroom finish
+                          if (restoreFuture != null) {
+                            await restoreFuture;
+                          }
                           // get account profile
+                          // add account to contact store
                           final account = await AccountApi().getMe();
+
+                          await ContactStore().storeContact(account);
                           userState.setMe(account);
                         } on ApiException catch (e) {
                           ScaffoldMessenger.of(context).showSnackBar(
@@ -207,4 +223,19 @@ class _RegisterOrLoginScreenState extends State<RegisterOrLoginScreen> {
             ),
           ),
         );
+
+  Future<void> restoreGroupChat() async {
+    final groups = await GroupChatApi().getMyGroups();
+
+    //save contact of group members
+    Set<GroupMember> set = {};
+    for (GroupChat group in groups) {
+      set.addAll(group.members);
+    }
+    for (GroupMember contact in set) {
+      await ContactStore().storeContact(contact.user);
+    }
+
+    await Future.wait(groups.map((group) => ChatroomStore().save(group)));
+  }
 }

@@ -1,8 +1,9 @@
 import 'dart:convert';
 import 'dart:developer';
+import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
-import 'package:fyp_chat_app/dto/access_token_dto.dart';
+import 'package:flutter/foundation.dart';
 import 'package:fyp_chat_app/models/access_token.dart';
 import 'package:fyp_chat_app/network/auth_api.dart';
 import 'package:fyp_chat_app/storage/credential_store.dart';
@@ -23,10 +24,9 @@ class AccessTokenNotFoundException implements Exception {
 
 abstract class Api {
   // use hostname -I to get wsl2 ip and replace the ip address
-  static const String baseUrl =
-      "https://fyp-chat-server-production.up.railway.app";
+  static const String baseUrl = "https://fyp-chat-server-dev.up.railway.app";
   // static const String baseUrl = "https://fyp-chat-server.onrender.com";
-  // static const String baseUrl = "http://localhost:3000";
+  // static const String baseUrl = "http://172.29.138.1:3000";
   abstract String pathPrefix;
 
   dynamic _processResponse(http.Response response) {
@@ -41,36 +41,43 @@ abstract class Api {
     return json.decode(response.body);
   }
 
+  //
+  Uint8List _processJSONlessResponse(http.Response response) {
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      final body = json.decode(response.body);
+      log('ApiException: [${response.statusCode}] ${body["message"]}');
+      throw ApiException(response.statusCode, body["message"], body["error"]);
+    }
+    return response.bodyBytes;
+  }
+
   Future<AccessToken> _getAccessToken() async {
     AccessToken? accessToken = await CredentialStore().getToken();
     if (accessToken != null && !accessToken.isAccessTokenExpired()) {
       // not expired
       return accessToken;
     }
-    AccessTokenDto? newAccessToken;
     if (accessToken != null &&
         accessToken.isAccessTokenExpired() &&
         accessToken.refreshToken != null &&
         !accessToken.isRefreshTokenExpired()) {
       // access token expired, refresh token not expired
+      log('Api: access token expired. attempt to refresh token.');
       try {
-        newAccessToken =
-            await AuthApi().refreshToken(accessToken.refreshToken!);
+        return await AuthApi().refreshToken(accessToken.refreshToken!);
       } catch (e) {
         // refresh token failed
+        log('Api: refresh token failed. error: $e');
       }
     }
-    if (newAccessToken == null) {
-      // both expired or token not exist
-      final loginDto = await CredentialStore().getCredential();
-      if (loginDto == null) {
-        // wtf?
-        throw AccessTokenNotFoundException();
-      }
-      newAccessToken = await AuthApi().login(loginDto);
+    log('Api: attempt to re-login');
+    // both expired or token not exist
+    final loginDto = await CredentialStore().getCredential();
+    if (loginDto == null) {
+      // wtf?
+      throw AccessTokenNotFoundException();
     }
-    CredentialStore().storeToken(newAccessToken);
-    return AccessToken.fromDto(newAccessToken);
+    return await AuthApi().login(loginDto);
   }
 
   @protected
@@ -95,6 +102,27 @@ abstract class Api {
   }
 
   @protected
+  Future<Uint8List> getMedia(
+    String path, {
+    Map<String, String>? headers,
+    Map<String, String>? query,
+    bool useAuth = false,
+  }) async {
+    final url =
+        Uri.parse("$baseUrl$pathPrefix$path").replace(queryParameters: query);
+    if (useAuth) {
+      AccessToken accessToken = await _getAccessToken();
+      headers ??= {};
+      headers['Authorization'] = 'Bearer ${accessToken.accessToken}';
+    }
+    final response = await http.get(
+      url,
+      headers: headers,
+    );
+    return _processJSONlessResponse(response);
+  }
+
+  @protected
   Future<dynamic> post(
     String path, {
     Map<String, String>? headers,
@@ -113,6 +141,30 @@ abstract class Api {
       headers: headers,
       body: body != null ? json.encode(body) : null,
     );
+    return _processResponse(response);
+  }
+
+  // Post function, for media (Uses multipart as content type instead)
+  @protected
+  Future<dynamic> postMedia(
+    String path, {
+    Map<String, String>? headers,
+    required File file,
+    bool useAuth = false,
+  }) async {
+    final url = Uri.parse("$baseUrl$pathPrefix$path");
+    headers ??= {};
+    headers['Content-Type'] = 'multipart/form-data';
+    if (useAuth) {
+      AccessToken accessToken = await _getAccessToken();
+      headers['Authorization'] = 'Bearer ${accessToken.accessToken}';
+    }
+    final request = http.MultipartRequest('POST', url);
+    final fileToUpload = await http.MultipartFile.fromPath('file', file.path);
+    request.files.add(fileToUpload);
+    request.headers.addAll(headers); // Replace headers
+    final streamedResponse = await request.send();
+    final response = await http.Response.fromStream(streamedResponse);
     return _processResponse(response);
   }
 

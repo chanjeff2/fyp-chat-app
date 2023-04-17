@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:fyp_chat_app/dto/account_dto.dart';
+import 'package:fyp_chat_app/models/account.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AccountStore {
@@ -13,12 +14,14 @@ class AccountStore {
 
   static const accountKey = 'account';
 
-  Future<AccountDto?> getAccount() async {
+  Future<Account?> getAccount() async {
     final pref = await SharedPreferences.getInstance();
     final accountJson = pref.getString(accountKey);
-    return accountJson == null
-        ? null
-        : AccountDto.fromJson(json.decode(accountJson));
+    if (accountJson == null) {
+      return null;
+    }
+    final dto = AccountDto.fromJson(json.decode(accountJson));
+    return Account.fromDto(dto);
   }
 
   Future<void> storeAccount(AccountDto dto) async {

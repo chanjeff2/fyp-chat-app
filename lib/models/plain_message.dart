@@ -1,69 +1,36 @@
-import 'package:json_annotation/json_annotation.dart';
+import 'package:fyp_chat_app/entities/chat_message_entity.dart';
+import 'package:fyp_chat_app/models/chat_message.dart';
+import 'package:fyp_chat_app/models/enum.dart';
 
-part 'plain_message.g.dart';
-
-@JsonSerializable()
-class PlainMessage {
-  static const String createTableCommandFields =
-      "$columnId INTEGER PRIMARY KEY AUTOINCREMENT, $columnSenderUserId TEXT, $columnRecipientUserId TEXT, $columnContent TEXT, $columnSentAt TEXT, $columnIsRead INTEGER";
-
-  static const columnId = "id";
-  @JsonKey(name: columnId, includeIfNull: false)
-  int? id;
-
-  static const columnSenderUserId = "senderUserId";
-  @JsonKey(required: true, name: columnSenderUserId)
-  final String senderUserId;
-
-  static const columnRecipientUserId = "recipientUserId";
-  @JsonKey(required: true, name: columnRecipientUserId)
-  final String recipientUserId;
-
-  static const columnContent = "content";
-  @JsonKey(required: true, name: columnContent)
+class PlainMessage extends ChatMessage {
+  @override
   final String content;
 
-  static const columnSentAt = "sentAt";
-  @JsonKey(
-    required: true,
-    name: columnSentAt,
-    fromJson: DateTime.parse,
-    toJson: toIso8601String,
-  )
-  final DateTime sentAt;
-
-  static const columnIsRead = "isRead";
-  @JsonKey(
-    required: true,
-    name: columnIsRead,
-    fromJson: intToBool,
-    toJson: boolToInt,
-  )
-  final bool isRead;
-
   PlainMessage({
-    this.id,
-    required this.senderUserId,
-    required this.recipientUserId,
+    id,
+    required String senderUserId,
+    required String chatroomId,
     required this.content,
-    required this.sentAt,
-    this.isRead = false,
-  });
+    required DateTime sentAt,
+    isRead = false,
+  }) : super(
+          type: FCMEventType.textMessage,
+          id: id,
+          senderUserId: senderUserId,
+          chatroomId: chatroomId,
+          messageType: MessageType.text,
+          sentAt: sentAt,
+          isRead: isRead,
+        );
 
-  Map<String, dynamic> toJson() => _$PlainMessageToJson(this);
-
-  factory PlainMessage.fromJson(Map<String, dynamic> json) =>
-      _$PlainMessageFromJson(json);
-}
-
-String toIso8601String(DateTime dateTime) {
-  return dateTime.toIso8601String();
-}
-
-bool intToBool(int i) {
-  return i == 1;
-}
-
-int boolToInt(bool isTrue) {
-  return isTrue ? 1 : 0;
+  @override
+  ChatMessageEntity toEntity() => ChatMessageEntity(
+        id: id,
+        senderUserId: senderUserId,
+        chatroomId: chatroomId,
+        content: content,
+        type: MessageType.text.index,
+        sentAt: sentAt.toIso8601String(),
+        isRead: isRead ? 1 : 0,
+      );
 }

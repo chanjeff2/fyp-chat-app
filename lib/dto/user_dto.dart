@@ -10,12 +10,17 @@ class UserDto {
   @JsonKey(required: true)
   String username;
 
+  @JsonKey()
   String? displayName;
+
+  @JsonKey()
+  String? status;
 
   UserDto({
     required this.userId,
     required this.username,
     this.displayName,
+    this.status,
   });
 
   Map<String, dynamic> toJson() => _$UserDtoToJson(this);

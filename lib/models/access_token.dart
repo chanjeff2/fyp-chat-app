@@ -21,6 +21,13 @@ class AccessToken {
             ? null
             : DateTime.parse(dto.refreshTokenExpiresAt!);
 
+  AccessTokenDto toDto() => AccessTokenDto(
+        accessToken: accessToken,
+        accessTokenExpiresAt: accessTokenExpiresAt.toIso8601String(),
+        refreshToken: refreshToken,
+        refreshTokenExpiresAt: refreshTokenExpiresAt?.toIso8601String(),
+      );
+
   bool isAccessTokenExpired() {
     return DateTime.now().isAfter(accessTokenExpiresAt);
   }

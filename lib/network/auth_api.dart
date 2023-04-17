@@ -1,6 +1,8 @@
 import 'package:fyp_chat_app/dto/access_token_dto.dart';
 import 'package:fyp_chat_app/dto/login_dto.dart';
 import 'package:fyp_chat_app/dto/register_dto.dart';
+import 'package:fyp_chat_app/models/access_token.dart';
+import 'package:fyp_chat_app/storage/credential_store.dart';
 
 import 'api.dart';
 
@@ -15,25 +17,40 @@ class AuthApi extends Api {
   @override
   String pathPrefix = "/auth";
 
-  Future<AccessTokenDto> register(RegisterDto registerDto) async {
+  Future<AccessToken> register(RegisterDto registerDto) async {
     final json = await post("/register", body: registerDto.toJson());
-    return AccessTokenDto.fromJson(json);
+    final dto = AccessTokenDto.fromJson(json);
+    final accessToken = AccessToken.fromDto(dto);
+    // store credential
+    await CredentialStore()
+        .storeCredential(registerDto.username, registerDto.password);
+    await CredentialStore().storeToken(accessToken);
+    return accessToken;
   }
 
-  Future<AccessTokenDto> login(LoginDto loginDto) async {
+  Future<AccessToken> login(LoginDto loginDto) async {
     final json = await post("/login", body: loginDto.toJson());
-    return AccessTokenDto.fromJson(json);
+    final dto = AccessTokenDto.fromJson(json);
+    final accessToken = AccessToken.fromDto(dto);
+    // store credential
+    await CredentialStore()
+        .storeCredential(loginDto.username, loginDto.password);
+    await CredentialStore().storeToken(accessToken);
+    return accessToken;
   }
 
   Future<void> logout() async {
     await post("/logout", useAuth: true);
   }
 
-  Future<AccessTokenDto> refreshToken(String refreshToken) async {
+  Future<AccessToken> refreshToken(String refreshToken) async {
     final json = await post(
       "/refresh-tokens",
       headers: {'Authorization': 'Bearer $refreshToken'},
     );
-    return AccessTokenDto.fromJson(json);
+    final dto = AccessTokenDto.fromJson(json);
+    final accessToken = AccessToken.fromDto(dto);
+    await CredentialStore().storeToken(accessToken);
+    return accessToken;
   }
 }

@@ -50,7 +50,12 @@ class _MyAppState extends State<MyApp> {
 
     // handle fcm message
     // handle message received on foreground
-    FirebaseMessaging.onMessage.listen(FCMHandler.onForegroundMessage);
+    FirebaseMessaging.onMessage.listen(
+      (message) => FCMHandler.onForegroundMessage(
+        Provider.of<UserState>(context, listen: false),
+        message,
+      ),
+    );
     setUpFCMInteractedMessage();
   }
 

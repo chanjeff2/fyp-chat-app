@@ -1,4 +1,6 @@
-import '../dto/user_dto.dart';
+import 'package:fyp_chat_app/dto/user_dto.dart';
+import 'package:fyp_chat_app/models/user.dart';
+
 import 'api.dart';
 
 class UsersApi extends Api {
@@ -12,13 +14,15 @@ class UsersApi extends Api {
   @override
   String pathPrefix = "/users";
 
-  Future<UserDto> getUserById(String id) async {
+  Future<User> getUserById(String id) async {
     final json = await get("/id/$id", useAuth: true);
-    return UserDto.fromJson(json);
+    final dto = UserDto.fromJson(json);
+    return User.fromDto(dto);
   }
 
-  Future<UserDto> getUserByUsername(String username) async {
+  Future<User> getUserByUsername(String username) async {
     final json = await get("/username/$username", useAuth: true);
-    return UserDto.fromJson(json);
+    final dto = UserDto.fromJson(json);
+    return User.fromDto(dto);
   }
 }

@@ -1,28 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:fyp_chat_app/components/default_option.dart';
 import 'package:fyp_chat_app/components/contact_option.dart';
+import 'package:fyp_chat_app/models/chatroom.dart';
+import 'package:fyp_chat_app/models/one_to_one_chat.dart';
 import 'package:fyp_chat_app/models/user.dart';
 import 'package:fyp_chat_app/network/api.dart';
 import 'package:fyp_chat_app/network/users_api.dart';
+import 'package:fyp_chat_app/screens/chatroom/join_course_group_screen.dart';
+import 'package:fyp_chat_app/screens/home/create_group_screen.dart';
+import 'package:fyp_chat_app/storage/chatroom_store.dart';
 
 import '../../storage/contact_store.dart';
 
 class SelectContact extends StatefulWidget {
   const SelectContact({
     Key? key,
-    this.onNewContact,
+    this.onNewChatroom,
   }) : super(key: key);
-  final void Function(User)? onNewContact;
+  final void Function(Chatroom)? onNewChatroom;
 
   @override
   State<SelectContact> createState() => _SelectContactState();
 }
 
 class _SelectContactState extends State<SelectContact> {
-  final List<Contact> _contacts = [
-    Contact(username: 'test', id: 'test'),
-    Contact(username: 'test2', id: 'test2')
-  ];
+  final List<Contact> _contacts = [];
 
   String addContactInput = "";
 
@@ -58,36 +60,49 @@ class _SelectContactState extends State<SelectContact> {
                 switch (index) {
                   case 0:
                     return InkWell(
-                      onTap: () {
-                        /*
-                  Navigator.push(context,
-                      MaterialPageRoute(builder: (builder) => CreateGroup()));
-                  */
+                      onTap: () async {
+                        Navigator.of(context).push(MaterialPageRoute(
+                          builder: (context) => CreateGroupScreen(
+                            onNewChatroom: widget.onNewChatroom,
+                            isCreateGroup: true,
+                            fromContactInfo: false,
+                          ),
+                        ));
                       },
                       child: const DefaultOption(
                         icon: Icons.group_add,
-                        name: "Add group",
+                        name: "Create group",
                       ),
                     );
 
                   case 1:
+                    // add content
                     return InkWell(
                       onTap: () async {
                         //Pop up screen for add content
-                        final name = await addContactDialog();
+                        final name = await inputDialog(
+                          "Add Contact",
+                          "Please enter their username",
+                        );
                         if (name == null || name.isEmpty) return;
                         setState(() {
                           addContactInput = name;
                         });
                         //add the user to local storage contact
                         try {
-                          User addUser = User.fromDto(await UsersApi()
-                              .getUserByUsername(addContactInput));
-                          //local storage on disk
-                          ContactStore().storeContact(addUser);
+                          User addUser = await UsersApi()
+                              .getUserByUsername(addContactInput);
+                          // local storage on disk
+                          await ContactStore().storeContact(addUser);
+                          final chatroom = OneToOneChat(
+                            target: addUser,
+                            unread: 0,
+                            createdAt: DateTime.now(),
+                          );
+                          await ChatroomStore().save(chatroom);
                           // callback and return to home
                           Navigator.of(context).pop();
-                          widget.onNewContact?.call(addUser);
+                          widget.onNewChatroom?.call(chatroom);
                           //print(_contacts.length);
                         } on ApiException catch (e) {
                           ScaffoldMessenger.of(context).showSnackBar(
@@ -101,30 +116,61 @@ class _SelectContactState extends State<SelectContact> {
                     );
 
                   case 2:
+                    //TODO: add to course group
+                    return InkWell(
+                      onTap: () async {
+                        // final course = await inputDialog(
+                        //   "Join a course group",
+                        //   "Please enter course code",
+                        // );
+                        // if (course == null || course.isEmpty) return;
+                        // //late final GroupChat group;
+                        // try {
+                        //   //TODO: send join request to server
+                        //   // group = await GroupChatApi()
+                        //   //     .createGroup(CreateGroupDto(name: name));
+                        // } on ApiException catch (e) {
+                        //   ScaffoldMessenger.of(context).showSnackBar(
+                        //       SnackBar(content: Text("error: ${e.message}")));
+                        // }
+                        // // await ChatroomStore().save(group);
+                        // // callback and return to home
+                        // Navigator.of(context).pop();
+                        // // widget.onNewChatroom?.call(group);
+                        Navigator.of(context).push(MaterialPageRoute(
+                          builder: (context) => JoinCourseGroupScreen(onNewChatroom: widget.onNewChatroom,),
+                        ));
+                      },
+                      child: const DefaultOption(
+                        icon: Icons.group_add,
+                        name: "Join a course group",
+                      ),
+                    );
+
+                  case 3:
                     return const Padding(
                       padding:
                           EdgeInsets.symmetric(horizontal: 15, vertical: 10),
                       child: Text(
-                        "Contacts on USTalk",
+                        "Groups in USTalk",
                         style: TextStyle(fontWeight: FontWeight.bold),
                       ),
                     );
 
                   default:
-                    return ContactOption();
+                    return const ContactOption();
                 }
               }),
         ));
   }
 
-  Future<String?> addContactDialog() => showDialog<String>(
+  Future<String?> inputDialog(String title, String hint) => showDialog<String>(
         context: context,
         builder: (context) => AlertDialog(
-          title: const Text('Add Contact'),
+          title: Text(title),
           content: TextField(
             autofocus: true,
-            decoration:
-                const InputDecoration(hintText: "Please enter the username"),
+            decoration: InputDecoration(hintText: hint),
             controller: addContactController,
           ),
           actions: [
