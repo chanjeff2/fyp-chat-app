@@ -184,7 +184,7 @@ class FCMHandler {
               android: AndroidNotificationDetails(
                 channelId,
                 channelName,
-                icon: 'app_icon',
+                icon: 'ic_launcher',
                 channelDescription: channelDescription,
                 importance: Importance.max,
                 priority: Priority.max,
