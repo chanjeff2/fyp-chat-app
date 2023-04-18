@@ -37,15 +37,16 @@ class SettingsScreen extends StatelessWidget {
                           ),
                         ),
                         title: Text(
-                          userState.me!.displayName ?? userState.me!.username,
+                          userState.me!.name,
                           style: const TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        subtitle: const Text(
-                          "Hi! I'm using USTalk.", // Status
-                          style: TextStyle(
+                        subtitle: Text(
+                          userState.me!.status 
+                          ?? "Hi! I'm using USTalk.", // Status
+                          style: const TextStyle(
                             fontSize: 14,
                           ),
                         ),

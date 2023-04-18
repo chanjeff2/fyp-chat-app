@@ -165,9 +165,10 @@ class _CreateGroupScreen extends State<CreateGroupScreen> {
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          subtitle: const Text(
-                            "Hi! I'm using USTalk.", // Status
-                            style: TextStyle(
+                          subtitle: Text(
+                            (filterList[index] as OneToOneChat).target.status
+                            ?? "Hi! I'm using USTalk.", // Status
+                            style: const TextStyle(
                               fontSize: 14,
                             ),
                           ),
