@@ -428,7 +428,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                                           isCollapsed: true,
                                           filled: true,
                                           fillColor: Colors.white70,
-                                          hintText: 'You blocked this group',
+                                          hintText: 'You blocked this user',
                                           hintStyle: TextStyle(
                                               color: Colors.grey.shade600),
                                           border: InputBorder.none,
@@ -615,8 +615,8 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                             shape: const CircleBorder(),
                             padding: const EdgeInsets.all(12),
                             backgroundColor: _textMessage
-                                            ? Theme.of(context).primaryColor
-                                            : Colors.grey, // <-- Button color
+                                ? Theme.of(context).primaryColor
+                                : Colors.grey, // <-- Button color
                             foregroundColor: Theme.of(context)
                                 .highlightColor, // <-- Splash color
                             minimumSize: const Size(0, 0),
