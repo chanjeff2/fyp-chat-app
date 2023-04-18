@@ -10,7 +10,9 @@ import 'package:fyp_chat_app/models/chatroom.dart';
 import 'package:fyp_chat_app/models/chatroom_event.dart';
 import 'package:fyp_chat_app/models/enum.dart';
 import 'package:fyp_chat_app/models/group_member.dart';
+import 'package:fyp_chat_app/models/one_to_one_chat.dart';
 import 'package:fyp_chat_app/models/received_plain_message.dart';
+import 'package:fyp_chat_app/models/user.dart';
 import 'package:fyp_chat_app/models/user_state.dart';
 import 'package:fyp_chat_app/network/group_chat_api.dart';
 import 'package:fyp_chat_app/network/users_api.dart';
@@ -64,7 +66,19 @@ class FCMHandler {
       await ContactStore().storeContact(sender);
     }
     if (!await ChatroomStore().contains(event.chatroomId)) {
-      final chatroom = await GroupChatApi().getGroup(event.chatroomId);
+      Chatroom chatroom;
+      try {
+        chatroom = await GroupChatApi().getGroup(event.chatroomId);
+      } catch (e) {
+        final User targetUser = await UsersApi().getUserById(event.chatroomId);
+        await ContactStore().storeContact(targetUser);
+        chatroom = OneToOneChat(
+          target: targetUser,
+          unread: 0,
+          createdAt: DateTime.now(),
+        );
+      }
+
       await ChatroomStore().save(chatroom);
     }
     final Chatroom chatroom = (await ChatroomStore().get(event.chatroomId))!;
