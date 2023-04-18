@@ -17,6 +17,7 @@ ChatroomEntity _$ChatroomEntityFromJson(Map<String, dynamic> json) {
     name: json['name'] as String?,
     createdAt: json['createdAt'] as String,
     groupType: json['groupType'] as int?,
+    description: json['description'] as String?,
   );
 }
 
@@ -27,4 +28,5 @@ Map<String, dynamic> _$ChatroomEntityToJson(ChatroomEntity instance) =>
       'name': instance.name,
       'createdAt': instance.createdAt,
       'groupType': instance.groupType,
+      'description': instance.description,
     };

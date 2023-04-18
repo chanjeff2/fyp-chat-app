@@ -365,7 +365,8 @@ class _ContactInfoState extends State<ContactInfo> {
                   ),
                   subtitle: Text(
                     (widget.chatroom.type == ChatroomType.group)
-                        ? "This is a new USTalk group!"
+                        ? ((widget.chatroom as GroupChat).description
+                            ?? "This is a new USTalk group!")
                         : ((widget.chatroom as OneToOneChat).target.status
                             ?? "Hi! I'm using USTalk."),
                     style: const TextStyle(

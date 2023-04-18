@@ -8,6 +8,8 @@ import 'package:fyp_chat_app/models/chat_message.dart';
 
 class GroupChat extends Chatroom {
   final List<GroupMember> members;
+  
+  String? description;
 
   @override
   final String name;
@@ -22,6 +24,7 @@ class GroupChat extends Chatroom {
     required this.members,
     required this.name,
     ChatMessage? latestMessage,
+    String? description,
     required int unread,
     required DateTime createdAt,
     required this.groupType
@@ -48,7 +51,8 @@ class GroupChat extends Chatroom {
               (e) => GroupMember.fromDto(e),
             )
             .toList(),
-        name = dto.name,
+      name = dto.name,
+      description = dto.description,
         super(
           id: dto.id,
           createdAt: DateTime.parse(dto.createdAt),

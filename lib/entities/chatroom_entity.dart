@@ -45,12 +45,17 @@ $columnGroupType INTEGER
   @JsonKey(required: true, name: columnGroupType)
   final int? groupType;
 
+  static const columnDescription = "description";
+  @JsonKey(required: false, name: columnDescription)
+  final String? description;
+
   ChatroomEntity({
     required this.id,
     required this.type,
     this.name,
     required this.createdAt,
     this.groupType,
+    this.description,
   });
 
   Map<String, dynamic> toJson() => _$ChatroomEntityToJson(this);

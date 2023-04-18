@@ -22,12 +22,16 @@ class GroupDto {
   @JsonKey(required: true)
   GroupType groupType;
 
+  @JsonKey(required: false)
+  String? description;
+
   GroupDto({
     required this.id,
     required this.name,
     required this.members,
     required this.createdAt,
     required this.groupType,
+    this.description,
   });
 
   Map<String, dynamic> toJson() => _$GroupDtoToJson(this);
