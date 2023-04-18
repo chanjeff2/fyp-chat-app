@@ -20,7 +20,7 @@ void main() {
     expect(receivedAccessChangeEvent.type, dto.type);
     expect(receivedAccessChangeEvent.senderUserId, dto.senderUserId);
     expect(receivedAccessChangeEvent.chatroomId, dto.chatroomId);
-    expect(receivedAccessChangeEvent.sentAt, dto.sentAt);
+    expect(receivedAccessChangeEvent.sentAt, DateTime.parse(dto.sentAt));
     expect(receivedAccessChangeEvent.targetUserId, dto.targetUserId);
   });
 }

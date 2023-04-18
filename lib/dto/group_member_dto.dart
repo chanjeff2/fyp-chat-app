@@ -22,5 +22,3 @@ class GroupMemberDto {
   factory GroupMemberDto.fromJson(Map<String, dynamic> json) =>
       _$GroupMemberDtoFromJson(json);
 }
-
-
