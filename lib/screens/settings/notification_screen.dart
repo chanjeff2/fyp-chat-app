@@ -31,7 +31,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
     return Consumer<UserState>(
         builder: (context, userState, child) => Scaffold(
               appBar: AppBar(
-                title: const Text("Chat"),
+                title: const Text("Notifications"),
               ),
               body: Column(
                 children: [
