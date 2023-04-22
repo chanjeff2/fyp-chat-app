@@ -79,7 +79,10 @@ class SettingsScreen extends StatelessWidget {
       case account:
         {
           return Navigator.of(context).push(
-              MaterialPageRoute(builder: (context) => const ProfileScreen()));
+              MaterialPageRoute(
+                builder: (context) => const ProfileScreen(),
+                settings: const RouteSettings(name: "/edit-profile"),
+              ));
         }
       case privacy:
         {

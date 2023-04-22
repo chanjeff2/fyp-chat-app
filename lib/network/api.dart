@@ -8,6 +8,7 @@ import 'package:fyp_chat_app/models/access_token.dart';
 import 'package:fyp_chat_app/network/auth_api.dart';
 import 'package:fyp_chat_app/storage/credential_store.dart';
 import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
 
 class ApiException implements Exception {
   int statusCode;
@@ -167,6 +168,35 @@ abstract class Api {
     final response = await http.Response.fromStream(streamedResponse);
     return _processResponse(response);
   }
+
+  @protected
+  Future<dynamic> putMedia(
+    String path, {
+      Map<String, String>? headers,
+      required File file,
+      bool useAuth = false,
+      bool profilePic = false,
+    }) async {
+      final url = Uri.parse("$baseUrl$pathPrefix$path");
+      final ext =  file.path.split('.').last;
+      headers ??= {};
+      headers['Content-Type'] = profilePic ? 'image/$ext' : 'multipart/form-data';
+      if (useAuth) {
+        AccessToken accessToken = await _getAccessToken();
+        headers['Authorization'] = 'Bearer ${accessToken.accessToken}';
+      }
+      
+      final request = http.MultipartRequest('PUT', url);
+      final fileToUpload = await http.MultipartFile.fromPath(
+        'file', file.path,
+        contentType: MediaType('image', ext)
+      );
+      request.files.add(fileToUpload);
+      request.headers.addAll(headers); // Replace headers
+      final streamedResponse = await request.send();
+      final response = await http.Response.fromStream(streamedResponse);
+      return _processResponse(response);
+    }
 
   @protected
   Future<dynamic> patch(

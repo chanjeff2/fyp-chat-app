@@ -4,11 +4,13 @@ import 'package:fyp_chat_app/components/contact_option.dart';
 import 'package:fyp_chat_app/models/chatroom.dart';
 import 'package:fyp_chat_app/models/one_to_one_chat.dart';
 import 'package:fyp_chat_app/models/user.dart';
+import 'package:fyp_chat_app/models/user_state.dart';
 import 'package:fyp_chat_app/network/api.dart';
 import 'package:fyp_chat_app/network/users_api.dart';
 import 'package:fyp_chat_app/screens/chatroom/join_course_group_screen.dart';
 import 'package:fyp_chat_app/screens/home/create_group_screen.dart';
 import 'package:fyp_chat_app/storage/chatroom_store.dart';
+import 'package:provider/provider.dart';
 
 import '../../storage/contact_store.dart';
 
@@ -48,7 +50,8 @@ class _SelectContactState extends State<SelectContact> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return Consumer<UserState>(
+      builder: (context, userState, child) => Scaffold(
         appBar: AppBar(
           title: const Text("Select Contact"),
         ),
@@ -85,6 +88,11 @@ class _SelectContactState extends State<SelectContact> {
                           "Please enter their username",
                         );
                         if (name == null || name.isEmpty) return;
+                        if (name == userState.me!.username) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text("You cannot add yourself as contact")));
+                          return;
+                        }
                         setState(() {
                           addContactInput = name;
                         });
@@ -160,8 +168,11 @@ class _SelectContactState extends State<SelectContact> {
                   default:
                     return const ContactOption();
                 }
-              }),
-        ));
+              }
+            ),
+        )
+      )
+    );
   }
 
   Future<String?> inputDialog(String title, String hint) => showDialog<String>(

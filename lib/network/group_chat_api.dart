@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:fyp_chat_app/dto/create_group_dto.dart';
 import 'package:fyp_chat_app/dto/group_dto.dart';
 import 'package:fyp_chat_app/dto/group_member_dto.dart';
@@ -128,5 +130,17 @@ class GroupChatApi extends Api {
     } catch (e) {
       return false;
     }
+  }
+
+  Future<GroupChat> updateGroupInfo(GroupDto gpDto, String groupId) async {
+    final json = await patch("/$groupId", body: gpDto.toJson(), useAuth: true);
+    final dto = GroupDto.fromJson(json);
+    return GroupChat.fromDto(dto);
+  }
+
+  Future<GroupChat> updateProfilePic(File image, String groupId) async {
+    final json = await putMedia("/$groupId/update-profile-pic", file: image, useAuth: true);
+    final dto = GroupDto.fromJson(json);
+    return GroupChat.fromDto(dto);
   }
 }

@@ -273,8 +273,8 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
                 Expanded(
                   child: UserIcon(
                     isGroup: true,
-                    radius: 32,
-                    iconSize: 20,
+                    radius: 18,
+                    iconSize: 18,
                     profilePicUrl: widget.chatroom.profilePicUrl,
                   ),
                 ),

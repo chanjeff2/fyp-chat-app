@@ -218,8 +218,8 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                 Expanded(
                   child: UserIcon(
                     isGroup: false,
-                    radius: 32,
-                    iconSize: 20,
+                    radius: 18,
+                    iconSize: 18,
                     profilePicUrl: (widget.chatroom as OneToOneChat).target.profilePicUrl,
                   ),
                 ),

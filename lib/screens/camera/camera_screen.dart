@@ -231,6 +231,8 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
             sendCallback: widget.sendCallback,
           )
         ));
+      } else {
+        Navigator.of(context).pop(File(image.path));
       }
       return; // do nothing for now
     } on CameraException catch (e) {
@@ -511,6 +513,8 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
                                           sendCallback: widget.sendCallback,
                                         )
                                       ));
+                                    } else {
+                                      Navigator.of(context).pop(File(image.path));
                                     }
                                   }
                                 },
