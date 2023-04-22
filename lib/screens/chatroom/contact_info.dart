@@ -14,6 +14,7 @@ import 'package:fyp_chat_app/network/group_chat_api.dart';
 import 'package:fyp_chat_app/screens/chatroom/chatroom_screen.dart';
 import 'package:fyp_chat_app/screens/chatroom/chatroom_screen_group.dart';
 import 'package:fyp_chat_app/screens/home/create_group_screen.dart';
+import 'package:fyp_chat_app/screens/settings/edit_group_chat.dart';
 import 'package:fyp_chat_app/storage/chatroom_store.dart';
 import 'package:fyp_chat_app/storage/block_store.dart';
 import 'package:fyp_chat_app/storage/group_member_store.dart';
@@ -210,6 +211,21 @@ class _ContactInfoState extends State<ContactInfo> {
               Text(widget.chatroom.name),
             ],
           ),
+          actions: (widget.chatroom.type == ChatroomType.group &&
+                          checkIsAdmin(userState))
+                    ? [
+                        IconButton(
+                          onPressed: () =>
+                            Navigator.of(context).push(MaterialPageRoute(
+                              builder: (context) => EditGroupChat(
+                                groupChat: widget.chatroom as GroupChat,
+                              ),
+                            )),
+                          
+                          icon: const Icon(Icons.edit)
+                        )
+                      ]
+                    : null
         ),
         body: SingleChildScrollView(
           child: Column(
