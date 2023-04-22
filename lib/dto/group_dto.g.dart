@@ -20,6 +20,7 @@ GroupDto _$GroupDtoFromJson(Map<String, dynamic> json) {
     createdAt: json['createdAt'] as String,
     groupType: $enumDecode(_$GroupTypeEnumMap, json['groupType']),
     description: json['description'] as String?,
+    profilePicUrl: json['profilePicUrl'] as String?,
   );
 }
 
@@ -30,6 +31,7 @@ Map<String, dynamic> _$GroupDtoToJson(GroupDto instance) => <String, dynamic>{
       'createdAt': instance.createdAt,
       'groupType': _$GroupTypeEnumMap[instance.groupType]!,
       'description': instance.description,
+      'profilePicUrl': instance.profilePicUrl,
     };
 
 const _$GroupTypeEnumMap = {

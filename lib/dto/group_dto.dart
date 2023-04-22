@@ -25,6 +25,9 @@ class GroupDto {
   @JsonKey(required: false)
   String? description;
 
+  @JsonKey(required: false)
+  String? profilePicUrl;
+
   GroupDto({
     required this.id,
     required this.name,
@@ -32,6 +35,7 @@ class GroupDto {
     required this.createdAt,
     required this.groupType,
     this.description,
+    this.profilePicUrl,
   });
 
   Map<String, dynamic> toJson() => _$GroupDtoToJson(this);

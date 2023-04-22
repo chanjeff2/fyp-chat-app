@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fyp_chat_app/components/user_icon.dart';
 import 'package:fyp_chat_app/models/account.dart';
 import 'package:fyp_chat_app/models/user_state.dart';
 import 'package:provider/provider.dart';
@@ -48,13 +49,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     child: Stack(
                       alignment: AlignmentDirectional.topCenter,
                       children: [
-                        const CircleAvatar(
+                        UserIcon(
                           radius: 72,
-                          // child: profilePicture ? null : Icon(Icons.person, size: 48),
-                          // backgroundImage: profileImage,
-                          child:
-                              Icon(Icons.person, size: 72, color: Colors.white),
-                          backgroundColor: Colors.blueGrey,
+                          iconSize: 72,
+                          isGroup: false,
+                          profilePicUrl: userState.me!.profilePicUrl,
                         ),
                         Positioned(
                           bottom: 1,

@@ -13,7 +13,9 @@ $columnId TEXT PRIMARY KEY NOT NULL,
 $columnType INTEGER NOT NULL,
 $columnName TEXT,
 $columnCreatedAt TEXT NOT NULL,
-$columnGroupType INTEGER
+$columnGroupType INTEGER,
+$columnDescription TEXT,
+$columnProfilePicUrl TEXT
 """;
 
   static const columnId = "id";
@@ -41,13 +43,16 @@ $columnGroupType INTEGER
   final String createdAt;
 
   static const columnGroupType = "groupType";
-
   @JsonKey(required: true, name: columnGroupType)
   final int? groupType;
 
   static const columnDescription = "description";
   @JsonKey(required: false, name: columnDescription)
   final String? description;
+
+  static const columnProfilePicUrl = "profilePicUrl";
+  @JsonKey(required: false, name: columnProfilePicUrl)
+  final String? profilePicUrl;
 
   ChatroomEntity({
     required this.id,
@@ -56,6 +61,7 @@ $columnGroupType INTEGER
     required this.createdAt,
     this.groupType,
     this.description,
+    this.profilePicUrl,
   });
 
   Map<String, dynamic> toJson() => _$ChatroomEntityToJson(this);

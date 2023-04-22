@@ -10,11 +10,13 @@ class AccountDto extends UserDto {
     required String username,
     String? displayName,
     String? status,
+    String? profilePicUrl,
   }) : super(
           userId: userId,
           username: username,
           displayName: displayName,
           status: status,
+          profilePicUrl: profilePicUrl,
         );
 
   @override

@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:fyp_chat_app/components/user_icon.dart';
 import 'package:fyp_chat_app/models/chatroom.dart';
 import 'package:fyp_chat_app/models/enum.dart';
+import 'package:fyp_chat_app/models/group_chat.dart';
+import 'package:fyp_chat_app/models/one_to_one_chat.dart';
 import 'package:intl/intl.dart';
 
-// Contact in selecting user, which shows status
+// Practically useless now, remake if needed
 class ContactOption extends StatelessWidget {
   const ContactOption({Key? key}) : super(key: key);
 
@@ -69,12 +72,11 @@ class HomeContact extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 8.0),
         child: ListTile(
-          leading: CircleAvatar(
-            child: chatroom.type == ChatroomType.group
-                ? const Icon(Icons.group, size: 28, color: Colors.white)
-                : const Icon(Icons.person, size: 28, color: Colors.white),
-            radius: 28,
-            backgroundColor: Colors.blueGrey,
+          leading: UserIcon(
+            isGroup: chatroom.type == ChatroomType.group,
+            profilePicUrl: chatroom.type == ChatroomType.group
+                            ? (chatroom as GroupChat).profilePicUrl
+                            : (chatroom as OneToOneChat).target.profilePicUrl,
           ),
           title: Row(
             children: [

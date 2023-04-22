@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:fyp_chat_app/components/music_player.dart';
+import 'package:fyp_chat_app/components/user_icon.dart';
 import 'package:fyp_chat_app/components/video_player.dart';
 import 'package:fyp_chat_app/models/access_change_event.dart';
 import 'package:fyp_chat_app/models/chatroom.dart';
@@ -254,25 +255,27 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
                     latestMessage: (_messages.isEmpty) ? null : _messages[0],
                     createdAt: widget.chatroom.createdAt,
                     groupType: (widget.chatroom).groupType,
+                    description: (widget.chatroom).description,
+                    profilePicUrl: (widget.chatroom).profilePicUrl,
                   ));
             },
             borderRadius: BorderRadius.circular(40.0),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               mainAxisSize: MainAxisSize.max,
-              children: const [
-                Expanded(
+              children: [
+                const Expanded(
                   child: Icon(
                     Icons.arrow_back,
                   ),
                 ),
                 // SizedBox(width: 4),
                 Expanded(
-                  child: CircleAvatar(
-                    // child: profilePicture ? null : Icon(Icons.person, size: 48),
-                    child: Icon(Icons.group, size: 20, color: Colors.white),
+                  child: UserIcon(
+                    isGroup: true,
                     radius: 32,
-                    backgroundColor: Colors.blueGrey,
+                    iconSize: 20,
+                    profilePicUrl: widget.chatroom.profilePicUrl,
                   ),
                 ),
               ],
@@ -288,7 +291,6 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
                           chatroom: widget.chatroom,
                           blockedFuture: blockedFuture)))
                   .then((value) {
-                        print((value as GroupChat).members.length);
                         setState(() {
                           blockedFuture =
                               BlockStore().contain(widget.chatroom.id);

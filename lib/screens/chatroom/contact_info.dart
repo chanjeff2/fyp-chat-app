@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:fyp_chat_app/components/user_icon.dart';
 import 'package:fyp_chat_app/models/access_change_event.dart';
 import 'package:fyp_chat_app/models/enum.dart';
 import 'package:fyp_chat_app/models/group_chat.dart';
@@ -197,13 +198,13 @@ class _ContactInfoState extends State<ContactInfo> {
           ),
           title: Row(
             children: <Widget>[
-              CircleAvatar(
-                // child: profilePicture ? null : Icon(Icons.person, size: 20),
-                child: (widget.chatroom.type == ChatroomType.group)
-                    ? const Icon(Icons.group, size: 20, color: Colors.white)
-                    : const Icon(Icons.person, size: 20, color: Colors.white),
+              UserIcon(
                 radius: 20,
-                backgroundColor: Colors.blueGrey,
+                iconSize: 20,
+                isGroup: widget.chatroom.type == ChatroomType.group,
+                profilePicUrl: widget.chatroom.type == ChatroomType.group
+                                ? (widget.chatroom as GroupChat).profilePicUrl
+                                : (widget.chatroom as OneToOneChat).target.profilePicUrl,
               ),
               const SizedBox(width: 12),
               Text(widget.chatroom.name),
@@ -216,14 +217,13 @@ class _ContactInfoState extends State<ContactInfo> {
             children: [
               const SizedBox(height: 20),
               Center(
-                child: CircleAvatar(
+                child: UserIcon(
                   radius: 72,
-                  // child: profilePicture ? null : Icon(Icons.person, size: 48),
-                  // backgroundImage: profileImage,
-                  child: (widget.chatroom.type == ChatroomType.group)
-                      ? const Icon(Icons.group, size: 72, color: Colors.white)
-                      : const Icon(Icons.person, size: 72, color: Colors.white),
-                  backgroundColor: Colors.blueGrey,
+                  iconSize: 72,
+                  isGroup: widget.chatroom.type == ChatroomType.group,
+                  profilePicUrl: widget.chatroom.type == ChatroomType.group
+                                  ? (widget.chatroom as GroupChat).profilePicUrl
+                                  : (widget.chatroom as OneToOneChat).target.profilePicUrl,
                 ),
               ),
               const SizedBox(height: 14),
@@ -665,11 +665,16 @@ class _ContactInfoState extends State<ContactInfo> {
                             child: Row(
                               children: [
                                 const SizedBox(width: 16),
-                                const CircleAvatar(
+                                UserIcon(
                                   radius: 24,
-                                  child: Icon(Icons.person,
-                                      size: 28, color: Colors.white),
-                                  backgroundColor: Colors.blueGrey,
+                                  iconSize: 24,
+                                  isGroup: false,
+                                  profilePicUrl: (checkIsAdmin(userState)
+                                                    ? chatroom
+                                                        .members[index - 1]
+                                                    : chatroom.members[index])
+                                                  .user
+                                                  .profilePicUrl,
                                 ),
                                 const SizedBox(width: 16),
                                 Text(
@@ -753,10 +758,11 @@ class _ContactInfoState extends State<ContactInfo> {
                                 child: Row(
                                   children: [
                                     const SizedBox(width: 16),
-                                    const CircleAvatar(
+                                    UserIcon(
                                       radius: 24,
-                                      child: Icon(Icons.group),
-                                      backgroundColor: Colors.blueGrey,
+                                      iconSize: 24,
+                                      isGroup: true,
+                                      profilePicUrl: (chatrooms[index] as GroupChat).profilePicUrl,
                                     ),
                                     const SizedBox(width: 16),
                                     Text(

@@ -78,6 +78,8 @@ abstract class Chatroom {
           unread: unread,
           createdAt: DateTime.parse(e.createdAt),
           groupType: GroupType.values[e.groupType!],
+          description: e.description,
+          profilePicUrl: e.profilePicUrl,
         );
     }
   }

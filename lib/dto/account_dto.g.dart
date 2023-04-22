@@ -16,6 +16,7 @@ AccountDto _$AccountDtoFromJson(Map<String, dynamic> json) {
     username: json['username'] as String,
     displayName: json['displayName'] as String?,
     status: json['status'] as String?,
+    profilePicUrl: json['profilePicUrl'] as String?,
   );
 }
 
@@ -25,4 +26,5 @@ Map<String, dynamic> _$AccountDtoToJson(AccountDto instance) =>
       'username': instance.username,
       'displayName': instance.displayName,
       'status': instance.status,
+      'profilePicUrl': instance.profilePicUrl,
     };

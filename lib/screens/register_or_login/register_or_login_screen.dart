@@ -184,8 +184,22 @@ class _RegisterOrLoginScreenState extends State<RegisterOrLoginScreen> {
                           await ContactStore().storeContact(account);
                           userState.setMe(account);
                         } on ApiException catch (e) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text("error: ${e.message}")));
+                          if (e.message.contains("duplicate key error collection")) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                    "Provided username has been used. Please use another username"
+                                  )));
+                          } else if (e.statusCode == 401) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                    "Incorrect username or password. Please try again"
+                                  )));
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text("error: ${e.message}")));
+                          }
                         } finally {
                           //remove loading screen
                           setState(() {

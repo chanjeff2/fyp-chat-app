@@ -11,6 +11,8 @@ class GroupChat extends Chatroom {
   
   String? description;
 
+  String? profilePicUrl;
+
   @override
   final String name;
 
@@ -24,10 +26,11 @@ class GroupChat extends Chatroom {
     required this.members,
     required this.name,
     ChatMessage? latestMessage,
-    String? description,
     required int unread,
     required DateTime createdAt,
-    required this.groupType
+    required this.groupType,
+    this.description,
+    this.profilePicUrl,
   }) : super(
           id: id,
           latestMessage: latestMessage,
@@ -42,6 +45,8 @@ class GroupChat extends Chatroom {
         name: name,
         createdAt: createdAt.toIso8601String(),
         groupType: groupType.index,
+        description: description,
+        profilePicUrl: profilePicUrl,
       );
 
   GroupChat.fromDto(GroupDto dto)
@@ -53,6 +58,7 @@ class GroupChat extends Chatroom {
             .toList(),
       name = dto.name,
       description = dto.description,
+      profilePicUrl = dto.profilePicUrl,
         super(
           id: dto.id,
           createdAt: DateTime.parse(dto.createdAt),

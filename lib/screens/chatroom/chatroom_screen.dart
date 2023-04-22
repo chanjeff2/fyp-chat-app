@@ -5,6 +5,7 @@ import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:fyp_chat_app/components/attachment_menu.dart';
 import 'package:fyp_chat_app/components/music_player.dart';
+import 'package:fyp_chat_app/components/user_icon.dart';
 import 'package:fyp_chat_app/components/video_player.dart';
 import 'package:fyp_chat_app/models/chat_message.dart';
 import 'package:fyp_chat_app/models/chatroom.dart';
@@ -207,19 +208,19 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               mainAxisSize: MainAxisSize.max,
-              children: const [
-                Expanded(
+              children: [
+                const Expanded(
                   child: Icon(
                     Icons.arrow_back,
                   ),
                 ),
                 // SizedBox(width: 4),
                 Expanded(
-                  child: CircleAvatar(
-                    // child: profilePicture ? null : Icon(Icons.person, size: 48),
-                    child: Icon(Icons.person, size: 20, color: Colors.white),
+                  child: UserIcon(
+                    isGroup: false,
                     radius: 32,
-                    backgroundColor: Colors.blueGrey,
+                    iconSize: 20,
+                    profilePicUrl: (widget.chatroom as OneToOneChat).target.profilePicUrl,
                   ),
                 ),
               ],

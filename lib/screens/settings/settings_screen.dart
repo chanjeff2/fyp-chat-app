@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fyp_chat_app/components/user_icon.dart';
 import 'package:fyp_chat_app/models/user_state.dart';
 import 'package:fyp_chat_app/screens/settings/chat_screen.dart';
 import 'package:fyp_chat_app/screens/settings/notification_screen.dart';
@@ -26,14 +27,13 @@ class SettingsScreen extends StatelessWidget {
                     child: Padding(
                       padding: const EdgeInsets.symmetric(vertical: 8),
                       child: ListTile(
-                        leading: const SizedBox(
+                        leading: SizedBox(
                           height: double.infinity,
-                          child: CircleAvatar(
-                            // child: profilePicture ? null : Icon(Icons.person, size: 48),
-                            child: Icon(Icons.person,
-                                size: 48, color: Colors.white),
+                          child: UserIcon(
                             radius: 32,
-                            backgroundColor: Colors.blueGrey,
+                            iconSize: 32,
+                            isGroup: false,
+                            profilePicUrl: userState.me!.profilePicUrl,
                           ),
                         ),
                         title: Text(

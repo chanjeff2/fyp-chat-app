@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fyp_chat_app/components/palette.dart';
+import 'package:fyp_chat_app/components/user_icon.dart';
 import 'package:fyp_chat_app/dto/create_group_dto.dart';
 import 'package:fyp_chat_app/dto/group_member_dto.dart';
 import 'package:fyp_chat_app/models/chatroom.dart';
@@ -152,11 +153,11 @@ class _CreateGroupScreen extends State<CreateGroupScreen> {
                           tileColor: isChecked[index]
                               ? Palette.ustGrey[500]
                               : Colors.white,
-                          leading: const CircleAvatar(
-                            child: Icon(Icons.person,
-                                size: 28, color: Colors.white),
+                          leading: UserIcon(
                             radius: 28,
-                            backgroundColor: Colors.blueGrey,
+                            iconSize: 28,
+                            isGroup: false,
+                            profilePicUrl: (filterList[index] as OneToOneChat).target.profilePicUrl,
                           ),
                           title: Text(
                             filterList[index].name,
