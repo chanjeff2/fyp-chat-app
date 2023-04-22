@@ -40,6 +40,12 @@ class ContactStore {
     return User.fromEntity(entity);
   }
 
+  Future<List<UserEntity>> getAll() async {
+    final db = await DiskStorage().db;
+    final result = await db.query(table);
+    return result.map((e) => UserEntity.fromJson(e)).toList();
+  }
+
   Future<bool> removeContact(String userId) async {
     final db = await DiskStorage().db;
     final count = await db.delete(

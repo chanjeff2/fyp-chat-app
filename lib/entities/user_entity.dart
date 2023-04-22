@@ -11,7 +11,8 @@ $columnUserId TEXT PRIMARY KEY NOT NULL,
 $columnUsername TEXT UNIQUE NOT NULL, 
 $columnDisplayName TEXT,
 $columnStatus TEXT,
-$columnProfilePicUrl TEXT
+$columnProfilePicUrl TEXT,
+$columnUpdatedAt TEXT NOT NULL
 """;
 
   static const columnUserId = "userId";
@@ -34,23 +35,21 @@ $columnProfilePicUrl TEXT
   @JsonKey(name: columnProfilePicUrl)
   final String? profilePicUrl;
 
+  static const columnUpdatedAt = "updatedAt";
+  @JsonKey(name: columnUpdatedAt)
+  final String updatedAt;
+
   UserEntity({
     required this.userId,
     required this.username,
     this.displayName,
     this.status,
     this.profilePicUrl,
+    required this.updatedAt,
   });
 
   Map<String, dynamic> toJson() => _$UserEntityToJson(this);
 
   factory UserEntity.fromJson(Map<String, dynamic> json) =>
       _$UserEntityFromJson(json);
-
-  UserEntity.fromDto(UserDto dto)
-      : userId = dto.userId,
-        username = dto.username,
-        displayName = dto.displayName,
-        status = dto.status,
-        profilePicUrl = dto.profilePicUrl;
 }

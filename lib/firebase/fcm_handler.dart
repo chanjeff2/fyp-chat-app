@@ -66,19 +66,14 @@ class FCMHandler {
       await ContactStore().storeContact(sender);
     }
     if (!await ChatroomStore().contains(event.chatroomId)) {
-      Chatroom chatroom;
-      try {
+      late final Chatroom chatroom;
+      if (event.chatroomId == sender.userId) {
+        // one to one
+        chatroom =
+            OneToOneChat(target: sender, unread: 0, createdAt: DateTime.now());
+      } else {
         chatroom = await GroupChatApi().getGroup(event.chatroomId);
-      } catch (e) {
-        final User targetUser = await UsersApi().getUserById(event.chatroomId);
-        await ContactStore().storeContact(targetUser);
-        chatroom = OneToOneChat(
-          target: targetUser,
-          unread: 0,
-          createdAt: DateTime.now(),
-        );
       }
-
       await ChatroomStore().save(chatroom);
     }
     final Chatroom chatroom = (await ChatroomStore().get(event.chatroomId))!;

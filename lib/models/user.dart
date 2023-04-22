@@ -8,6 +8,7 @@ class User {
   final String? displayName;
   final String? status;
   final String? profilePicUrl;
+  final DateTime updatedAt;
 
   String get name => displayName ?? username;
   String get id => userId;
@@ -18,6 +19,7 @@ class User {
     this.displayName,
     this.status,
     this.profilePicUrl,
+    required this.updatedAt,
   });
 
   User.fromDto(UserDto dto)
@@ -25,14 +27,16 @@ class User {
         username = dto.username,
         displayName = dto.displayName,
         status = dto.status,
-        profilePicUrl = dto.profilePicUrl;
+        profilePicUrl = dto.profilePicUrl,
+        updatedAt = DateTime.parse(dto.updatedAt);
 
   User.fromEntity(UserEntity entity)
       : userId = entity.userId,
         username = entity.username,
         displayName = entity.displayName,
         status = entity.status,
-        profilePicUrl = entity.profilePicUrl;
+        profilePicUrl = entity.profilePicUrl,
+        updatedAt = DateTime.parse(entity.updatedAt);
 
   UserEntity toEntity() => UserEntity(
         userId: userId,
@@ -40,5 +44,6 @@ class User {
         displayName: displayName,
         status: status,
         profilePicUrl: profilePicUrl,
+        updatedAt: updatedAt.toIso8601String(),
       );
 }

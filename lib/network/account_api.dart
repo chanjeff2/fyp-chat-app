@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:fyp_chat_app/dto/account_dto.dart';
+import 'package:fyp_chat_app/dto/update_user_dto.dart';
 import 'package:fyp_chat_app/models/account.dart';
 import 'package:fyp_chat_app/storage/account_store.dart';
 
@@ -31,9 +32,9 @@ class AccountApi extends Api {
     return Account.fromDto(ac);
   }
 
-  Future<Account> updateProfile(AccountDto accountDto) async {
+  Future<Account> updateProfile(UpdateUserDto updateUserDto) async {
     final json = await patch("/update-profile",
-        body: accountDto.toJson(), useAuth: true);
+        body: updateUserDto.toJson(), useAuth: true);
     final ac = AccountDto.fromJson(json);
     AccountStore().storeAccount(ac);
     return Account.fromDto(ac);

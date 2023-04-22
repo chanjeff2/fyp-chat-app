@@ -9,12 +9,14 @@ class Account extends User {
     String? displayName,
     String? status,
     String? profilePicUrl,
+    required DateTime updatedAt,
   }) : super(
           userId: userId,
           username: username,
           displayName: displayName,
           status: status,
           profilePicUrl: profilePicUrl,
+          updatedAt: updatedAt,
         );
 
   Account.fromDto(AccountDto dto)
@@ -24,6 +26,7 @@ class Account extends User {
           displayName: dto.displayName,
           status: dto.status,
           profilePicUrl: dto.profilePicUrl,
+          updatedAt: DateTime.parse(dto.updatedAt),
         );
 
   AccountDto toDto() => AccountDto(
@@ -32,5 +35,6 @@ class Account extends User {
         displayName: displayName,
         status: status,
         profilePicUrl: profilePicUrl,
+        updatedAt: updatedAt.toIso8601String(),
       );
 }

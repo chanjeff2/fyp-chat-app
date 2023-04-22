@@ -8,6 +8,7 @@ import 'package:fyp_chat_app/network/account_api.dart';
 import 'package:fyp_chat_app/network/api.dart';
 import 'package:fyp_chat_app/network/auth_api.dart';
 import 'package:fyp_chat_app/storage/credential_store.dart';
+import 'package:fyp_chat_app/utilities/sync_manager.dart';
 
 class UserState extends ChangeNotifier {
   Account? _me;
@@ -45,6 +46,7 @@ class UserState extends ChangeNotifier {
         // show error?
       }
     }
+    await SyncManager().synchronizeContacts();
     isInitialized = true;
     notifyListeners();
   }
