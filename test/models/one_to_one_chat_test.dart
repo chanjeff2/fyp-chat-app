@@ -12,6 +12,9 @@ void main() {
         username: 'test',
         displayName: 'displayTest',
         status: 'statusTest',
+        profilePicUrl:
+          "https://storage.googleapis.com/download/storage/test-link-doesnt-link-to-anything",
+        updatedAt: DateTime.now(),
       ),
       latestMessage: PlainMessage(
         id: 1,
