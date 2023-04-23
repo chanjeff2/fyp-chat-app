@@ -18,6 +18,7 @@ class GroupChat extends GroupInfo {
     required GroupType groupType,
     String? description,
     String? profilePicUrl,
+    bool isMuted = false,
   }) : super(
           id: id,
           description: description,
@@ -28,6 +29,7 @@ class GroupChat extends GroupInfo {
           updatedAt: updatedAt,
           groupType: groupType,
           profilePicUrl: profilePicUrl,
+          isMuted: isMuted,
         );
 
   GroupChat.fromDto(GroupDto dto)

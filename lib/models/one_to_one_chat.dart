@@ -25,11 +25,13 @@ class OneToOneChat extends Chatroom {
     ChatMessage? latestMessage,
     required int unread,
     required DateTime createdAt,
+    bool isMuted = false,
   }) : super(
           id: target.userId,
           latestMessage: latestMessage,
           unread: unread,
           createdAt: createdAt,
+          isMuted: isMuted,
         );
 
   @override
@@ -37,5 +39,7 @@ class OneToOneChat extends Chatroom {
         id: id,
         type: type.index,
         createdAt: createdAt.toIso8601String(),
+        isMuted: isMuted,
+        profilePicUrl: profilePicUrl,
       );
 }

@@ -6,6 +6,7 @@ import 'package:fyp_chat_app/models/access_change_event.dart';
 import 'package:fyp_chat_app/models/chatroom.dart';
 import 'package:fyp_chat_app/models/enum.dart';
 import 'package:fyp_chat_app/models/group_chat.dart';
+import 'package:fyp_chat_app/models/one_to_one_chat.dart';
 import 'package:fyp_chat_app/models/received_plain_message.dart';
 import 'package:fyp_chat_app/models/user_state.dart';
 import 'package:fyp_chat_app/network/auth_api.dart';
@@ -32,11 +33,11 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   var appBarHeight = AppBar().preferredSize.height;
   final Map<String, Chatroom> _chatroomMap = {};
   final Map<String, Chatroom> _filteredChatroomMap = {};
-  late final Future<bool> _loadChatroomFuture;
+  late Future<bool> _loadChatroomFuture;
   late final StreamSubscription<ReceivedChatEvent> _messageStreamSubscription;
   Offset _tapPosition = Offset.zero;
   List<Chatroom> chatroomListForDeleteToGestureDetector = [];
@@ -47,6 +48,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   void initState() {
+    WidgetsBinding.instance?.addObserver(this);
     super.initState();
     _loadChatroomFuture = _loadChatroom();
     _messageStreamSubscription = Provider.of<UserState>(context, listen: false)
@@ -86,8 +88,17 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance?.removeObserver(this);
     super.dispose();
     _messageStreamSubscription.cancel();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      //do your stuff
+      _loadChatroomFuture = _loadChatroom();
+    }
   }
 
   Future<bool> _loadChatroom() async {
@@ -317,9 +328,8 @@ class _HomeScreenState extends State<HomeScreen> {
   _onMenuItemSelected(int value, UserState userState) async {
     switch (value) {
       case 0:
-        Navigator.of(context)
-            .push(_route(const SettingsScreen()))
-            .then((value) => setState(() => {_loadChatroom()}));
+        Navigator.of(context).push(_route(const SettingsScreen())).then(
+            (value) => setState(() => {_loadChatroomFuture = _loadChatroom()}));
         break;
       case 1:
         try {
@@ -347,6 +357,103 @@ class _HomeScreenState extends State<HomeScreen> {
             Rect.fromLTWH(0, 0, overlay!.paintBounds.size.width,
                 overlay.paintBounds.size.height)),
         items: [
+          (chatroomListForDeleteToGestureDetector[
+                      chatroomListForDeleteToGestureDetectorID]
+                  .isMuted)
+              ? PopupMenuItem(
+                  child: const Text('Unmute chatroom'),
+                  onTap: () async {
+                    Future.delayed(const Duration(seconds: 0), () async {
+                      String chatroomId =
+                          chatroomListForDeleteToGestureDetector[
+                                  chatroomListForDeleteToGestureDetectorID]
+                              .id;
+                      if (_filteredChatroomMap[chatroomId]?.type ==
+                          ChatroomType.oneToOne) {
+                        //one to one chatroom Unmute
+                        OneToOneChat chatroom =
+                            _filteredChatroomMap[chatroomId] as OneToOneChat;
+                        await ChatroomStore().save(OneToOneChat(
+                          target: chatroom.target,
+                          latestMessage: chatroom.latestMessage,
+                          unread: chatroom.unread,
+                          createdAt: chatroom.createdAt,
+                          isMuted: false,
+                        ));
+                        await _loadChatroom();
+                      } else if (_filteredChatroomMap[chatroomId]?.type ==
+                          ChatroomType.group) {
+                        //group chatroom Unmute
+                        GroupChat chatroom =
+                            _filteredChatroomMap[chatroomId] as GroupChat;
+                        await ChatroomStore().save(GroupChat(
+                          id: chatroom.id,
+                          members: chatroom.members,
+                          name: chatroom.name,
+                          latestMessage: chatroom.latestMessage,
+                          unread: chatroom.unread,
+                          createdAt: chatroom.createdAt,
+                          groupType: chatroom.groupType,
+                          description: chatroom.description,
+                          profilePicUrl: chatroom.profilePicUrl,
+                          updatedAt: chatroom.updatedAt,
+                          isMuted: false,
+                        ));
+                        await _loadChatroom();
+                      } else {
+                        throw Exception('Chatroom type not found');
+                      }
+                    });
+                  },
+                  value: "Unmute chatroom",
+                )
+              : PopupMenuItem(
+                  child: const Text('Mute chatroom'),
+                  onTap: () async {
+                    Future.delayed(const Duration(seconds: 0), () async {
+                      String chatroomId =
+                          chatroomListForDeleteToGestureDetector[
+                                  chatroomListForDeleteToGestureDetectorID]
+                              .id;
+                      if (_filteredChatroomMap[chatroomId]?.type ==
+                          ChatroomType.oneToOne) {
+                        //one to one chatroom mute
+                        OneToOneChat chatroom =
+                            _filteredChatroomMap[chatroomId] as OneToOneChat;
+                        await ChatroomStore().save(OneToOneChat(
+                          target: chatroom.target,
+                          latestMessage: chatroom.latestMessage,
+                          unread: chatroom.unread,
+                          createdAt: chatroom.createdAt,
+                          isMuted: true,
+                        ));
+                        await _loadChatroom();
+                      } else if (_filteredChatroomMap[chatroomId]?.type ==
+                          ChatroomType.group) {
+                        //group chatroom mute
+                        GroupChat chatroom =
+                            _filteredChatroomMap[chatroomId] as GroupChat;
+                        await ChatroomStore().save(GroupChat(
+                          id: chatroom.id,
+                          members: chatroom.members,
+                          name: chatroom.name,
+                          latestMessage: chatroom.latestMessage,
+                          unread: chatroom.unread,
+                          createdAt: chatroom.createdAt,
+                          groupType: chatroom.groupType,
+                          description: chatroom.description,
+                          profilePicUrl: chatroom.profilePicUrl,
+                          updatedAt: chatroom.updatedAt,
+                          isMuted: true,
+                        ));
+                        await _loadChatroom();
+                      } else {
+                        throw Exception('Chatroom type not found');
+                      }
+                    });
+                  },
+                  value: "Mute chatroom",
+                ),
           PopupMenuItem(
             child: const Text('Delete chatroom'),
             onTap: () async {

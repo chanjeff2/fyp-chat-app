@@ -60,7 +60,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
   late StreamSubscription<ReceivedChatEvent> _messageSubscription;
   late final UserState _state;
   late Future<bool> blockedFuture;
-
+  late bool isMuted;
   late Future<bool> trustworthyFuture;
   late bool warningStatus =
       true; //just a variable to turn off the warning screen
@@ -74,6 +74,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
     // set chatting with
     _state = Provider.of<UserState>(context, listen: false);
     _state.chatroom = widget.chatroom;
+    isMuted = widget.chatroom.isMuted;
     // register new message listener
     _messageSubscription = Provider.of<UserState>(context, listen: false)
         .messageStream
@@ -191,6 +192,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
     return Consumer<UserState>(
         builder: (context, userState, child) => WillPopScope(
             onWillPop: () async {
+              await MessageStore().readAllMessageOfChatroom(widget.chatroom.id);
               Navigator.pop(
                   context,
                   OneToOneChat(
@@ -198,6 +200,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                     unread: 0,
                     createdAt: widget.chatroom.createdAt,
                     latestMessage: (_messages.isEmpty) ? null : _messages[0],
+                    isMuted: isMuted,
                   ));
               return true;
             },
@@ -207,7 +210,9 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                 leadingWidth: 72,
                 titleSpacing: 8,
                 leading: InkWell(
-                  onTap: () {
+                  onTap: () async {
+                    await MessageStore()
+                        .readAllMessageOfChatroom(widget.chatroom.id);
                     Navigator.pop(
                         context,
                         OneToOneChat(
@@ -216,6 +221,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                           createdAt: widget.chatroom.createdAt,
                           latestMessage:
                               (_messages.isEmpty) ? null : _messages[0],
+                          isMuted: isMuted,
                         ));
                   },
                   borderRadius: BorderRadius.circular(40.0),
@@ -250,12 +256,13 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                                   chatroom: widget.chatroom,
                                   blockedFuture: blockedFuture,
                                 )))
-                        .then((value) => {
-                              setState(() {
-                                blockedFuture =
-                                    BlockStore().contain(widget.chatroom.id);
-                              })
-                            }),
+                        .then((value) {
+                      isMuted = value.isMuted;
+                      setState(() {
+                        blockedFuture =
+                            BlockStore().contain(widget.chatroom.id);
+                      });
+                    }),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [

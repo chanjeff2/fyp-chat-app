@@ -20,6 +20,7 @@ ChatroomEntity _$ChatroomEntityFromJson(Map<String, dynamic> json) {
     groupType: json['groupType'] as int?,
     description: json['description'] as String?,
     profilePicUrl: json['profilePicUrl'] as String?,
+    isMuted: ((json['isMuted'] as int) == 1) ? true : false,
   );
 }
 
@@ -33,4 +34,9 @@ Map<String, dynamic> _$ChatroomEntityToJson(ChatroomEntity instance) =>
       'groupType': instance.groupType,
       'description': instance.description,
       'profilePicUrl': instance.profilePicUrl,
+      'isMuted': (instance.isMuted == null)
+          ? 0
+          : (instance.isMuted!)
+              ? 1
+              : 0,
     };

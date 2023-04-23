@@ -188,7 +188,10 @@ class FCMHandler {
     return null;
   }
 
-  static void _showNotification(ReceivedChatEvent message) {
+  static void _showNotification(ReceivedChatEvent message) async {
+    if ((await ChatroomStore().get(message.chatroom.id))!.isMuted == true) {
+      return;
+    }
     late final String notificationTitle;
     switch (message.chatroom.type) {
       case ChatroomType.oneToOne:

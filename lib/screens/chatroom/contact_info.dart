@@ -282,33 +282,69 @@ class _ContactInfoState extends State<ContactInfo> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           // Notification button
-                          Column(children: [
-                            InkWell(
-                              onTap: () {
-                                print("Mute notifications from testuser");
-                              },
-                              child: Ink(
-                                padding: const EdgeInsets.all(12),
-                                decoration: const BoxDecoration(
-                                  color: Colors.blueGrey,
-                                  borderRadius:
-                                      BorderRadius.all(Radius.circular(10.0)),
+                          Column(
+                            children: [
+                              if (chatroom.isMuted) ...[
+                                InkWell(
+                                  onTap: () async {
+                                    setState(() {
+                                      chatroom.isMuted = false;
+                                    });
+                                    await ChatroomStore().save(chatroom);
+                                  },
+                                  child: Ink(
+                                    padding: const EdgeInsets.all(12),
+                                    decoration: const BoxDecoration(
+                                      color: Colors.blueGrey,
+                                      borderRadius: BorderRadius.all(
+                                          Radius.circular(10.0)),
+                                    ),
+                                    child: const Icon(
+                                      Icons.notifications_off_outlined,
+                                      color: Colors.white70,
+                                      size: 28,
+                                    ),
+                                  ),
                                 ),
-                                child: const Icon(
-                                  Icons.notifications_outlined,
-                                  color: Colors.white70,
-                                  size: 28,
+                                const SizedBox(height: 8),
+                                const Text(
+                                  "Muted",
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                  ),
                                 ),
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            const Text(
-                              "Mute",
-                              style: TextStyle(
-                                fontSize: 18,
-                              ),
-                            ),
-                          ]),
+                              ] else ...[
+                                InkWell(
+                                  onTap: () async {
+                                    setState(() {
+                                      chatroom.isMuted = true;
+                                    });
+                                    await ChatroomStore().save(chatroom);
+                                  },
+                                  child: Ink(
+                                    padding: const EdgeInsets.all(12),
+                                    decoration: const BoxDecoration(
+                                      color: Colors.blueGrey,
+                                      borderRadius: BorderRadius.all(
+                                          Radius.circular(10.0)),
+                                    ),
+                                    child: const Icon(
+                                      Icons.notifications_outlined,
+                                      color: Colors.white70,
+                                      size: 28,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                const Text(
+                                  "Mute",
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
                           const SizedBox(width: 32),
                           // Search button
                           Column(children: [

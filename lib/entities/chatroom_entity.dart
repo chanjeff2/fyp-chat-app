@@ -15,7 +15,8 @@ $columnCreatedAt TEXT NOT NULL,
 $columnUpdatedAt TEXT,
 $columnGroupType INTEGER,
 $columnDescription TEXT,
-$columnProfilePicUrl TEXT
+$columnProfilePicUrl TEXT,
+$columnIsMuted INTEGER 
 """;
 
   static const columnId = "id";
@@ -60,6 +61,10 @@ $columnProfilePicUrl TEXT
   @JsonKey(name: columnProfilePicUrl)
   final String? profilePicUrl;
 
+  static const columnIsMuted = "isMuted";
+  @JsonKey(required: true, name: columnIsMuted)
+  final bool isMuted;
+
   ChatroomEntity({
     required this.id,
     required this.type,
@@ -69,6 +74,7 @@ $columnProfilePicUrl TEXT
     this.groupType,
     this.description,
     this.profilePicUrl,
+    required this.isMuted,
   });
 
   Map<String, dynamic> toJson() => _$ChatroomEntityToJson(this);

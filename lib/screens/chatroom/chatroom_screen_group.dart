@@ -250,6 +250,7 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
     return Consumer<UserState>(
         builder: (context, userState, child) => WillPopScope(
             onWillPop: () async {
+              await MessageStore().readAllMessageOfChatroom(widget.chatroom.id);
               Navigator.pop(
                   context,
                   GroupChat(
@@ -263,6 +264,7 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
                     groupType: chatroom.groupType,
                     description: chatroom.description,
                     profilePicUrl: chatroom.profilePicUrl,
+                    isMuted: chatroom.isMuted,
                   ));
               return true;
             },
@@ -272,7 +274,9 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
                 leadingWidth: 72,
                 titleSpacing: 8,
                 leading: InkWell(
-                  onTap: () {
+                  onTap: () async {
+                    await MessageStore()
+                        .readAllMessageOfChatroom(widget.chatroom.id);
                     Navigator.pop(
                         context,
                         GroupChat(
@@ -287,6 +291,7 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
                           groupType: chatroom.groupType,
                           description: chatroom.description,
                           profilePicUrl: chatroom.profilePicUrl,
+                          isMuted: chatroom.isMuted,
                         ));
                   },
                   borderRadius: BorderRadius.circular(40.0),

@@ -31,11 +31,13 @@ class GroupInfo extends Chatroom {
     required this.groupType,
     this.description,
     this.profilePicUrl,
+    bool isMuted = false,
   }) : super(
           id: id,
           latestMessage: latestMessage,
           unread: unread,
           createdAt: createdAt,
+          isMuted: isMuted,
         );
 
   @override
@@ -48,6 +50,7 @@ class GroupInfo extends Chatroom {
         groupType: groupType.index,
         description: description,
         profilePicUrl: profilePicUrl,
+        isMuted: isMuted,
       );
 
   GroupInfo.fromDto(GroupInfoDto dto)
