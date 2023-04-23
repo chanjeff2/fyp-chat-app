@@ -137,7 +137,10 @@ class _ContactInfoState extends State<ContactInfo> {
         case FCMEventType.mediaMessage:
           break;
         case FCMEventType.patchGroup:
-          // TODO: Handle this case.
+          setState(() {
+            (widget.chatroom as GroupChat)
+                .merge(receivedChatEvent.chatroom as GroupChat);
+          });
           break;
         case FCMEventType.addMember:
           final event = receivedChatEvent.event as AccessControlEvent;

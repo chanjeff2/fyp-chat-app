@@ -43,6 +43,7 @@ class UserState extends ChangeNotifier {
         final ac = await AccountApi().getMe();
         _me = ac;
         await SyncManager().synchronizeContacts();
+        await SyncManager().synchronizeGroups();
       } on ApiException catch (e) {
         // show error?
       }

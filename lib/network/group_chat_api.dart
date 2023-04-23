@@ -159,12 +159,14 @@ class GroupChatApi extends Api {
     return GroupInfo.fromDto(GroupInfoDto.fromJson(json));
   }
 
-  Future<List<GroupInfoDto>> synchronize(List<SyncGroupDto> groups) async {
+  Future<List<GroupInfo>> synchronize(List<SyncGroupDto> groups) async {
     final List<dynamic> json = await post(
       "/sync",
       body: {"data": groups.map((e) => e.toJson()).toList()},
       useAuth: true,
     );
-    return json.map((e) => GroupInfoDto.fromJson(e)).toList();
+    return json
+        .map((e) => GroupInfo.fromDto(GroupInfoDto.fromJson(e)))
+        .toList();
   }
 }

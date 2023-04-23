@@ -1,3 +1,4 @@
+import 'package:fyp_chat_app/dto/group_info_dto.dart';
 import 'package:fyp_chat_app/entities/chatroom_entity.dart';
 import 'package:fyp_chat_app/models/chatroom.dart';
 import 'package:fyp_chat_app/models/enum.dart';
@@ -34,9 +35,20 @@ class ChatroomStore {
     final result = await db.query(table);
 
     final chatroomList = await Future.wait(result
-        .map((e) => ChatroomEntity.fromJson(e))
-        .map((e) async => Chatroom.fromEntity(e)));
+        .map((e) async => Chatroom.fromEntity(ChatroomEntity.fromJson(e))));
     return chatroomList.whereType<Chatroom>().toList();
+  }
+
+  Future<List<GroupInfoDto>> getAllGroupInfoDto() async {
+    final db = await DiskStorage().db;
+    final result = await db.query(
+      table,
+      where: '${ChatroomEntity.columnType} = ?',
+      whereArgs: [ChatroomType.group.index],
+    );
+
+    final chatroomList = result.map((e) => GroupInfoDto.fromJson(e)).toList();
+    return chatroomList;
   }
 
   Future<Chatroom?> get(String id) async {

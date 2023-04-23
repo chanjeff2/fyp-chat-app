@@ -106,7 +106,9 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
           _messages.insert(0, receivedChatEvent.event as MediaMessage);
           break;
         case FCMEventType.patchGroup:
-          // TODO: Handle this case.
+          setState(() {
+            widget.chatroom.merge(receivedChatEvent.chatroom as GroupChat);
+          });
           break;
         case FCMEventType.addMember:
           final event = receivedChatEvent.event as AccessControlEvent;
