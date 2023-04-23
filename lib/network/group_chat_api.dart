@@ -5,6 +5,8 @@ import 'package:fyp_chat_app/dto/group_dto.dart';
 import 'package:fyp_chat_app/dto/group_member_dto.dart';
 import 'package:fyp_chat_app/dto/send_access_control_dto.dart';
 import 'package:fyp_chat_app/dto/send_invitation_dto.dart';
+import 'package:fyp_chat_app/dto/sync_group_dto.dart';
+import 'package:fyp_chat_app/dto/update_group_dto.dart';
 import 'package:fyp_chat_app/models/enum.dart';
 import 'package:fyp_chat_app/models/group_chat.dart';
 import 'package:fyp_chat_app/models/group_member.dart';
@@ -132,15 +134,23 @@ class GroupChatApi extends Api {
     }
   }
 
-  Future<GroupChat> updateGroupInfo(GroupDto gpDto, String groupId) async {
+  Future<UpdateGroupDto> updateGroupInfo(UpdateGroupDto gpDto, String groupId) async {
     final json = await patch("/$groupId", body: gpDto.toJson(), useAuth: true);
-    final dto = GroupDto.fromJson(json);
-    return GroupChat.fromDto(dto);
+    print(json);
+    return UpdateGroupDto.fromJson(json);
   }
 
-  Future<GroupChat> updateProfilePic(File image, String groupId) async {
+  Future<UpdateGroupDto> updateProfilePic(File image, String groupId) async {
     final json = await putMedia("/$groupId/update-profile-pic", file: image, useAuth: true);
-    final dto = GroupDto.fromJson(json);
-    return GroupChat.fromDto(dto);
+    return UpdateGroupDto.fromJson(json);
+  }
+
+  Future<List<UpdateGroupDto>> synchronize(List<SyncGroupDto> users) async {
+    final List<dynamic> json = await post(
+      "/sync",
+      body: {"data": users.map((e) => e.toJson()).toList()},
+      useAuth: true,
+    );
+    return json.map((e) => UpdateGroupDto.fromJson(e)).toList();
   }
 }

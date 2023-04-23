@@ -41,6 +41,8 @@ class _ContactInfoState extends State<ContactInfo> {
   List<int> _media = [1, 2, 3, 4, 5, 6, 7, 8, 9];
   Offset _tapPosition = Offset.zero;
 
+  late Chatroom chatroom;
+
   late StreamSubscription<ReceivedChatEvent> _messageSubscription;
 
   Future<bool> checkSelfAccount(
@@ -91,15 +93,15 @@ class _ContactInfoState extends State<ContactInfo> {
   }
 
   bool checkIsAdmin(UserState userState) {
-    if (widget.chatroom.type != ChatroomType.group) {
+    if (chatroom.type != ChatroomType.group) {
       return false;
     }
-    if ((widget.chatroom as GroupChat).members.firstWhereOrNull(
+    if ((chatroom as GroupChat).members.firstWhereOrNull(
             (member) => member.user.userId == userState.me?.userId) ==
         null) {
       return false;
     }
-    return (widget.chatroom as GroupChat)
+    return (chatroom as GroupChat)
             .members
             .firstWhereOrNull(
                 (member) => member.user.userId == userState.me?.userId)!
@@ -117,10 +119,15 @@ class _ContactInfoState extends State<ContactInfo> {
   @override
   void initState() {
     super.initState();
+
+    setState(() {
+      chatroom = widget.chatroom;
+    });
+
     _messageSubscription = Provider.of<UserState>(context, listen: false)
         .messageStream
         .listen((receivedChatEvent) async {
-      if (receivedChatEvent.chatroom.id != widget.chatroom.id) {
+      if (receivedChatEvent.chatroom.id != chatroom.id) {
         // skip other chatroom event
         return;
       }
@@ -135,17 +142,17 @@ class _ContactInfoState extends State<ContactInfo> {
         case FCMEventType.addMember:
           final event = receivedChatEvent.event as AccessControlEvent;
           final member = await GroupMemberStore()
-              .getbyChatroomIdAndUserId(widget.chatroom.id, event.targetUserId);
+              .getbyChatroomIdAndUserId(chatroom.id, event.targetUserId);
           setState(() {
-            if (!(widget.chatroom as GroupChat).members.contains(member)) {
-              (widget.chatroom as GroupChat).members.add(member!);
+            if (!(chatroom as GroupChat).members.contains(member)) {
+              (chatroom as GroupChat).members.add(member!);
             }
           });
           break;
         case FCMEventType.kickMember:
           final event = receivedChatEvent.event as AccessControlEvent;
           setState(() {
-            (widget.chatroom as GroupChat)
+            (chatroom as GroupChat)
                 .members
                 .removeWhere((member) => member.user.id == event.targetUserId);
           });
@@ -154,26 +161,26 @@ class _ContactInfoState extends State<ContactInfo> {
         case FCMEventType.demoteAdmin:
           final event = receivedChatEvent.event as AccessControlEvent;
           final member = await GroupMemberStore()
-              .getbyChatroomIdAndUserId(widget.chatroom.id, event.targetUserId);
+              .getbyChatroomIdAndUserId(chatroom.id, event.targetUserId);
           setState(() {
-            (widget.chatroom as GroupChat)
+            (chatroom as GroupChat)
                 .members
                 .removeWhere((member) => member.user.id == event.targetUserId);
-            (widget.chatroom as GroupChat).members.add(member!);
+            (chatroom as GroupChat).members.add(member!);
           });
           break;
         case FCMEventType.memberJoin:
           final member = await GroupMemberStore().getbyChatroomIdAndUserId(
-              widget.chatroom.id, receivedChatEvent.event.senderUserId);
+              chatroom.id, receivedChatEvent.event.senderUserId);
           setState(() {
-            if (!(widget.chatroom as GroupChat).members.contains(member)) {
-              (widget.chatroom as GroupChat).members.add(member!);
+            if (!(chatroom as GroupChat).members.contains(member)) {
+              (chatroom as GroupChat).members.add(member!);
             }
           });
           break;
         case FCMEventType.memberLeave:
           setState(() {
-            (widget.chatroom as GroupChat).members.removeWhere((member) =>
+            (chatroom as GroupChat).members.removeWhere((member) =>
                 member.user.id == receivedChatEvent.event.senderUserId);
           });
           break;
@@ -192,41 +199,44 @@ class _ContactInfoState extends State<ContactInfo> {
     return Consumer<UserState>(
       builder: (context, userState, child) => Scaffold(
         appBar: AppBar(
-          leadingWidth: 24,
-          leading: IconButton(
-            onPressed: () => Navigator.pop(context, widget.chatroom),
-            icon: const Icon(Icons.arrow_back),
-          ),
-          title: Row(
-            children: <Widget>[
-              UserIcon(
-                radius: 20,
-                iconSize: 20,
-                isGroup: widget.chatroom.type == ChatroomType.group,
-                profilePicUrl: widget.chatroom.type == ChatroomType.group
-                                ? (widget.chatroom as GroupChat).profilePicUrl
-                                : (widget.chatroom as OneToOneChat).target.profilePicUrl,
-              ),
-              const SizedBox(width: 12),
-              Text(widget.chatroom.name),
-            ],
-          ),
-          actions: (widget.chatroom.type == ChatroomType.group &&
-                          checkIsAdmin(userState))
+            leadingWidth: 24,
+            leading: IconButton(
+              onPressed: () => Navigator.pop(context, chatroom),
+              icon: const Icon(Icons.arrow_back),
+            ),
+            title: Row(
+              children: <Widget>[
+                UserIcon(
+                  radius: 20,
+                  iconSize: 20,
+                  isGroup: chatroom.type == ChatroomType.group,
+                  profilePicUrl: chatroom.type == ChatroomType.group
+                      ? (chatroom as GroupChat).profilePicUrl
+                      : (chatroom as OneToOneChat).target.profilePicUrl,
+                ),
+                const SizedBox(width: 12),
+                Text(chatroom.name),
+              ],
+            ),
+            actions:
+                (chatroom.type == ChatroomType.group && checkIsAdmin(userState))
                     ? [
                         IconButton(
-                          onPressed: () =>
-                            Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) => EditGroupChat(
-                                groupChat: widget.chatroom as GroupChat,
-                              ),
-                            )),
-                          
-                          icon: const Icon(Icons.edit)
-                        )
+                            onPressed: () => Navigator.of(context)
+                                    .push(MaterialPageRoute(
+                                  builder: (context) => EditGroupChat(
+                                    groupChat: chatroom as GroupChat,
+                                  ),
+                                ))
+                                    .then((updatedChatroom) {
+                                  setState(() {
+                                    chatroom = updatedChatroom;
+                                  });
+                                  print((updatedChatroom as GroupChat).toEntity().toJson());
+                                }),
+                            icon: const Icon(Icons.edit))
                       ]
-                    : null
-        ),
+                    : null),
         body: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -236,27 +246,26 @@ class _ContactInfoState extends State<ContactInfo> {
                 child: UserIcon(
                   radius: 72,
                   iconSize: 72,
-                  isGroup: widget.chatroom.type == ChatroomType.group,
-                  profilePicUrl: widget.chatroom.type == ChatroomType.group
-                                  ? (widget.chatroom as GroupChat).profilePicUrl
-                                  : (widget.chatroom as OneToOneChat).target.profilePicUrl,
+                  isGroup: chatroom.type == ChatroomType.group,
+                  profilePicUrl: chatroom.type == ChatroomType.group
+                      ? (chatroom as GroupChat).profilePicUrl
+                      : (chatroom as OneToOneChat).target.profilePicUrl,
                 ),
               ),
               const SizedBox(height: 14),
-              Text(widget.chatroom.name,
+              Text(chatroom.name,
                   textAlign: TextAlign.center,
                   style: const TextStyle(
                     fontSize: 28,
                   )),
               Text(
                 // isGroup ? "Group - $participants participants" : "Known as $user.username"
-                widget.chatroom.type == ChatroomType.group
-                    ? ((widget.chatroom as GroupChat).members.length)
-                            .toString() +
-                        ((widget.chatroom as GroupChat).members.length > 1
+                chatroom.type == ChatroomType.group
+                    ? ((chatroom as GroupChat).members.length).toString() +
+                        ((chatroom as GroupChat).members.length > 1
                             ? " participants"
                             : " participant")
-                    : "Known as ${(widget.chatroom as OneToOneChat).target.username}",
+                    : "Known as ${(chatroom as OneToOneChat).target.username}",
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                   fontSize: 24,
@@ -323,11 +332,11 @@ class _ContactInfoState extends State<ContactInfo> {
                       ),
                     ),
                   ]),
-                  (widget.chatroom.type == ChatroomType.group &&
+                  (chatroom.type == ChatroomType.group &&
                           checkIsAdmin(userState))
                       ? const SizedBox(width: 32)
                       : const SizedBox(width: 0),
-                  (widget.chatroom.type == ChatroomType.group &&
+                  (chatroom.type == ChatroomType.group &&
                           checkIsAdmin(userState))
                       ? Column(children: [
                           InkWell(
@@ -336,7 +345,7 @@ class _ContactInfoState extends State<ContactInfo> {
                                 builder: (context) => CreateGroupScreen(
                                   isCreateGroup: false,
                                   fromContactInfo: false,
-                                  group: widget.chatroom as GroupChat,
+                                  group: chatroom as GroupChat,
                                 ),
                               ));
                             },
@@ -371,7 +380,7 @@ class _ContactInfoState extends State<ContactInfo> {
               GestureDetector(
                 child: ListTile(
                   title: Text(
-                    (widget.chatroom.type == ChatroomType.group)
+                    (chatroom.type == ChatroomType.group)
                         ? "Group description"
                         : "Status",
                     style: const TextStyle(
@@ -380,11 +389,11 @@ class _ContactInfoState extends State<ContactInfo> {
                     ),
                   ),
                   subtitle: Text(
-                    (widget.chatroom.type == ChatroomType.group)
-                        ? ((widget.chatroom as GroupChat).description
-                            ?? "This is a new USTalk group!")
-                        : ((widget.chatroom as OneToOneChat).target.status
-                            ?? "Hi! I'm using USTalk."),
+                    (chatroom.type == ChatroomType.group)
+                        ? ((chatroom as GroupChat).description ??
+                            "This is a new USTalk group!")
+                        : ((chatroom as OneToOneChat).target.status ??
+                            "Hi! I'm using USTalk."),
                     style: const TextStyle(
                       fontSize: 16,
                     ),
@@ -393,9 +402,8 @@ class _ContactInfoState extends State<ContactInfo> {
               ),
               const Divider(thickness: 2, indent: 8, endIndent: 8),
               //Official group
-              (widget.chatroom.type == ChatroomType.group &&
-                      (widget.chatroom as GroupChat).groupType ==
-                          GroupType.Course)
+              (chatroom.type == ChatroomType.group &&
+                      (chatroom as GroupChat).groupType == GroupType.Course)
                   ? GestureDetector(
                       child: const ListTile(
                         leading: SizedBox(
@@ -418,9 +426,8 @@ class _ContactInfoState extends State<ContactInfo> {
                       ),
                     )
                   : Container(),
-              (widget.chatroom.type == ChatroomType.group &&
-                      (widget.chatroom as GroupChat).groupType ==
-                          GroupType.Course)
+              (chatroom.type == ChatroomType.group &&
+                      (chatroom as GroupChat).groupType == GroupType.Course)
                   ? const Divider(thickness: 2, indent: 8, endIndent: 8)
                   : Container(),
               /*
@@ -463,7 +470,7 @@ class _ContactInfoState extends State<ContactInfo> {
                           fontSize: 16,
                         ),
                       ),
-                      subtitle: (widget.chatroom.type == ChatroomType.group)
+                      subtitle: (chatroom.type == ChatroomType.group)
                           ? Text(
                               "All messages are end-to-end encrypted.",
                               style: TextStyle(
@@ -544,7 +551,7 @@ class _ContactInfoState extends State<ContactInfo> {
               ),
               const Divider(thickness: 2, indent: 8, endIndent: 8),
               // Group members
-              (widget.chatroom.type == ChatroomType.group)
+              (chatroom.type == ChatroomType.group)
                   ? Row(
                       children: const [
                         SizedBox(width: 16),
@@ -570,17 +577,17 @@ class _ContactInfoState extends State<ContactInfo> {
                       ],
                     ),
               const SizedBox(height: 8),
-              if (widget.chatroom.type == ChatroomType.group)
+              if (chatroom.type == ChatroomType.group)
                 //Group List View
                 Builder(builder: (_) {
-                  final chatroom = widget.chatroom as GroupChat;
+                  final groupChat = chatroom as GroupChat;
                   return ListView.builder(
                       // +1 for add members
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
                       itemCount: checkIsAdmin(userState)
-                          ? chatroom.members.length + 1
-                          : chatroom.members.length,
+                          ? groupChat.members.length + 1
+                          : groupChat.members.length,
                       itemBuilder: (_, index) {
                         // Add member
                         if (index == 0 && checkIsAdmin(userState)) {
@@ -590,7 +597,7 @@ class _ContactInfoState extends State<ContactInfo> {
                                 builder: (context) => CreateGroupScreen(
                                   isCreateGroup: false,
                                   fromContactInfo: false,
-                                  group: widget.chatroom as GroupChat,
+                                  group: chatroom as GroupChat,
                                 ),
                               ));
                             },
@@ -616,41 +623,46 @@ class _ContactInfoState extends State<ContactInfo> {
                         // Group members
                         return InkWell(
                           onTapDown: (position) async {
-                            print(chatroom.members.length);
+                            print(groupChat.members.length);
                             print((await GroupMemberStore()
                                     .getByChatroomId(chatroom.id))
                                 .length);
                             print((checkIsAdmin(userState)
-                                    ? chatroom.members[index - 1]
-                                    : chatroom.members[index])
+                                    ? groupChat.members[index - 1]
+                                    : groupChat.members[index])
                                 .id);
                             print((await GroupMemberStore()
-                                    .getbyChatroomIdAndUserId(chatroom.id, ((checkIsAdmin(userState)
-                                ? chatroom.members[index - 1]
-                                : chatroom.members[index]).user.userId)))!.id);
+                                    .getbyChatroomIdAndUserId(
+                                        chatroom.id,
+                                        ((checkIsAdmin(userState)
+                                                ? groupChat.members[index - 1]
+                                                : groupChat.members[index])
+                                            .user
+                                            .userId)))!
+                                .id);
                             return _getTapPosition(position);
                           },
                           onLongPress: () async {
                             if (checkIsAdmin(userState) &&
                                 !(await checkSelfAccount(
                                     determineListViewIndexForCommonGroupList(
-                                        userState, chatroom.members, index),
+                                        userState, groupChat.members, index),
                                     index,
                                     userState))) {
                               await _showContextMenu(context,
-                                  chatroom.members[index - 1], userState);
+                                  groupChat.members[index - 1], userState);
                             }
                           },
                           onTap: () async {
                             /* direct to OneToOne chat */
                             if (!(await checkSelfAccount(
                                 determineListViewIndexForCommonGroupList(
-                                    userState, chatroom.members, index),
+                                    userState, groupChat.members, index),
                                 index,
                                 userState))) {
                               Chatroom? pmChatroom = await ChatroomStore().get(
                                   determineListViewIndexForCommonGroupList(
-                                          userState, chatroom.members, index)
+                                          userState, groupChat.members, index)
                                       .user
                                       .userId);
                               if (pmChatroom == null) {
@@ -660,7 +672,7 @@ class _ContactInfoState extends State<ContactInfo> {
                                   target:
                                       determineListViewIndexForCommonGroupList(
                                               userState,
-                                              chatroom.members,
+                                              groupChat.members,
                                               index)
                                           .user,
                                   unread: 0,
@@ -686,48 +698,47 @@ class _ContactInfoState extends State<ContactInfo> {
                                   iconSize: 24,
                                   isGroup: false,
                                   profilePicUrl: (checkIsAdmin(userState)
-                                                    ? chatroom
-                                                        .members[index - 1]
-                                                    : chatroom.members[index])
-                                                  .user
-                                                  .profilePicUrl,
+                                          ? groupChat.members[index - 1]
+                                          : groupChat.members[index])
+                                      .user
+                                      .profilePicUrl,
                                 ),
                                 const SizedBox(width: 16),
                                 Text(
                                     // isGroup ? _members[index].name : _common_group[index].name,
                                     ((checkIsAdmin(userState)
-                                                    ? chatroom
+                                                    ? groupChat
                                                         .members[index - 1]
-                                                    : chatroom.members[index])
+                                                    : groupChat.members[index])
                                                 .user
                                                 .userId ==
                                             userState.me!.userId)
                                         ? "You"
                                         : ((checkIsAdmin(userState)
-                                                        ? chatroom
+                                                        ? groupChat
                                                             .members[index - 1]
-                                                        : chatroom
+                                                        : groupChat
                                                             .members[index])
                                                     .user
                                                     .displayName ==
                                                 null)
                                             ? determineListViewIndexForCommonGroupList(
                                                     userState,
-                                                    chatroom.members,
+                                                    groupChat.members,
                                                     index)
                                                 .user
                                                 .username
                                             : determineListViewIndexForCommonGroupList(
                                                     userState,
-                                                    chatroom.members,
+                                                    groupChat.members,
                                                     index)
                                                 .user
                                                 .displayName!,
                                     style: const TextStyle(fontSize: 16)),
                                 const Expanded(child: SizedBox()),
                                 ((checkIsAdmin(userState)
-                                                ? chatroom.members[index - 1]
-                                                : chatroom.members[index])
+                                                ? groupChat.members[index - 1]
+                                                : groupChat.members[index])
                                             .role ==
                                         Role.admin)
                                     ? const Icon(Icons.manage_accounts,
@@ -740,10 +751,10 @@ class _ContactInfoState extends State<ContactInfo> {
                         );
                       });
                 }),
-              if (widget.chatroom.type == ChatroomType.oneToOne)
+              if (chatroom.type == ChatroomType.oneToOne)
                 // oneToOne Chatroom List View
                 FutureBuilder<List<Chatroom>>(
-                    future: checkCommonGroupChat(widget.chatroom, userState),
+                    future: checkCommonGroupChat(chatroom, userState),
                     builder: (context, snapshot) {
                       if (!snapshot.hasData) {
                         return const Center(child: CircularProgressIndicator());
@@ -752,7 +763,7 @@ class _ContactInfoState extends State<ContactInfo> {
                       return ListView.builder(
                           // +1 for add members / create group with the user
                           shrinkWrap: true,
-                          physics: NeverScrollableScrollPhysics(),
+                          physics: const NeverScrollableScrollPhysics(),
                           itemCount: chatrooms.length,
                           itemBuilder: (context, index) {
                             // Common groups
@@ -778,7 +789,9 @@ class _ContactInfoState extends State<ContactInfo> {
                                       radius: 24,
                                       iconSize: 24,
                                       isGroup: true,
-                                      profilePicUrl: (chatrooms[index] as GroupChat).profilePicUrl,
+                                      profilePicUrl:
+                                          (chatrooms[index] as GroupChat)
+                                              .profilePicUrl,
                                     ),
                                     const SizedBox(width: 16),
                                     Text(
@@ -794,7 +807,7 @@ class _ContactInfoState extends State<ContactInfo> {
 
               const Divider(thickness: 2, indent: 8, endIndent: 8),
               // Block / Leave group
-              if ((widget.chatroom.type == ChatroomType.group)) ...[
+              if ((chatroom.type == ChatroomType.group)) ...[
                 InkWell(
                   onTap: () {
                     /* confirm => process leave group */
@@ -819,12 +832,10 @@ class _ContactInfoState extends State<ContactInfo> {
                           if (snapshot.hasData && snapshot.data == false) {
                             return AlertDialog(
                               //Blocking button
-                              title:
-                                  (widget.chatroom.type == ChatroomType.group)
-                                      ? const Text("Block group?")
-                                      : const Text("Block user?"),
-                              content: (widget.chatroom.type ==
-                                      ChatroomType.group)
+                              title: (chatroom.type == ChatroomType.group)
+                                  ? const Text("Block group?")
+                                  : const Text("Block user?"),
+                              content: (chatroom.type == ChatroomType.group)
                                   ? const Text(
                                       "You will no longer be able to receive messages from this group.")
                                   : const Text(
@@ -837,14 +848,14 @@ class _ContactInfoState extends State<ContactInfo> {
                                 TextButton(
                                   onPressed: () async {
                                     bool status = await BlockApi()
-                                        .sendBlockRequest(widget.chatroom.id);
+                                        .sendBlockRequest(chatroom.id);
                                     if (status) {
                                       //update blocked chatroom in blockstore
                                       await BlockStore()
-                                          .storeBlocked(widget.chatroom.id);
+                                          .storeBlocked(chatroom.id);
                                     }
                                     Navigator.pop(context);
-                                    Navigator.pop(context, widget.chatroom);
+                                    Navigator.pop(context, chatroom);
                                   },
                                   child: const Text("Block"),
                                 ),
@@ -854,12 +865,10 @@ class _ContactInfoState extends State<ContactInfo> {
                               snapshot.data == true) {
                             return AlertDialog(
                               //Unblock button
-                              title:
-                                  (widget.chatroom.type == ChatroomType.group)
-                                      ? const Text("Unblock group?")
-                                      : const Text("Unblock user?"),
-                              content: (widget.chatroom.type ==
-                                      ChatroomType.group)
+                              title: (chatroom.type == ChatroomType.group)
+                                  ? const Text("Unblock group?")
+                                  : const Text("Unblock user?"),
+                              content: (chatroom.type == ChatroomType.group)
                                   ? const Text(
                                       "You will be able to receive messages from this group.")
                                   : const Text(
@@ -872,14 +881,14 @@ class _ContactInfoState extends State<ContactInfo> {
                                 TextButton(
                                   onPressed: () async {
                                     bool status = await BlockApi()
-                                        .sendUnblockRequest(widget.chatroom.id);
+                                        .sendUnblockRequest(chatroom.id);
                                     if (status) {
                                       //update chatroom in chatroomstore
                                       await BlockStore()
-                                          .removeBlocked(widget.chatroom.id);
+                                          .removeBlocked(chatroom.id);
                                     }
                                     Navigator.pop(context);
-                                    Navigator.pop(context, widget.chatroom);
+                                    Navigator.pop(context, chatroom);
                                   },
                                   child: const Text("Unblock"),
                                 ),
@@ -888,12 +897,10 @@ class _ContactInfoState extends State<ContactInfo> {
                           } else {
                             return AlertDialog(
                               //Blocking button
-                              title:
-                                  (widget.chatroom.type == ChatroomType.group)
-                                      ? const Text("Block group?")
-                                      : const Text("Block user?"),
-                              content: (widget.chatroom.type ==
-                                      ChatroomType.group)
+                              title: (chatroom.type == ChatroomType.group)
+                                  ? const Text("Block group?")
+                                  : const Text("Block user?"),
+                              content: (chatroom.type == ChatroomType.group)
                                   ? const Text(
                                       "You will no longer be able to receive messages from this group.")
                                   : const Text(
@@ -901,7 +908,7 @@ class _ContactInfoState extends State<ContactInfo> {
                               actions: [
                                 TextButton(
                                   onPressed: () =>
-                                      Navigator.pop(context, widget.chatroom),
+                                      Navigator.pop(context, chatroom),
                                   child: const Text("Cancel"),
                                 ),
                                 TextButton(
@@ -925,12 +932,12 @@ class _ContactInfoState extends State<ContactInfo> {
                               size: 24, color: Colors.red),
                           title: (snapshot.hasData && snapshot.data == false)
                               ? Text(
-                                  "Block${(widget.chatroom.type == ChatroomType.group) ? ' Group' : ''}",
+                                  "Block${(chatroom.type == ChatroomType.group) ? ' Group' : ''}",
                                   style: const TextStyle(
                                       color: Colors.red, fontSize: 18),
                                 )
                               : Text(
-                                  "Unblock${(widget.chatroom.type == ChatroomType.group) ? ' Group' : ''}",
+                                  "Unblock${(chatroom.type == ChatroomType.group) ? ' Group' : ''}",
                                   style: const TextStyle(
                                       color: Colors.red, fontSize: 18),
                                 ),
@@ -941,7 +948,7 @@ class _ContactInfoState extends State<ContactInfo> {
                             leading: const Icon(Icons.block,
                                 size: 24, color: Colors.red),
                             title: Text(
-                              "Block${(widget.chatroom.type == ChatroomType.group) ? ' Group' : ''}",
+                              "Block${(chatroom.type == ChatroomType.group) ? ' Group' : ''}",
                               style: const TextStyle(
                                   color: Colors.red, fontSize: 18),
                             ));
@@ -974,21 +981,21 @@ class _ContactInfoState extends State<ContactInfo> {
             child: const Text('Promote admin'),
             onTap: () async {
               await GroupChatApi().addAdmin(
-                  widget.chatroom.id, memberSelectedForTheAction.user.userId);
+                  chatroom.id, memberSelectedForTheAction.user.userId);
               //get newest info of member from server
               GroupMember memberfromAPI = await GroupChatApi().getGroupMember(
-                  widget.chatroom.id, memberSelectedForTheAction.user.userId);
+                  chatroom.id, memberSelectedForTheAction.user.userId);
               // await GroupMemberStore().save(
-              //     widget.chatroom.id,
+              //     chatroom.id,
               //     GroupMember(
               //         id: memberSelectedForTheAction.id,
               //         user: memberfromAPI.user,
               //         role: Role.admin));
               setState(() {
-                (widget.chatroom as GroupChat).members.removeWhere((element) =>
+                (chatroom as GroupChat).members.removeWhere((element) =>
                     (element.user.userId ==
                         memberSelectedForTheAction.user.userId));
-                (widget.chatroom as GroupChat).members.add(GroupMember(
+                (chatroom as GroupChat).members.add(GroupMember(
                     id: memberSelectedForTheAction.id,
                     user: memberfromAPI.user,
                     role: Role.admin));
@@ -1007,20 +1014,20 @@ class _ContactInfoState extends State<ContactInfo> {
             child: const Text('Demote admin'),
             onTap: () async {
               await GroupChatApi().removeAdmin(
-                  widget.chatroom.id, memberSelectedForTheAction.user.userId);
+                  chatroom.id, memberSelectedForTheAction.user.userId);
               GroupMember memberfromAPI = await GroupChatApi().getGroupMember(
-                  widget.chatroom.id, memberSelectedForTheAction.user.userId);
+                  chatroom.id, memberSelectedForTheAction.user.userId);
               // await GroupMemberStore().save(
-              //     widget.chatroom.id,
+              //     chatroom.id,
               //     GroupMember(
               //         id: memberSelectedForTheAction.id,
               //         user: memberfromAPI.user,
               //         role: Role.member));
               setState(() {
-                (widget.chatroom as GroupChat).members.removeWhere((element) =>
+                (chatroom as GroupChat).members.removeWhere((element) =>
                     (element.user.userId ==
                         memberSelectedForTheAction.user.userId));
-                (widget.chatroom as GroupChat).members.add(GroupMember(
+                (chatroom as GroupChat).members.add(GroupMember(
                     id: memberSelectedForTheAction.id,
                     user: memberfromAPI.user,
                     role: Role.member));
@@ -1039,7 +1046,7 @@ class _ContactInfoState extends State<ContactInfo> {
             child: const Text('Remove member'),
             onTap: () async {
               await GroupChatApi().kickMember(
-                  widget.chatroom.id, memberSelectedForTheAction.user.userId);
+                  chatroom.id, memberSelectedForTheAction.user.userId);
             },
             value: "Remove member",
           ),
@@ -1058,13 +1065,12 @@ class _ContactInfoState extends State<ContactInfo> {
       onPressed: () async {
         /* TODO: Leave Group Action */
         Navigator.pop(context, 'Leave Group');
-        bool leaveGroupSuccess =
-            await GroupChatApi().leaveGroup(widget.chatroom.id);
+        bool leaveGroupSuccess = await GroupChatApi().leaveGroup(chatroom.id);
         //return to home screen (delete if unnecessary)
         if (leaveGroupSuccess) {
-          ChatroomStore().remove(widget.chatroom.id);
-          (widget.chatroom as GroupChat).members.clear();
-          Navigator.pop(context, widget.chatroom);
+          ChatroomStore().remove(chatroom.id);
+          (chatroom as GroupChat).members.clear();
+          Navigator.pop(context, chatroom);
         } else {
           _leaveGroupFailedAlert(context);
         }

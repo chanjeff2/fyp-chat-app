@@ -61,20 +61,27 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
   late StreamSubscription<ReceivedChatEvent> _messageSubscription;
   late final UserState _state;
   late Future<bool> blockedFuture;
+
+  late GroupChat chatroom;
   @override
   void initState() {
     super.initState();
+
+    setState(() {
+      chatroom = widget.chatroom;
+    });
+
     _messageHistoryFuture = _loadMessageHistory();
     // check chatroom is blocked or not
-    blockedFuture = BlockStore().contain(widget.chatroom.id);
+    blockedFuture = BlockStore().contain(chatroom.id);
     // set chatting with
     _state = Provider.of<UserState>(context, listen: false);
-    _state.chatroom = widget.chatroom;
+    _state.chatroom = chatroom;
     // register new message listener
     _messageSubscription = Provider.of<UserState>(context, listen: false)
         .messageStream
         .listen((receivedChatEvent) async {
-      if (receivedChatEvent.chatroom.id != widget.chatroom.id) {
+      if (receivedChatEvent.chatroom.id != chatroom.id) {
         // skip other chatroom event
         return;
       }
@@ -103,17 +110,17 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
         case FCMEventType.addMember:
           final event = receivedChatEvent.event as AccessControlEvent;
           final member = await GroupMemberStore()
-              .getbyChatroomIdAndUserId(widget.chatroom.id, event.targetUserId);
+              .getbyChatroomIdAndUserId(chatroom.id, event.targetUserId);
           setState(() {
-            if (!widget.chatroom.members.contains(member)) {
-              widget.chatroom.members.add(member!);
+            if (!chatroom.members.contains(member)) {
+              chatroom.members.add(member!);
             }
           });
           break;
         case FCMEventType.kickMember:
           final event = receivedChatEvent.event as AccessControlEvent;
           setState(() {
-            widget.chatroom.members
+            chatroom.members
                 .removeWhere((member) => member.user.id == event.targetUserId);
           });
           break;
@@ -121,25 +128,25 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
         case FCMEventType.demoteAdmin:
           final event = receivedChatEvent.event as AccessControlEvent;
           final member = await GroupMemberStore()
-              .getbyChatroomIdAndUserId(widget.chatroom.id, event.targetUserId);
+              .getbyChatroomIdAndUserId(chatroom.id, event.targetUserId);
           setState(() {
-            widget.chatroom.members
+            chatroom.members
                 .removeWhere((member) => member.user.id == event.targetUserId);
-            widget.chatroom.members.add(member!);
+            chatroom.members.add(member!);
           });
           break;
         case FCMEventType.memberJoin:
           final member = await GroupMemberStore().getbyChatroomIdAndUserId(
-              widget.chatroom.id, receivedChatEvent.event.senderUserId);
+              chatroom.id, receivedChatEvent.event.senderUserId);
           setState(() {
-            if (!widget.chatroom.members.contains(member)) {
-              widget.chatroom.members.add(member!);
+            if (!chatroom.members.contains(member)) {
+              chatroom.members.add(member!);
             }
           });
           break;
         case FCMEventType.memberLeave:
           setState(() {
-            widget.chatroom.members.removeWhere((member) =>
+            chatroom.members.removeWhere((member) =>
                 member.user.id == receivedChatEvent.event.senderUserId);
           });
           break;
@@ -157,7 +164,7 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
 
   Future<bool> _loadMessageHistory() async {
     final messages = await MessageStore().getMessageByChatroomId(
-      widget.chatroom.id,
+      chatroom.id,
       start: _page * _pageSize,
       count: _pageSize,
     );
@@ -183,7 +190,7 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
       }
     });
 
-    GroupChat room = widget.chatroom;
+    GroupChat room = chatroom;
     final members = room.members;
     final names = <String, String>{
       for (var v in members) v.user.userId: v.user.name
@@ -202,7 +209,7 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
     _messageController.clear();
     final sentMessage = await SignalClient().sendMessageToChatroom(
       _state.me!,
-      widget.chatroom,
+      chatroom,
       message,
     );
     setState(() {
@@ -230,7 +237,7 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
     Navigator.of(context).push(MaterialPageRoute(
         builder: (context) => CameraScreen(
               source: Source.chatroom,
-              chatroom: widget.chatroom,
+              chatroom: chatroom,
               sendCallback: _updateMediaMessage,
             )));
   }
@@ -248,15 +255,15 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
               Navigator.pop(
                   context,
                   GroupChat(
-                    id: widget.chatroom.id,
-                    members: (widget.chatroom).members,
-                    name: widget.chatroom.name,
+                    id: chatroom.id,
+                    members: chatroom.members,
+                    name: chatroom.name,
                     unread: 0,
                     latestMessage: (_messages.isEmpty) ? null : _messages[0],
-                    createdAt: widget.chatroom.createdAt,
-                    groupType: (widget.chatroom).groupType,
-                    description: (widget.chatroom).description,
-                    profilePicUrl: (widget.chatroom).profilePicUrl,
+                    createdAt: chatroom.createdAt,
+                    groupType: chatroom.groupType,
+                    description: chatroom.description,
+                    profilePicUrl: chatroom.profilePicUrl,
                   ));
             },
             borderRadius: BorderRadius.circular(40.0),
@@ -275,7 +282,7 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
                     isGroup: true,
                     radius: 18,
                     iconSize: 18,
-                    profilePicUrl: widget.chatroom.profilePicUrl,
+                    profilePicUrl: chatroom.profilePicUrl,
                   ),
                 ),
               ],
@@ -288,57 +295,58 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
               onTap: () => Navigator.of(context)
                   .push(MaterialPageRoute(
                       builder: (context) => ContactInfo(
-                          chatroom: widget.chatroom,
+                          chatroom: chatroom,
                           blockedFuture: blockedFuture)))
-                  .then((value) {
+                  .then((updatedChatroom) {
                         setState(() {
                           blockedFuture =
-                              BlockStore().contain(widget.chatroom.id);
+                              BlockStore().contain(chatroom.id);
+                          chatroom = updatedChatroom;
                         });
                       }),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   //showing top bars chatroom name and participant's name
-                  Text(widget.chatroom.name),
+                  Text(chatroom.name),
                   Text(
-                    (widget.chatroom).members.isEmpty
+                    (chatroom).members.isEmpty
                         //if empty, show no ppl in group
                         ? ""
-                        : (((widget.chatroom).members[0].user.displayName ==
+                        : (((chatroom).members[0].user.displayName ==
                                     null)
                                 //check first member have display name or not
-                                ? (widget.chatroom)
+                                ? (chatroom)
                                     .members[0]
                                     .user
                                     .username
                                     .toString()
-                                : (widget.chatroom)
+                                : (chatroom)
                                     .members[0]
                                     .user
                                     .displayName!
                                     .toString()) +
-                            (((widget.chatroom).members.length < 2)
+                            (((chatroom).members.length < 2)
                                 //check there is second member or not
                                 ? ""
                                 : ', ' +
-                                    (((widget.chatroom)
+                                    (((chatroom)
                                                 .members[1]
                                                 .user
                                                 .displayName ==
                                             null)
                                         //check second member have display name or not
-                                        ? (widget.chatroom)
+                                        ? (chatroom)
                                             .members[1]
                                             .user
                                             .username
                                             .toString()
-                                        : (widget.chatroom)
+                                        : (chatroom)
                                             .members[1]
                                             .user
                                             .displayName!
                                             .toString()) +
-                                    (((widget.chatroom).members.length < 3)
+                                    (((chatroom).members.length < 3)
                                         //check if there are more members
                                         ? ""
                                         : ", ...")),
@@ -497,7 +505,7 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
                         future: blockedFuture,
                         builder: (context, snapshot) {
                           if ((snapshot.hasData && snapshot.data == true) ||
-                              (widget.chatroom).members.firstWhereOrNull(
+                              (chatroom).members.firstWhereOrNull(
                                       (member) =>
                                           member.user.userId ==
                                           userState.me?.userId) ==
@@ -777,7 +785,7 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
                             ),
                           )
                         : AttachmentMenu(
-                            chatroom: widget.chatroom,
+                            chatroom: chatroom,
                             sendCallback: _updateMediaMessage),
                   ),
                 ),

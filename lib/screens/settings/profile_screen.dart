@@ -78,6 +78,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                         try {
                                           // TODO: remove profile pic
                                           Navigator.pop(context);
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(const SnackBar(
+                                                  content: Text(
+                                                      "Profile Picture removed successfully")));
+                                          return;
                                         } catch (e) {
                                           ScaffoldMessenger.of(context)
                                               .showSnackBar(
@@ -133,6 +138,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         userState.setMe(await AccountApi()
                             .updateProfilePic(File(croppedFile.path)));
                         Navigator.pop(context);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                                content: Text(
+                                    "Profile Picture updated successfully")));
                       }),
                       child: Column(
                         children: [
@@ -202,6 +211,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         userState.setMe(await AccountApi()
                             .updateProfilePic(File(croppedFile.path)));
                         Navigator.pop(context);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                                content: Text(
+                                    "Profile Picture updated successfully")));
                       },
                       child: Column(
                         children: [
@@ -325,17 +338,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       onTap: () async {
                         String? name = await inputDialog(
                           "Display Name",
-                          "Please enter your Display Name(Enter nothing input your username by default)",
+                          "Submitting as blank will set your display name to your user name",
+                          "Input here",
                           displayNameController,
                         );
                         try {
-                          if (name == null || name.isEmpty) {
+                          if (name == null) {
                             return;
+                          }
+                          if (name.isEmpty) {
+                            name = userState.me!.username;
                           }
                           // send post request to server to update display name
                           final me = await AccountApi()
                               .updateProfile(UpdateUserDto(displayName: name));
                           userState.setMe(me);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                  content: Text(
+                                      "Display name updated successfully")));
                         } catch (e) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
@@ -367,7 +388,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       onTap: () async {
                         String? status = await inputDialog(
                           "Status",
-                          "Please enter your Status",
+                          null,
+                          "Input here",
                           statusController,
                         );
                         try {
@@ -378,6 +400,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           final me = await AccountApi()
                               .updateProfile(UpdateUserDto(status: status));
                           userState.setMe(me);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                  content:
+                                      Text("Status updated successfully")));
                         } catch (e) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
@@ -410,16 +436,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ));
   }
 
-  Future<String?> inputDialog(
-          String title, String hint, TextEditingController controller) =>
+  Future<String?> inputDialog(String title, String? description, String hint,
+          TextEditingController controller) =>
       showDialog<String>(
         context: context,
         builder: (context) => AlertDialog(
           title: Text(title),
-          content: TextField(
-            autofocus: true,
-            decoration: InputDecoration(hintText: hint),
-            controller: controller,
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (description != null) Text(description),
+              TextField(
+                autofocus: true,
+                decoration: InputDecoration(hintText: hint),
+                controller: controller,
+              ),
+            ],
           ),
           actions: [
             TextButton(
@@ -430,6 +463,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ],
         ),
       );
+
   void submitDialog(TextEditingController controller) {
     Navigator.of(context).pop(controller.text);
     controller.clear();
