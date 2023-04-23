@@ -14,6 +14,9 @@ void main() {
       members: [],
       createdAt: DateTime.now().toIso8601String(),
       groupType: GroupType.Basic,
+      updatedAt: DateTime.now().toIso8601String(),
+      description: 'testDescription',
+      profilePicUrl: 'testProfilePicUrl',
     );
   });
   test('serialilize and deserialize to json', () async {
@@ -27,5 +30,8 @@ void main() {
     expect(model.groupType, groupDto.groupType);
     expect(model.members.length, groupDto.members.length);
     expect(model.createdAt, groupDto.createdAt);
+    expect(model.updatedAt, groupDto.updatedAt);
+    expect(model.description, groupDto.description);
+    expect(model.profilePicUrl, groupDto.profilePicUrl);
   });
 }

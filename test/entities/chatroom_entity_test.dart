@@ -10,6 +10,10 @@ void main() {
       name: 'nameTest',
       createdAt: DateTime.now().toIso8601String(),
       groupType: 0,
+      description: 'descriptionTest',
+      profilePicUrl: 'profilePicUrlTest',
+      isMuted: false,
+      updatedAt: DateTime.now().toIso8601String(),
     );
   });
   test('serialize and deserialize to json', () async {
@@ -23,5 +27,9 @@ void main() {
     expect(receivedChatroomEntity.name, chatroomEntity.name);
     expect(receivedChatroomEntity.createdAt, chatroomEntity.createdAt);
     expect(receivedChatroomEntity.groupType, chatroomEntity.groupType);
+    expect(receivedChatroomEntity.description, chatroomEntity.description);
+    expect(receivedChatroomEntity.profilePicUrl, chatroomEntity.profilePicUrl);
+    expect(receivedChatroomEntity.isMuted, chatroomEntity.isMuted);
+    expect(receivedChatroomEntity.updatedAt, chatroomEntity.updatedAt);
   });
 }

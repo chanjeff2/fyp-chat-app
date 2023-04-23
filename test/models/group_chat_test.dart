@@ -24,6 +24,10 @@ void main() {
         content: "gg",
         isRead: false,
       ),
+      updatedAt: DateTime.now(),
+      description: 'testDescription',
+      profilePicUrl: 'testProfilePicUrl',
+      isMuted: false,
     );
     groupDto = GroupDto(
       id: "1",
@@ -31,6 +35,9 @@ void main() {
       members: [],
       createdAt: DateTime.now().toIso8601String(),
       groupType: GroupType.Basic,
+      updatedAt: DateTime.now().toIso8601String(),
+      description: 'testDescription',
+      profilePicUrl: 'testProfilePicUrl',
     );
   });
   test('serialize to entity', () async {
@@ -42,6 +49,9 @@ void main() {
     expect(entity.type, groupChat.type.index);
     expect(entity.createdAt, groupChat.createdAt.toIso8601String());
     expect(entity.groupType, groupChat.groupType.index);
+    expect(entity.updatedAt, groupChat.updatedAt.toIso8601String());
+    expect(entity.description, groupChat.description);
+    expect(entity.profilePicUrl, groupChat.profilePicUrl);
   });
   test('de-serialize from DTO', () async {
     //de-seriailize
@@ -51,5 +61,12 @@ void main() {
     expect(model.name, groupDto.name);
     expect(model.groupType, groupDto.groupType);
     expect(model.members.length, groupDto.members.length);
+    expect(model.createdAt, DateTime.parse(groupDto.createdAt));
+    expect(model.updatedAt, DateTime.parse(groupDto.updatedAt));
+    expect(model.description, groupDto.description);
+    expect(model.profilePicUrl, groupDto.profilePicUrl);
+    expect(model.unread, 0);
+    expect(model.latestMessage, null);
+    expect(model.isMuted, false);
   });
 }
