@@ -15,6 +15,7 @@ abstract class Chatroom {
   ChatMessage? latestMessage;
   int unread;
   final DateTime createdAt; // exist if read from db
+  DateTime get updatedAt;
 
   Chatroom({
     required this.id,
@@ -77,6 +78,7 @@ abstract class Chatroom {
           latestMessage: latestMessage,
           unread: unread,
           createdAt: DateTime.parse(e.createdAt),
+          updatedAt: DateTime.parse(e.updatedAt!),
           groupType: GroupType.values[e.groupType!],
           description: e.description,
           profilePicUrl: e.profilePicUrl,

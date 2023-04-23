@@ -17,6 +17,9 @@ class OneToOneChat extends Chatroom {
   @override
   ChatroomType get type => ChatroomType.oneToOne;
 
+  @override
+  DateTime get updatedAt => target.updatedAt;
+
   OneToOneChat({
     required this.target,
     ChatMessage? latestMessage,

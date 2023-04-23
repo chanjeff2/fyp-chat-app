@@ -130,7 +130,8 @@ class SignalClient {
 
   Uint8List _generateRandomVector(int length) {
     Uint8List bytes = Uint8List(length);
-    Random.secure().nextInt(256); // Discard the first value to avoid modulo bias
+    Random.secure()
+        .nextInt(256); // Discard the first value to avoid modulo bias
     for (int i = 0; i < length; i++) {
       bytes[i] = Random.secure().nextInt(256);
     }
@@ -278,7 +279,7 @@ class SignalClient {
     final ivParam = ParametersWithIV<KeyParameter>(KeyParameter(key), iv);
     final paddingParam = PaddedBlockCipherParameters(ivParam, null);
     paddedCipher.init(true, paddingParam);
-  
+
     final encryptedData = paddedCipher.process(content);
 
     // Temporarily write file into cache and upload
@@ -291,16 +292,14 @@ class SignalClient {
     // Send media to server, and obtain the id for the key
     final mediaInfo = await MediaApi().uploadFile(file);
 
-    final mediaKeyToSend = jsonEncode(
-      MediaKeyItem(
-        type: type,
-        baseName: mediaInfo.name,
-        aesKey: key,
-        iv: iv,
-        mediaId: mediaInfo.fileId)
-      .toDto()
-      .toJson()
-    );
+    final mediaKeyToSend = jsonEncode(MediaKeyItem(
+            type: type,
+            baseName: mediaInfo.name,
+            aesKey: key,
+            iv: iv,
+            mediaId: mediaInfo.fileId)
+        .toDto()
+        .toJson());
 
     // check if already establish session
     final remotePrimaryAddress = SignalProtocolAddress(
@@ -650,6 +649,7 @@ class SignalClient {
           unread: 1,
           latestMessage: plainMessage,
           createdAt: obtainedChatroom.createdAt,
+          updatedAt: obtainedChatroom.updatedAt,
           groupType: obtainedChatroom.groupType,
         );
         await ChatroomStore().save(groupChatroom);
@@ -780,6 +780,7 @@ class SignalClient {
           groupType: obtainedChatroom.groupType,
           latestMessage: mediaMessage,
           createdAt: obtainedChatroom.createdAt,
+          updatedAt: obtainedChatroom.updatedAt,
         );
         await ChatroomStore().save(groupChatroom);
       } else {

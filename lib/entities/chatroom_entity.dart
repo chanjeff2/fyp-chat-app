@@ -1,4 +1,3 @@
-import 'package:fyp_chat_app/models/chatroom.dart';
 import 'package:fyp_chat_app/models/enum.dart';
 import 'package:fyp_chat_app/models/group_chat.dart';
 import 'package:fyp_chat_app/models/one_to_one_chat.dart';
@@ -13,6 +12,7 @@ $columnId TEXT PRIMARY KEY NOT NULL,
 $columnType INTEGER NOT NULL,
 $columnName TEXT,
 $columnCreatedAt TEXT NOT NULL,
+$columnUpdatedAt TEXT,
 $columnGroupType INTEGER,
 $columnDescription TEXT,
 $columnProfilePicUrl TEXT
@@ -33,7 +33,7 @@ $columnProfilePicUrl TEXT
   static const columnName = "name";
 
   /// required for [GroupChat] only
-  @JsonKey(required: true, name: columnName)
+  @JsonKey(name: columnName)
   final String? name;
 
   static const columnCreatedAt = "createdAt";
@@ -42,16 +42,22 @@ $columnProfilePicUrl TEXT
   @JsonKey(required: true, name: columnCreatedAt)
   final String createdAt;
 
+  static const columnUpdatedAt = "updatedAt";
+
+  /// required for [GroupChat] only
+  @JsonKey(name: columnUpdatedAt)
+  final String? updatedAt;
+
   static const columnGroupType = "groupType";
   @JsonKey(required: true, name: columnGroupType)
   final int? groupType;
 
   static const columnDescription = "description";
-  @JsonKey(required: false, name: columnDescription)
+  @JsonKey(name: columnDescription)
   final String? description;
 
   static const columnProfilePicUrl = "profilePicUrl";
-  @JsonKey(required: false, name: columnProfilePicUrl)
+  @JsonKey(name: columnProfilePicUrl)
   final String? profilePicUrl;
 
   ChatroomEntity({
@@ -59,6 +65,7 @@ $columnProfilePicUrl TEXT
     required this.type,
     this.name,
     required this.createdAt,
+    this.updatedAt,
     this.groupType,
     this.description,
     this.profilePicUrl,

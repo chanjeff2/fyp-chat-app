@@ -14,6 +14,7 @@ class GroupChat extends GroupInfo {
     ChatMessage? latestMessage,
     required int unread,
     required DateTime createdAt,
+    required DateTime updatedAt,
     required GroupType groupType,
     String? description,
     String? profilePicUrl,
@@ -24,6 +25,7 @@ class GroupChat extends GroupInfo {
           latestMessage: latestMessage,
           unread: unread,
           createdAt: createdAt,
+          updatedAt: updatedAt,
           groupType: groupType,
           profilePicUrl: profilePicUrl,
         );
@@ -39,6 +41,7 @@ class GroupChat extends GroupInfo {
           name: dto.name,
           description: dto.description,
           createdAt: DateTime.parse(dto.createdAt),
+          updatedAt: DateTime.parse(dto.updatedAt),
           groupType: dto.groupType,
           unread: 0,
           profilePicUrl: dto.profilePicUrl,
@@ -51,6 +54,7 @@ class GroupChat extends GroupInfo {
     description = groupInfo.description;
     profilePicUrl = groupInfo.profilePicUrl;
     // createdAt dont need update
+    updatedAt = groupInfo.updatedAt;
     unread = groupInfo.unread;
     latestMessage = groupInfo.latestMessage;
     // groupType dont need update

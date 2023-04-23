@@ -257,6 +257,7 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
                     unread: 0,
                     latestMessage: (_messages.isEmpty) ? null : _messages[0],
                     createdAt: chatroom.createdAt,
+                    updatedAt: chatroom.updatedAt,
                     groupType: chatroom.groupType,
                     description: chatroom.description,
                     profilePicUrl: chatroom.profilePicUrl,
@@ -280,6 +281,7 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
                           latestMessage:
                               (_messages.isEmpty) ? null : _messages[0],
                           createdAt: chatroom.createdAt,
+                          updatedAt: chatroom.updatedAt,
                           groupType: chatroom.groupType,
                           description: chatroom.description,
                           profilePicUrl: chatroom.profilePicUrl,

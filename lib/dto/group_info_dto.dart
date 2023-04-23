@@ -12,6 +12,9 @@ class GroupInfoDto {
   String name;
 
   @JsonKey(required: true)
+  String updatedAt;
+
+  @JsonKey(required: true)
   String createdAt;
 
   @JsonKey(required: true)
@@ -27,6 +30,7 @@ class GroupInfoDto {
     required this.id,
     required this.name,
     required this.createdAt,
+    required this.updatedAt,
     required this.groupType,
     this.description,
     this.profilePicUrl,

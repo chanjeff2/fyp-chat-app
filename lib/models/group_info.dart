@@ -18,12 +18,16 @@ class GroupInfo extends Chatroom {
 
   final GroupType groupType;
 
+  @override
+  DateTime updatedAt;
+
   GroupInfo({
     required String id,
     required this.name,
     ChatMessage? latestMessage,
     required int unread,
     required DateTime createdAt,
+    required this.updatedAt,
     required this.groupType,
     this.description,
     this.profilePicUrl,
@@ -40,6 +44,7 @@ class GroupInfo extends Chatroom {
         type: type.index,
         name: name,
         createdAt: createdAt.toIso8601String(),
+        updatedAt: updatedAt.toIso8601String(),
         groupType: groupType.index,
         description: description,
         profilePicUrl: profilePicUrl,
@@ -50,6 +55,7 @@ class GroupInfo extends Chatroom {
         name = dto.name,
         description = dto.description,
         profilePicUrl = dto.profilePicUrl,
+        updatedAt = DateTime.parse(dto.updatedAt),
         super(
           id: dto.id,
           createdAt: DateTime.parse(dto.createdAt),
