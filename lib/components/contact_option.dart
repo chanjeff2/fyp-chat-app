@@ -74,9 +74,7 @@ class HomeContact extends StatelessWidget {
         child: ListTile(
           leading: UserIcon(
             isGroup: chatroom.type == ChatroomType.group,
-            profilePicUrl: chatroom.type == ChatroomType.group
-                            ? (chatroom as GroupChat).profilePicUrl
-                            : (chatroom as OneToOneChat).target.profilePicUrl,
+            profilePicUrl: chatroom.profilePicUrl,
           ),
           title: Row(
             children: [

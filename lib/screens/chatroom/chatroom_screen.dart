@@ -220,7 +220,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                     isGroup: false,
                     radius: 18,
                     iconSize: 18,
-                    profilePicUrl: (widget.chatroom as OneToOneChat).target.profilePicUrl,
+                    profilePicUrl: widget.chatroom.profilePicUrl,
                   ),
                 ),
               ],

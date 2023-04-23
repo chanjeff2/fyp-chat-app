@@ -157,7 +157,7 @@ class _CreateGroupScreen extends State<CreateGroupScreen> {
                             radius: 28,
                             iconSize: 28,
                             isGroup: false,
-                            profilePicUrl: (filterList[index] as OneToOneChat).target.profilePicUrl,
+                            profilePicUrl: filterList[index].profilePicUrl,
                           ),
                           title: Text(
                             filterList[index].name,
@@ -167,8 +167,8 @@ class _CreateGroupScreen extends State<CreateGroupScreen> {
                             ),
                           ),
                           subtitle: Text(
-                            (filterList[index] as OneToOneChat).target.status
-                            ?? "Hi! I'm using USTalk.", // Status
+                            (filterList[index] as OneToOneChat).target.status ??
+                                "Hi! I'm using USTalk.", // Status
                             style: const TextStyle(
                               fontSize: 14,
                             ),
@@ -201,7 +201,7 @@ class _CreateGroupScreen extends State<CreateGroupScreen> {
                           SnackBar(content: Text("error: ${e.message}")));
                     }
                     await ChatroomStore().save(group);
-                    
+
                     // callback and return to home
                     Navigator.of(context).pop();
                     Navigator.of(context).pop();

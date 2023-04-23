@@ -210,9 +210,7 @@ class _ContactInfoState extends State<ContactInfo> {
                   radius: 20,
                   iconSize: 20,
                   isGroup: chatroom.type == ChatroomType.group,
-                  profilePicUrl: chatroom.type == ChatroomType.group
-                      ? (chatroom as GroupChat).profilePicUrl
-                      : (chatroom as OneToOneChat).target.profilePicUrl,
+                  profilePicUrl: chatroom.profilePicUrl,
                 ),
                 const SizedBox(width: 12),
                 Text(chatroom.name),
@@ -246,9 +244,7 @@ class _ContactInfoState extends State<ContactInfo> {
                   radius: 72,
                   iconSize: 72,
                   isGroup: chatroom.type == ChatroomType.group,
-                  profilePicUrl: chatroom.type == ChatroomType.group
-                      ? (chatroom as GroupChat).profilePicUrl
-                      : (chatroom as OneToOneChat).target.profilePicUrl,
+                  profilePicUrl: chatroom.profilePicUrl,
                 ),
               ),
               const SizedBox(height: 14),
@@ -789,8 +785,7 @@ class _ContactInfoState extends State<ContactInfo> {
                                       iconSize: 24,
                                       isGroup: true,
                                       profilePicUrl:
-                                          (chatrooms[index] as GroupChat)
-                                              .profilePicUrl,
+                                          chatrooms[index].profilePicUrl,
                                     ),
                                     const SizedBox(width: 16),
                                     Text(
