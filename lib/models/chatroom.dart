@@ -22,7 +22,6 @@ abstract class Chatroom {
     this.latestMessage,
     required this.unread,
     required this.createdAt,
-    String? profilePicUrl,
   });
 
   /// Compares the last activity time of this Chatroom object to [other],
@@ -81,7 +80,7 @@ abstract class Chatroom {
           createdAt: DateTime.parse(e.createdAt),
           groupType: GroupType.values[e.groupType!],
           description: e.description,
-          profilePicUrl: e.profilePicUrl
+          profilePicUrl: e.profilePicUrl,
         );
     }
   }

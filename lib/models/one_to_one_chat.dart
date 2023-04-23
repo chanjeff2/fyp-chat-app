@@ -22,13 +22,11 @@ class OneToOneChat extends Chatroom {
     ChatMessage? latestMessage,
     required int unread,
     required DateTime createdAt,
-    String? profilePicUrl,
   }) : super(
           id: target.userId,
           latestMessage: latestMessage,
           unread: unread,
           createdAt: createdAt,
-          profilePicUrl: profilePicUrl,
         );
 
   @override

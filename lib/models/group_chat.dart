@@ -1,69 +1,46 @@
 import 'package:fyp_chat_app/dto/group_dto.dart';
-import 'package:fyp_chat_app/entities/chatroom_entity.dart';
-import 'package:fyp_chat_app/models/chatroom.dart';
 import 'package:fyp_chat_app/models/enum.dart';
+import 'package:fyp_chat_app/models/group_info.dart';
 import 'package:fyp_chat_app/models/group_member.dart';
-// import 'package:fyp_chat_app/models/plain_message.dart';
 import 'package:fyp_chat_app/models/chat_message.dart';
 
-class GroupChat extends Chatroom {
+class GroupChat extends GroupInfo {
   final List<GroupMember> members;
-
-  String? description;
-
-  @override
-  String? profilePicUrl;
-
-  @override
-  final String name;
-
-  @override
-  ChatroomType get type => ChatroomType.group;
-
-  GroupType groupType;
 
   GroupChat({
     required String id,
     required this.members,
-    required this.name,
+    required String name,
     ChatMessage? latestMessage,
     required int unread,
     required DateTime createdAt,
-    required this.groupType,
-    this.description,
-    this.profilePicUrl,
+    required GroupType groupType,
+    String? description,
+    String? profilePicUrl,
   }) : super(
           id: id,
+          description: description,
+          name: name,
           latestMessage: latestMessage,
           unread: unread,
           createdAt: createdAt,
+          groupType: groupType,
           profilePicUrl: profilePicUrl,
         );
 
-  @override
-  ChatroomEntity toEntity() => ChatroomEntity(
-        id: id,
-        type: type.index,
-        name: name,
-        createdAt: createdAt.toIso8601String(),
-        groupType: groupType.index,
-        description: description,
-        profilePicUrl: profilePicUrl,
-      );
-
   GroupChat.fromDto(GroupDto dto)
-      : groupType = dto.groupType,
-        members = dto.members
+      : members = dto.members
             .map(
               (e) => GroupMember.fromDto(e),
             )
             .toList(),
-        name = dto.name,
-        description = dto.description,
-        profilePicUrl = dto.profilePicUrl,
         super(
           id: dto.id,
+          name: dto.name,
+          description: dto.description,
           createdAt: DateTime.parse(dto.createdAt),
+          groupType: dto.groupType,
           unread: 0,
+          profilePicUrl: dto.profilePicUrl,
         );
 }
