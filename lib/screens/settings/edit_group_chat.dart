@@ -81,9 +81,16 @@ class _EditGroupChatState extends State<EditGroupChat> {
                                     TextButton(
                                       onPressed: () async {
                                         try {
-                                          // Update DTO
-
+                                          final updatedGroupInfo =
+                                              await GroupChatApi()
+                                                  .removeProfilePic(
+                                                      groupChat.id);
+                                          syncGroup(updatedGroupInfo);
                                           Navigator.pop(context);
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(const SnackBar(
+                                                  content: Text(
+                                                      "Group Icon removed successfully")));
                                         } catch (e) {
                                           ScaffoldMessenger.of(context)
                                               .showSnackBar(
@@ -136,7 +143,15 @@ class _EditGroupChatState extends State<EditGroupChat> {
                         if (croppedFile == null) return;
                         // Upload to server
                         // Update group data locally
+                        final updatedGroupInfo = await GroupChatApi()
+                            .updateProfilePic(
+                                File(croppedFile.path), groupChat.id);
+                        syncGroup(updatedGroupInfo);
                         Navigator.pop(context);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                                content:
+                                    Text("Group Icon updated successfully")));
                       }),
                       child: Column(
                         children: [
@@ -204,7 +219,15 @@ class _EditGroupChatState extends State<EditGroupChat> {
                         if (croppedFile == null) return;
                         // Upload to server
                         // Update group data locally
+                        final updatedGroupInfo = await GroupChatApi()
+                            .updateProfilePic(
+                                File(croppedFile.path), groupChat.id);
+                        syncGroup(updatedGroupInfo);
                         Navigator.pop(context);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                                content:
+                                    Text("Group Icon updated successfully")));
                       },
                       child: Column(
                         children: [
@@ -268,6 +291,7 @@ class _EditGroupChatState extends State<EditGroupChat> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
         title: const Text("Edit Group"),
         leading: IconButton(
@@ -342,6 +366,8 @@ class _EditGroupChatState extends State<EditGroupChat> {
                   final updatedGroupInfo = await GroupChatApi().updateGroupInfo(
                       UpdateGroupDto(name: name), groupChat.id);
                   syncGroup(updatedGroupInfo); // Sync the group info
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                      content: Text("Group name updated successfully")));
                 } catch (e) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
@@ -377,6 +403,7 @@ class _EditGroupChatState extends State<EditGroupChat> {
                   null,
                   "Input here",
                   statusController,
+                  editDesc: true,
                 );
                 try {
                   if (desc == null) {
@@ -385,6 +412,8 @@ class _EditGroupChatState extends State<EditGroupChat> {
                   final updatedGroupInfo = await GroupChatApi().updateGroupInfo(
                       UpdateGroupDto(description: desc), groupChat.id);
                   syncGroup(updatedGroupInfo); // Sync the group info
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                      content: Text("Description updated successfully")));
                 } catch (e) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
@@ -404,10 +433,8 @@ class _EditGroupChatState extends State<EditGroupChat> {
                   style: TextStyle(fontWeight: FontWeight.w500, fontSize: 16),
                 ),
                 subtitle: Text(
-                  (groupChat.description ??
-                      "This is a new USTalk group!"),
+                  (groupChat.description ?? "This is a new USTalk group!"),
                   style: const TextStyle(fontSize: 18),
-                  maxLines: 1,
                 ),
                 trailing:
                     Icon(Icons.edit, color: Theme.of(context).primaryColor),
@@ -418,7 +445,8 @@ class _EditGroupChatState extends State<EditGroupChat> {
   }
 
   Future<String?> inputDialog(String title, String? description, String hint,
-          TextEditingController controller) =>
+          TextEditingController controller,
+          {bool editDesc = false}) =>
       showDialog<String>(
         context: context,
         builder: (context) => AlertDialog(
@@ -428,11 +456,25 @@ class _EditGroupChatState extends State<EditGroupChat> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               if (description != null) Text(description),
-              TextField(
-                autofocus: true,
-                decoration: InputDecoration(hintText: hint),
-                controller: controller,
-              ),
+              if (!editDesc)
+                TextField(
+                  autofocus: true,
+                  decoration: InputDecoration(hintText: hint),
+                  controller: controller,
+                ),
+              if (editDesc)
+                TextField(
+                  autofocus: true,
+                  decoration: InputDecoration(hintText: hint),
+                  controller: controller,
+                  maxLines: 5,
+                )
+              else
+                TextField(
+                  autofocus: true,
+                  decoration: InputDecoration(hintText: hint),
+                  controller: controller,
+                ),
             ],
           ),
           actions: [

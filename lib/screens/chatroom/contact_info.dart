@@ -232,7 +232,6 @@ class _ContactInfoState extends State<ContactInfo> {
                                   setState(() {
                                     chatroom = updatedChatroom;
                                   });
-                                  print((updatedChatroom as GroupChat).toEntity().toJson());
                                 }),
                             icon: const Icon(Icons.edit))
                       ]

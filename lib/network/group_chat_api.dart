@@ -141,7 +141,12 @@ class GroupChatApi extends Api {
   }
 
   Future<UpdateGroupDto> updateProfilePic(File image, String groupId) async {
-    final json = await putMedia("/$groupId/update-profile-pic", file: image, useAuth: true);
+    final json = await putMedia("/$groupId/profile-pic", file: image, useAuth: true);
+    return UpdateGroupDto.fromJson(json);
+  }
+
+  Future<UpdateGroupDto> removeProfilePic(String groupId) async {
+    final json = await delete("/$groupId/profile-pic", useAuth: true);
     return UpdateGroupDto.fromJson(json);
   }
 

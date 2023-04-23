@@ -76,7 +76,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     TextButton(
                                       onPressed: () async {
                                         try {
-                                          // TODO: remove profile pic
+                                          userState.setMe(await AccountApi()
+                                              .removeProfilePic());
                                           Navigator.pop(context);
                                           ScaffoldMessenger.of(context)
                                               .showSnackBar(const SnackBar(
@@ -262,6 +263,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget build(BuildContext context) {
     return Consumer<UserState>(
         builder: (context, userState, child) => Scaffold(
+              resizeToAvoidBottomInset: false,
               appBar: AppBar(
                 title: const Text("Profile"),
               ),
@@ -426,7 +428,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         subtitle: Text(
                           (userState.me!.status ?? "Hi! I'm using USTalk."),
                           style: const TextStyle(fontSize: 18),
-                          maxLines: 1,
                         ),
                         trailing: Icon(Icons.edit,
                             color: Theme.of(context).primaryColor),
