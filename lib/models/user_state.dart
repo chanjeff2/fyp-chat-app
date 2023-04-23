@@ -42,11 +42,11 @@ class UserState extends ChangeNotifier {
         _isAccessTokenAvailable = true;
         final ac = await AccountApi().getMe();
         _me = ac;
+        await SyncManager().synchronizeContacts();
       } on ApiException catch (e) {
         // show error?
       }
     }
-    await SyncManager().synchronizeContacts();
     isInitialized = true;
     notifyListeners();
   }
