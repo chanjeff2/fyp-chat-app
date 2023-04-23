@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_file_dialog/flutter_file_dialog.dart';
 import 'package:fyp_chat_app/components/attachment_menu.dart';
 import 'package:fyp_chat_app/components/music_player.dart';
 import 'package:fyp_chat_app/components/user_icon.dart';
@@ -736,6 +737,17 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
             throw Exception("cannot open the link");
           }
         } finally {}
+      }
+    } else if (message is types.FileMessage) {
+      var path = message.uri;
+
+      final params =
+          SaveFileDialogParams(sourceFilePath: path, fileName: message.name);
+      final finalPath = await FlutterFileDialog.saveFile(params: params);
+
+      if (finalPath != null) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(const SnackBar(content: Text("File downloaded!")));
       }
     }
   }

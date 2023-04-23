@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_file_dialog/flutter_file_dialog.dart';
 import 'package:fyp_chat_app/components/music_player.dart';
 import 'package:fyp_chat_app/components/user_icon.dart';
 import 'package:fyp_chat_app/components/video_player.dart';
@@ -295,15 +296,13 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
               onTap: () => Navigator.of(context)
                   .push(MaterialPageRoute(
                       builder: (context) => ContactInfo(
-                          chatroom: chatroom,
-                          blockedFuture: blockedFuture)))
+                          chatroom: chatroom, blockedFuture: blockedFuture)))
                   .then((updatedChatroom) {
-                        setState(() {
-                          blockedFuture =
-                              BlockStore().contain(chatroom.id);
-                          chatroom = updatedChatroom;
-                        });
-                      }),
+                setState(() {
+                  blockedFuture = BlockStore().contain(chatroom.id);
+                  chatroom = updatedChatroom;
+                });
+              }),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -313,14 +312,9 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
                     (chatroom).members.isEmpty
                         //if empty, show no ppl in group
                         ? ""
-                        : (((chatroom).members[0].user.displayName ==
-                                    null)
+                        : (((chatroom).members[0].user.displayName == null)
                                 //check first member have display name or not
-                                ? (chatroom)
-                                    .members[0]
-                                    .user
-                                    .username
-                                    .toString()
+                                ? (chatroom).members[0].user.username.toString()
                                 : (chatroom)
                                     .members[0]
                                     .user
@@ -330,10 +324,7 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
                                 //check there is second member or not
                                 ? ""
                                 : ', ' +
-                                    (((chatroom)
-                                                .members[1]
-                                                .user
-                                                .displayName ==
+                                    (((chatroom).members[1].user.displayName ==
                                             null)
                                         //check second member have display name or not
                                         ? (chatroom)
@@ -505,10 +496,9 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
                         future: blockedFuture,
                         builder: (context, snapshot) {
                           if ((snapshot.hasData && snapshot.data == true) ||
-                              (chatroom).members.firstWhereOrNull(
-                                      (member) =>
-                                          member.user.userId ==
-                                          userState.me?.userId) ==
+                              (chatroom).members.firstWhereOrNull((member) =>
+                                      member.user.userId ==
+                                      userState.me?.userId) ==
                                   null) {
                             //blocked, cant input message
                             return Flexible(
@@ -718,8 +708,8 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
                           shape: const CircleBorder(),
                           padding: const EdgeInsets.all(12),
                           backgroundColor: _textMessage
-                                          ? Theme.of(context).primaryColor
-                                          : Colors.grey, // <-- Button color
+                              ? Theme.of(context).primaryColor
+                              : Colors.grey, // <-- Button color
                           foregroundColor: Theme.of(context)
                               .highlightColor, // <-- Splash color
                           minimumSize: const Size(0, 0),
@@ -812,6 +802,17 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
             throw Exception("cannot open the link");
           }
         } finally {}
+      }
+    } else if (message is types.FileMessage) {
+      var path = message.uri;
+
+      final params =
+          SaveFileDialogParams(sourceFilePath: path, fileName: message.name);
+      final finalPath = await FlutterFileDialog.saveFile(params: params);
+
+      if (finalPath != null) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(const SnackBar(content: Text("File downloaded!")));
       }
     }
   }

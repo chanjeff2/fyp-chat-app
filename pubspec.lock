@@ -433,6 +433,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.6.6"
+  flutter_file_dialog:
+    dependency: "direct main"
+    description:
+      name: flutter_file_dialog
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "3.0.0"
   flutter_image_compress:
     dependency: "direct main"
     description:
