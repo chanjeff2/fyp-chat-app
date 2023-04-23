@@ -88,18 +88,10 @@ void main() {
     expect(result[0].name, "testing");
     expect(result[0].description, null);
     expect(result[0].isPublic, false);
-    expect(
-        DateTime.parse(result[0].updatedAt!).millisecondsSinceEpoch,
-        greaterThanOrEqualTo(
-            DateTime.parse(syncGroupDto1.updatedAt).millisecondsSinceEpoch));
 
     expect(result[1].name, "fg");
     expect(result[1].description, null);
     expect(result[0].isPublic, false);
-    expect(
-        DateTime.parse(result[1].updatedAt!).millisecondsSinceEpoch,
-        greaterThanOrEqualTo(
-            DateTime.parse(syncGroupDto2.updatedAt).millisecondsSinceEpoch));
   });
 
   test('Get from server, update date newer than server', () async {

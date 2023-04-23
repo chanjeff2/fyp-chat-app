@@ -22,10 +22,6 @@ void main() {
       "isPublic": true,
       "name": "Team Rocket",
       "description": "We catch Pokemons",
-      "profilePicUrl":
-          "https://storage.googleapis.com/download/storage/test-link-doesnt-link-to-anything",
-      "createdAt": "2023-04-06T14:11:42.820Z",
-      "updatedAt": "2023-04-15T12:35:04.345Z"
     };
   });
   test('serialize and deserialize to json, group name only', () async {
@@ -36,9 +32,6 @@ void main() {
     //compare
     expect(receivedUpdateGroupDto.name, updateGroupDto1.name);
     expect(receivedUpdateGroupDto.description, null);
-    expect(receivedUpdateGroupDto.profilePicUrl, null);
-    expect(receivedUpdateGroupDto.createdAt, null);
-    expect(receivedUpdateGroupDto.updatedAt, null);
     expect(receivedUpdateGroupDto.isPublic, null);
   });
 
@@ -50,9 +43,6 @@ void main() {
     //compare
     expect(receivedUpdateGroupDto.name, null);
     expect(receivedUpdateGroupDto.description, updateGroupDto2.description);
-    expect(receivedUpdateGroupDto.profilePicUrl, null);
-    expect(receivedUpdateGroupDto.createdAt, null);
-    expect(receivedUpdateGroupDto.updatedAt, null);
     expect(receivedUpdateGroupDto.isPublic, null);
   });
 
@@ -62,10 +52,6 @@ void main() {
     //compare
     expect(receivedUpdateGroupDto.name, "Team Rocket");
     expect(receivedUpdateGroupDto.description, "We catch Pokemons");
-    expect(receivedUpdateGroupDto.profilePicUrl,
-        "https://storage.googleapis.com/download/storage/test-link-doesnt-link-to-anything");
-    expect(receivedUpdateGroupDto.createdAt, "2023-04-06T14:11:42.820Z");
-    expect(receivedUpdateGroupDto.updatedAt, "2023-04-15T12:35:04.345Z");
     expect(receivedUpdateGroupDto.isPublic, true);
   });
 }
