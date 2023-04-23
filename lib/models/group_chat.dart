@@ -43,4 +43,17 @@ class GroupChat extends GroupInfo {
           unread: 0,
           profilePicUrl: dto.profilePicUrl,
         );
+
+  GroupChat merge(GroupInfo groupInfo) {
+    // id dont need update
+    // member dont need update
+    name = groupInfo.name;
+    description = groupInfo.description;
+    profilePicUrl = groupInfo.profilePicUrl;
+    // createdAt dont need update
+    unread = groupInfo.unread;
+    latestMessage = groupInfo.latestMessage;
+    // groupType dont need update
+    return this;
+  }
 }

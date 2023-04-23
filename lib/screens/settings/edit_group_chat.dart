@@ -5,6 +5,7 @@ import 'package:fyp_chat_app/components/user_icon.dart';
 import 'package:fyp_chat_app/dto/update_group_dto.dart';
 import 'package:fyp_chat_app/models/enum.dart';
 import 'package:fyp_chat_app/models/group_chat.dart';
+import 'package:fyp_chat_app/models/group_info.dart';
 import 'package:fyp_chat_app/network/group_chat_api.dart';
 import 'package:fyp_chat_app/screens/camera/camera_screen.dart';
 import 'package:image_cropper/image_cropper.dart';
@@ -271,19 +272,9 @@ class _EditGroupChatState extends State<EditGroupChat> {
     );
   }
 
-  void syncGroup(UpdateGroupDto newGroupInfo) {
+  void syncGroup(GroupInfo groupInfo) {
     setState(() {
-      groupChat = GroupChat(
-        id: groupChat.id,
-        members: groupChat.members,
-        name: newGroupInfo.name!,
-        unread: groupChat.unread,
-        latestMessage: groupChat.latestMessage,
-        createdAt: DateTime.parse(newGroupInfo.createdAt!),
-        groupType: groupChat.groupType,
-        description: newGroupInfo.description,
-        profilePicUrl: newGroupInfo.profilePicUrl,
-      );
+      groupChat.merge(groupInfo);
     });
     return;
   }

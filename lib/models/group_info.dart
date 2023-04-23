@@ -16,7 +16,7 @@ class GroupInfo extends Chatroom {
   @override
   ChatroomType get type => ChatroomType.group;
 
-  GroupType groupType;
+  final GroupType groupType;
 
   GroupInfo({
     required String id,

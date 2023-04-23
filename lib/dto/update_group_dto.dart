@@ -11,23 +11,11 @@ class UpdateGroupDto {
   String? description;
 
   @JsonKey(includeIfNull: false)
-  String? profilePicUrl;
-
-  @JsonKey(includeIfNull: false)
-  String? createdAt;
-
-  @JsonKey(includeIfNull: false)
-  String? updatedAt;
-
-  @JsonKey(includeIfNull: false)
   bool? isPublic;
 
   UpdateGroupDto({
     this.name,
     this.description,
-    this.profilePicUrl,
-    this.createdAt,
-    this.updatedAt,
     this.isPublic,
   });
 

@@ -2,13 +2,14 @@ import 'dart:io';
 
 import 'package:fyp_chat_app/dto/create_group_dto.dart';
 import 'package:fyp_chat_app/dto/group_dto.dart';
+import 'package:fyp_chat_app/dto/group_info_dto.dart';
 import 'package:fyp_chat_app/dto/group_member_dto.dart';
 import 'package:fyp_chat_app/dto/send_access_control_dto.dart';
-import 'package:fyp_chat_app/dto/send_invitation_dto.dart';
 import 'package:fyp_chat_app/dto/sync_group_dto.dart';
 import 'package:fyp_chat_app/dto/update_group_dto.dart';
 import 'package:fyp_chat_app/models/enum.dart';
 import 'package:fyp_chat_app/models/group_chat.dart';
+import 'package:fyp_chat_app/models/group_info.dart';
 import 'package:fyp_chat_app/models/group_member.dart';
 
 import 'api.dart';
@@ -134,28 +135,30 @@ class GroupChatApi extends Api {
     }
   }
 
-  Future<UpdateGroupDto> updateGroupInfo(UpdateGroupDto gpDto, String groupId) async {
+  Future<GroupInfo> updateGroupInfo(
+      UpdateGroupDto gpDto, String groupId) async {
     final json = await patch("/$groupId", body: gpDto.toJson(), useAuth: true);
     print(json);
-    return UpdateGroupDto.fromJson(json);
+    return GroupInfo.fromDto(GroupInfoDto.fromJson(json));
   }
 
-  Future<UpdateGroupDto> updateProfilePic(File image, String groupId) async {
-    final json = await putMedia("/$groupId/profile-pic", file: image, useAuth: true);
-    return UpdateGroupDto.fromJson(json);
+  Future<GroupInfo> updateProfilePic(File image, String groupId) async {
+    final json =
+        await putMedia("/$groupId/profile-pic", file: image, useAuth: true);
+    return GroupInfo.fromDto(GroupInfoDto.fromJson(json));
   }
 
-  Future<UpdateGroupDto> removeProfilePic(String groupId) async {
+  Future<GroupInfo> removeProfilePic(String groupId) async {
     final json = await delete("/$groupId/profile-pic", useAuth: true);
-    return UpdateGroupDto.fromJson(json);
+    return GroupInfo.fromDto(GroupInfoDto.fromJson(json));
   }
 
-  Future<List<UpdateGroupDto>> synchronize(List<SyncGroupDto> users) async {
+  Future<List<GroupInfoDto>> synchronize(List<SyncGroupDto> groups) async {
     final List<dynamic> json = await post(
       "/sync",
-      body: {"data": users.map((e) => e.toJson()).toList()},
+      body: {"data": groups.map((e) => e.toJson()).toList()},
       useAuth: true,
     );
-    return json.map((e) => UpdateGroupDto.fromJson(e)).toList();
+    return json.map((e) => GroupInfoDto.fromJson(e)).toList();
   }
 }
