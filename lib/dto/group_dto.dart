@@ -1,3 +1,4 @@
+import 'package:fyp_chat_app/dto/group_info_dto.dart';
 import 'package:fyp_chat_app/models/enum.dart';
 import 'package:json_annotation/json_annotation.dart';
 
@@ -6,38 +7,28 @@ import 'group_member_dto.dart';
 part 'group_dto.g.dart';
 
 @JsonSerializable(explicitToJson: true)
-class GroupDto {
-  @JsonKey(required: true, name: "_id")
-  String id;
-
-  @JsonKey(required: true)
-  String name;
-
+class GroupDto extends GroupInfoDto {
   @JsonKey(required: true)
   List<GroupMemberDto> members;
 
-  @JsonKey(required: true)
-  String createdAt;
-
-  @JsonKey(required: true)
-  GroupType groupType;
-
-  @JsonKey(required: false)
-  String? description;
-
-  @JsonKey(required: false)
-  String? profilePicUrl;
-
   GroupDto({
-    required this.id,
-    required this.name,
+    required String id,
+    required String name,
     required this.members,
-    required this.createdAt,
-    required this.groupType,
-    this.description,
-    this.profilePicUrl,
-  });
+    required String createdAt,
+    required GroupType groupType,
+    String? description,
+    String? profilePicUrl,
+  }) : super(
+          id: id,
+          name: name,
+          createdAt: createdAt,
+          groupType: groupType,
+          description: description,
+          profilePicUrl: profilePicUrl,
+        );
 
+  @override
   Map<String, dynamic> toJson() => _$GroupDtoToJson(this);
 
   factory GroupDto.fromJson(Map<String, dynamic> json) =>

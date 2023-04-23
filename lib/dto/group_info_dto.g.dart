@@ -1,22 +1,19 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'group_dto.dart';
+part of 'group_info_dto.dart';
 
 // **************************************************************************
 // JsonSerializableGenerator
 // **************************************************************************
 
-GroupDto _$GroupDtoFromJson(Map<String, dynamic> json) {
+GroupInfoDto _$GroupInfoDtoFromJson(Map<String, dynamic> json) {
   $checkKeys(
     json,
-    requiredKeys: const ['_id', 'name', 'createdAt', 'groupType', 'members'],
+    requiredKeys: const ['_id', 'name', 'createdAt', 'groupType'],
   );
-  return GroupDto(
+  return GroupInfoDto(
     id: json['_id'] as String,
     name: json['name'] as String,
-    members: (json['members'] as List<dynamic>)
-        .map((e) => GroupMemberDto.fromJson(e as Map<String, dynamic>))
-        .toList(),
     createdAt: json['createdAt'] as String,
     groupType: $enumDecode(_$GroupTypeEnumMap, json['groupType']),
     description: json['description'] as String?,
@@ -24,14 +21,14 @@ GroupDto _$GroupDtoFromJson(Map<String, dynamic> json) {
   );
 }
 
-Map<String, dynamic> _$GroupDtoToJson(GroupDto instance) => <String, dynamic>{
+Map<String, dynamic> _$GroupInfoDtoToJson(GroupInfoDto instance) =>
+    <String, dynamic>{
       '_id': instance.id,
       'name': instance.name,
       'createdAt': instance.createdAt,
       'groupType': _$GroupTypeEnumMap[instance.groupType]!,
       'description': instance.description,
       'profilePicUrl': instance.profilePicUrl,
-      'members': instance.members.map((e) => e.toJson()).toList(),
     };
 
 const _$GroupTypeEnumMap = {
