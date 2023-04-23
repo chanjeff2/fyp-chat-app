@@ -43,6 +43,12 @@ class GroupChatApi extends Api {
     return GroupChat.fromDto(dto);
   }
 
+  Future<GroupInfo> getGroupInfo(String groupId) async {
+    final json = await get("/$groupId/info", useAuth: true);
+    final dto = GroupInfoDto.fromJson(json);
+    return GroupInfo.fromDto(dto);
+  }
+
   Future<GroupMember> getGroupMember(String groupId, String userId) async {
     final json = await get("/$groupId/member/$userId", useAuth: true);
     final dto = GroupMemberDto.fromJson(json);

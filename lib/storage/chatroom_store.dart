@@ -2,6 +2,7 @@ import 'package:fyp_chat_app/entities/chatroom_entity.dart';
 import 'package:fyp_chat_app/models/chatroom.dart';
 import 'package:fyp_chat_app/models/enum.dart';
 import 'package:fyp_chat_app/models/group_chat.dart';
+import 'package:fyp_chat_app/models/group_info.dart';
 import 'package:fyp_chat_app/models/one_to_one_chat.dart';
 import 'package:fyp_chat_app/storage/disk_storage.dart';
 import 'package:fyp_chat_app/storage/group_member_store.dart';
@@ -90,6 +91,20 @@ class ChatroomStore {
       map,
       where: '${ChatroomEntity.columnId} = ?',
       whereArgs: [entity.id],
+    );
+    // if no existing record, insert new record
+    if (count == 0) await db.insert(table, map);
+  }
+
+  Future<void> updateGroupInfo(GroupInfo groupInfo) async {
+    final db = await DiskStorage().db;
+    final map = groupInfo.toEntity().toJson();
+    // try update
+    final count = await db.update(
+      table,
+      map,
+      where: '${ChatroomEntity.columnId} = ?',
+      whereArgs: [groupInfo.id],
     );
     // if no existing record, insert new record
     if (count == 0) await db.insert(table, map);

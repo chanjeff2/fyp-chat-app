@@ -76,7 +76,6 @@ class FCMHandler {
       }
       await ChatroomStore().save(chatroom);
     }
-    final Chatroom chatroom = (await ChatroomStore().get(event.chatroomId))!;
     switch (event.type) {
       case FCMEventType.textMessage:
         final messageDto = event as MessageDto;
@@ -96,6 +95,8 @@ class FCMHandler {
               .getGroupMember(dto.chatroomId, dto.targetUserId);
           await GroupMemberStore().save(dto.chatroomId, newMember);
         }
+        final Chatroom chatroom =
+            (await ChatroomStore().get(event.chatroomId))!;
         return ReceivedChatEvent(
           sender: sender,
           chatroom: chatroom,
@@ -111,6 +112,8 @@ class FCMHandler {
           // someone else got kicked
           await GroupMemberStore().remove(dto.chatroomId, dto.targetUserId);
         }
+        final Chatroom chatroom =
+            (await ChatroomStore().get(event.chatroomId))!;
         return ReceivedChatEvent(
           sender: sender,
           chatroom: chatroom,
@@ -131,14 +134,24 @@ class FCMHandler {
                 id: groupUserId,
                 user: updatedMember.user,
                 role: updatedMember.role));
+        final Chatroom chatroom =
+            (await ChatroomStore().get(event.chatroomId))!;
         return ReceivedChatEvent(
           sender: sender,
           chatroom: chatroom,
           event: AccessControlEvent.fromDto(dto),
         );
       case FCMEventType.patchGroup:
-        // TODO: Handle this case.
-        break;
+        final dto = event;
+        final groupInfo = await GroupChatApi().getGroupInfo(dto.chatroomId);
+        await ChatroomStore().updateGroupInfo(groupInfo);
+        final Chatroom chatroom =
+            (await ChatroomStore().get(event.chatroomId))!;
+        return ReceivedChatEvent(
+          sender: sender,
+          chatroom: chatroom,
+          event: ChatroomEvent.from(dto),
+        );
       case FCMEventType.memberJoin:
         final dto = event;
         // if I am the new member, already fetched chatroom when join
@@ -147,6 +160,8 @@ class FCMHandler {
               .getGroupMember(dto.chatroomId, dto.senderUserId);
           await GroupMemberStore().save(dto.chatroomId, newMember);
         }
+        final Chatroom chatroom =
+            (await ChatroomStore().get(event.chatroomId))!;
         return ReceivedChatEvent(
           sender: sender,
           chatroom: chatroom,
@@ -162,6 +177,8 @@ class FCMHandler {
           // someone else left
           await GroupMemberStore().remove(dto.chatroomId, dto.senderUserId);
         }
+        final Chatroom chatroom =
+            (await ChatroomStore().get(event.chatroomId))!;
         return ReceivedChatEvent(
           sender: sender,
           chatroom: chatroom,
