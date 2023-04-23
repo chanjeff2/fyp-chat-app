@@ -9,6 +9,11 @@ void main() {
     accountDto = Account(
       userId: "1234",
       username: "testuser",
+      displayName: "User123",
+      status: "I'm the storm that is approaching",
+      profilePicUrl:
+          "https://storage.googleapis.com/download/storage/test-link-doesnt-link-to-anything",
+      updatedAt: DateTime.now(),
     ).toDto();
   });
   test('serialize and de-serialize json', () async {
@@ -21,5 +26,7 @@ void main() {
     expect(receivedAccountDto.username, accountDto.username);
     expect(receivedAccountDto.displayName, accountDto.displayName);
     expect(receivedAccountDto.status, accountDto.status);
+    expect(receivedAccountDto.profilePicUrl, accountDto.profilePicUrl);
+    expect(receivedAccountDto.updatedAt, accountDto.updatedAt);
   });
 }

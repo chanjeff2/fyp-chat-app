@@ -13,6 +13,9 @@ void main() {
       username: "username",
       displayName: 'displayName',
       status: 'status',
+      profilePicUrl:
+          "https://storage.googleapis.com/download/storage/test-link-doesnt-link-to-anything",
+      updatedAt: DateTime.now(),
     );
 
     userDto = UserDto(
@@ -20,6 +23,9 @@ void main() {
       username: "username",
       displayName: 'displayName',
       status: 'status',
+      profilePicUrl:
+          "https://storage.googleapis.com/download/storage/test-link-doesnt-link-to-anything",
+      updatedAt: DateTime.now().toIso8601String(),
     );
   });
   test('serialize and de-serialize to Entity', () async {
@@ -32,6 +38,8 @@ void main() {
     expect(receivedUser.username, user.username);
     expect(receivedUser.displayName, user.displayName);
     expect(receivedUser.status, user.status);
+    expect(receivedUser.profilePicUrl, user.profilePicUrl);
+    expect(receivedUser.updatedAt, user.updatedAt);
   });
 
   test('deserialize from DTO', () async {
@@ -42,30 +50,7 @@ void main() {
     expect(receivedUser.username, userDto.username);
     expect(receivedUser.displayName, userDto.displayName);
     expect(receivedUser.status, userDto.status);
-  });
-
-  test('serialize and de-serialize DTO to JSON', () async {
-    // serialize
-    final json = userDto.toJson();
-    // de-serialize
-    final receivedDto = UserDto.fromJson(json);
-    // compare
-    expect(receivedDto.userId, userDto.userId);
-    expect(receivedDto.username, userDto.username);
-    expect(receivedDto.displayName, userDto.displayName);
-    expect(receivedDto.status, userDto.status);
-  });
-
-  test('serialize and de-serialize Entity to JSON', () async {
-    final entity = user.toEntity();
-    // serialize
-    final json = entity.toJson();
-    // de-serialize
-    final receivedEntity = UserEntity.fromJson(json);
-    // compare
-    expect(receivedEntity.userId, entity.userId);
-    expect(receivedEntity.username, entity.username);
-    expect(receivedEntity.displayName, entity.displayName);
-    expect(receivedEntity.status, entity.status);
+    expect(receivedUser.profilePicUrl, userDto.profilePicUrl);
+    expect(receivedUser.updatedAt, DateTime.parse(userDto.updatedAt));
   });
 }

@@ -15,6 +15,9 @@ void main() {
           username: 'test',
           displayName: 'testDisplayName',
           status: 'testStatus',
+          profilePicUrl:
+              "https://storage.googleapis.com/download/storage/test-link-doesnt-link-to-anything",
+          updatedAt: DateTime.now().toIso8601String(),
         ),
         role: Role.member);
   });
@@ -28,6 +31,8 @@ void main() {
     expect(model.user.username, groupMemberDto.user.username);
     expect(model.user.displayName, groupMemberDto.user.displayName);
     expect(model.user.status, groupMemberDto.user.status);
+    expect(model.user.profilePicUrl, groupMemberDto.user.profilePicUrl);
+    expect(model.user.updatedAt, groupMemberDto.user.updatedAt);
     expect(model.role, groupMemberDto.role);
   });
 }
