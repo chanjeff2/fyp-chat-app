@@ -80,6 +80,7 @@ abstract class Chatroom {
           members: members,
           latestMessage: latestMessage,
           unread: unread,
+          profilePicUrl: e.profilePicUrl,
           createdAt: DateTime.parse(e.createdAt),
           updatedAt: DateTime.parse(e.updatedAt!),
           groupType: GroupType.values[e.groupType!],
