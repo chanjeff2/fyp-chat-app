@@ -16,9 +16,10 @@ class SyncManager {
   }
 
   Future<void> synchronizeGroups() async {
-    final groups = await ChatroomStore().getAllGroupInfoDto();
+    final groups = await ChatroomStore().getAllGroupChatEntity();
     final groupsNeedUpdate = await GroupChatApi().synchronize(groups
-        .map((e) => SyncGroupDto(id: e.id, updatedAt: e.updatedAt))
+        .map((e) =>
+            SyncGroupDto(id: e.id, updatedAt: e.updatedAt ?? e.createdAt))
         .toList());
     await Future.wait(groupsNeedUpdate
         .map((e) async => await ChatroomStore().updateGroupInfo(e)));

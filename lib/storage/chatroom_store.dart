@@ -39,7 +39,7 @@ class ChatroomStore {
     return chatroomList.whereType<Chatroom>().toList();
   }
 
-  Future<List<GroupInfoDto>> getAllGroupInfoDto() async {
+  Future<List<ChatroomEntity>> getAllGroupChatEntity() async {
     final db = await DiskStorage().db;
     final result = await db.query(
       table,
@@ -47,7 +47,7 @@ class ChatroomStore {
       whereArgs: [ChatroomType.group.index],
     );
 
-    final chatroomList = result.map((e) => GroupInfoDto.fromJson(e)).toList();
+    final chatroomList = result.map((e) => ChatroomEntity.fromJson(e)).toList();
     return chatroomList;
   }
 
