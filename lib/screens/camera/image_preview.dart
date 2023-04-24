@@ -12,12 +12,13 @@ import 'package:provider/provider.dart';
 import '../../models/user_state.dart';
 
 class ImagePreview extends StatefulWidget {
-  const ImagePreview({Key? key,
-                      required this.image,
-                      required this.chatroom,
-                      required this.sendCallback,
-                      this.saveImage = false,
-                    }) : super(key: key);
+  const ImagePreview({
+    Key? key,
+    required this.image,
+    required this.chatroom,
+    required this.sendCallback,
+    this.saveImage = false,
+  }) : super(key: key);
 
   final File image;
   final Chatroom chatroom;
@@ -29,28 +30,33 @@ class ImagePreview extends StatefulWidget {
 }
 
 class _ImagePreviewState extends State<ImagePreview> {
-
   bool _isSending = false;
-
 
   @override
   Widget build(BuildContext context) {
     return Consumer<UserState>(
-      builder: (context, userState, child) => Scaffold(
-        backgroundColor: Colors.black,
-        appBar: AppBar(
+      builder: (context, userState, child) => WillPopScope(
+        onWillPop: () async => !_isSending,
+        child: Scaffold(
           backgroundColor: Colors.black,
-          leadingWidth: 56,
-          leading: IconButton(
-            icon: const Icon(
-              Icons.arrow_back,
-              color: Colors.white,
-            ),
-            onPressed: () {
-              Navigator.pop(context);
-            },
-          ),
-          /* Commented out, implement if time is allowed
+          appBar: AppBar(
+            backgroundColor: Colors.black,
+            leadingWidth: 56,
+            leading: _isSending
+                ? const Icon(
+                    Icons.hourglass_top,
+                    color: Colors.white,
+                  )
+                : IconButton(
+                    icon: const Icon(
+                      Icons.arrow_back,
+                      color: Colors.white,
+                    ),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                  ),
+            /* Commented out, implement if time is allowed
           actions: [
             // Crop
             IconButton(
@@ -86,21 +92,21 @@ class _ImagePreviewState extends State<ImagePreview> {
             ),
           ],
           */
-        ),
-        body: SizedBox(
-          width: MediaQuery.of(context).size.width,
-          height: MediaQuery.of(context).size.height,
-          child: Stack(
-            children: [
-              SizedBox(
-                width: MediaQuery.of(context).size.width,
-                height: MediaQuery.of(context).size.height - 150,
-                child: Image.file(
-                  widget.image,
-                  fit: BoxFit.contain,
+          ),
+          body: SizedBox(
+            width: MediaQuery.of(context).size.width,
+            height: MediaQuery.of(context).size.height,
+            child: Stack(
+              children: [
+                SizedBox(
+                  width: MediaQuery.of(context).size.width,
+                  height: MediaQuery.of(context).size.height - 150,
+                  child: Image.file(
+                    widget.image,
+                    fit: BoxFit.contain,
+                  ),
                 ),
-              ),
-              /* Comment out for now, if time allows to add caption to images
+                /* Comment out for now, if time allows to add caption to images
               Positioned(
                 bottom: 0,
                 child: Container(
@@ -161,55 +167,56 @@ class _ImagePreviewState extends State<ImagePreview> {
                 ),
               ),
               */
-            ],
+              ],
+            ),
           ),
-        ),
-        floatingActionButton: FloatingActionButton(
-          backgroundColor: (_isSending) ? Colors.grey : Palette.ustBlue[500],
-          onPressed: () async {
-            if (!_isSending) {
-              try {
-                setState(() {
-                  _isSending = true;
-                });
-                final mediaMessage = await SignalClient().sendMediaToChatroom(
-                  userState.me!,
-                  widget.chatroom,
-                  widget.image,
-                  widget.image.path, 
-                  MessageType.image,
-                );
-                widget.sendCallback(mediaMessage);
-              } on Exception catch (e) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text("error: $e")));
-              }
+          floatingActionButton: FloatingActionButton(
+            backgroundColor: (_isSending) ? Colors.grey : Palette.ustBlue[500],
+            onPressed: () async {
+              if (!_isSending) {
+                try {
+                  setState(() {
+                    _isSending = true;
+                  });
+                  final mediaMessage = await SignalClient().sendMediaToChatroom(
+                    userState.me!,
+                    widget.chatroom,
+                    widget.image,
+                    widget.image.path,
+                    MessageType.image,
+                  );
+                  widget.sendCallback(mediaMessage);
+                } on Exception catch (e) {
+                  ScaffoldMessenger.of(context)
+                      .showSnackBar(SnackBar(content: Text("error: $e")));
+                }
 
-              // return to chatroom
-              switch (widget.chatroom.type) {
-                case ChatroomType.oneToOne:
-                  Navigator.of(context).popUntil(
-                    (route) => route.settings.name == "/chatroom/${widget.chatroom.id}"
-                  );
-                break;
-                case ChatroomType.group:
-                  Navigator.of(context).popUntil(
-                    (route) => route.settings.name == "/chatroom-group/${widget.chatroom.id}"
-                  );
-                break;
+                // return to chatroom
+                switch (widget.chatroom.type) {
+                  case ChatroomType.oneToOne:
+                    Navigator.of(context).popUntil((route) =>
+                        route.settings.name ==
+                        "/chatroom/${widget.chatroom.id}");
+                    break;
+                  case ChatroomType.group:
+                    Navigator.of(context).popUntil((route) =>
+                        route.settings.name ==
+                        "/chatroom-group/${widget.chatroom.id}");
+                    break;
+                }
+                setState(() {
+                  _isSending = false;
+                });
               }
-              setState(() {
-                _isSending = false;
-              });
-            }
-          },
-          child: Icon(
-            (_isSending) ? Icons.hourglass_top : Icons.send,
-            color: Colors.white,
-            size: 28,
+            },
+            child: Icon(
+              (_isSending) ? Icons.hourglass_top : Icons.send,
+              color: Colors.white,
+              size: 28,
+            ),
           ),
         ),
       ),
-    ); 
+    );
   }
 }

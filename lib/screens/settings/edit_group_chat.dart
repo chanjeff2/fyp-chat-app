@@ -26,6 +26,8 @@ class _EditGroupChatState extends State<EditGroupChat> {
   late TextEditingController statusController;
   late TextEditingController displayNameController;
 
+  bool _isUpdating = false;
+
   @override
   void initState() {
     // Add default items to list
@@ -82,6 +84,9 @@ class _EditGroupChatState extends State<EditGroupChat> {
                                     TextButton(
                                       onPressed: () async {
                                         try {
+                                          setState(() {
+                                            _isUpdating = true;
+                                          });
                                           final updatedGroupInfo =
                                               await GroupChatApi()
                                                   .removeProfilePic(
@@ -92,6 +97,9 @@ class _EditGroupChatState extends State<EditGroupChat> {
                                               .showSnackBar(const SnackBar(
                                                   content: Text(
                                                       "Group Icon removed successfully")));
+                                          setState(() {
+                                            _isUpdating = false;
+                                          });
                                         } catch (e) {
                                           ScaffoldMessenger.of(context)
                                               .showSnackBar(
@@ -144,6 +152,9 @@ class _EditGroupChatState extends State<EditGroupChat> {
                         if (croppedFile == null) return;
                         // Upload to server
                         // Update group data locally
+                        setState(() {
+                          _isUpdating = true;
+                        });
                         final updatedGroupInfo = await GroupChatApi()
                             .updateProfilePic(
                                 File(croppedFile.path), groupChat.id);
@@ -153,6 +164,9 @@ class _EditGroupChatState extends State<EditGroupChat> {
                             const SnackBar(
                                 content:
                                     Text("Group Icon updated successfully")));
+                        setState(() {
+                          _isUpdating = false;
+                        });
                       }),
                       child: Column(
                         children: [
@@ -220,6 +234,9 @@ class _EditGroupChatState extends State<EditGroupChat> {
                         if (croppedFile == null) return;
                         // Upload to server
                         // Update group data locally
+                        setState(() {
+                          _isUpdating = true;
+                        });
                         final updatedGroupInfo = await GroupChatApi()
                             .updateProfilePic(
                                 File(croppedFile.path), groupChat.id);
@@ -229,6 +246,9 @@ class _EditGroupChatState extends State<EditGroupChat> {
                             const SnackBar(
                                 content:
                                     Text("Group Icon updated successfully")));
+                        setState(() {
+                          _isUpdating = false;
+                        });
                       },
                       child: Column(
                         children: [
@@ -281,162 +301,179 @@ class _EditGroupChatState extends State<EditGroupChat> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      resizeToAvoidBottomInset: false,
-      appBar: AppBar(
-        title: const Text("Edit Group"),
-        leading: IconButton(
-          onPressed: () => Navigator.pop(context, groupChat),
-          icon: const Icon(Icons.arrow_back),
-        ),
-      ),
-      body: Column(
-        children: [
-          const SizedBox(height: 20),
-          Center(
-            child: Stack(
-              alignment: AlignmentDirectional.topCenter,
-              children: [
-                UserIcon(
-                  radius: 72,
-                  iconSize: 72,
-                  isGroup: true,
-                  profilePicUrl: groupChat.profilePicUrl,
+    return WillPopScope(
+      onWillPop: () async => !_isUpdating,
+      child: Scaffold(
+        resizeToAvoidBottomInset: false,
+        appBar: AppBar(
+          title: const Text("Edit Group"),
+          leading: _isUpdating
+              ? const Icon(Icons.hourglass_top)
+              : IconButton(
+                  onPressed: () => Navigator.pop(context, groupChat),
+                  icon: const Icon(Icons.arrow_back),
                 ),
-                Positioned(
-                  bottom: 1,
-                  right: 1,
-                  child: GestureDetector(
-                    onTap: () {
-                      _showBottomSheet(context, groupChat);
-                    },
-                    child: Container(
-                      child: const Padding(
-                        padding: EdgeInsets.all(2.0),
-                        child: Icon(Icons.camera_alt, color: Colors.black),
-                      ),
-                      decoration: BoxDecoration(
-                          border: Border.all(
-                            width: 6,
-                            color: Colors.white,
-                          ),
-                          borderRadius:
-                              const BorderRadius.all(Radius.circular(50)),
-                          color: Colors.white,
-                          boxShadow: [
-                            BoxShadow(
-                              offset: const Offset(2, 4),
-                              color: Colors.black.withOpacity(
-                                0.3,
-                              ),
-                              blurRadius: 3,
+        ),
+        body: Column(
+          children: [
+            const SizedBox(height: 20),
+            Center(
+              child: Stack(
+                alignment: AlignmentDirectional.topCenter,
+                children: [
+                  UserIcon(
+                    radius: 72,
+                    iconSize: 72,
+                    isGroup: true,
+                    profilePicUrl: groupChat.profilePicUrl,
+                  ),
+                  Positioned(
+                    bottom: 1,
+                    right: 1,
+                    child: GestureDetector(
+                      onTap: () {
+                        _showBottomSheet(context, groupChat);
+                      },
+                      child: Container(
+                        child: const Padding(
+                          padding: EdgeInsets.all(2.0),
+                          child: Icon(Icons.camera_alt, color: Colors.black),
+                        ),
+                        decoration: BoxDecoration(
+                            border: Border.all(
+                              width: 6,
+                              color: Colors.white,
                             ),
-                          ]),
+                            borderRadius:
+                                const BorderRadius.all(Radius.circular(50)),
+                            color: Colors.white,
+                            boxShadow: [
+                              BoxShadow(
+                                offset: const Offset(2, 4),
+                                color: Colors.black.withOpacity(
+                                  0.3,
+                                ),
+                                blurRadius: 3,
+                              ),
+                            ]),
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          const SizedBox(height: 20),
-          // Group name
-          InkWell(
-              onTap: () async {
-                // Don't allow user to edit group name if it is a course group
-                if (groupChat.groupType == GroupType.Course) return;
-                String? name = await inputDialog(
-                  "Group name",
-                  null,
-                  "Input here",
-                  displayNameController,
-                );
-                try {
-                  if (name == null || name.isEmpty) {
-                    return;
-                  }
-                  final updatedGroupInfo = await GroupChatApi().updateGroupInfo(
-                      UpdateGroupDto(name: name), groupChat.id);
-                  syncGroup(updatedGroupInfo); // Sync the group info
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                      content: Text("Group name updated successfully")));
-                } catch (e) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(e.toString()),
-                    ),
+            const SizedBox(height: 20),
+            // Group name
+            InkWell(
+                onTap: () async {
+                  // Don't allow user to edit group name if it is a course group
+                  if (groupChat.groupType == GroupType.Course) return;
+                  String? name = await inputDialog(
+                    "Group name",
+                    "Input here",
+                    displayNameController,
                   );
-                }
-              },
-              child: ListTile(
-                leading: const SizedBox(
-                  height: double.infinity,
-                  child: Icon(Icons.group, color: Colors.black, size: 30),
-                ),
-                title: const Text(
-                  "Group Name",
-                  style: TextStyle(fontWeight: FontWeight.w500, fontSize: 16),
-                ),
-                subtitle: Text(
-                  groupChat.name,
-                  style: const TextStyle(fontSize: 18),
-                  maxLines: 1,
-                ),
-                trailing: (groupChat.groupType == GroupType.Basic)
-                    ? Icon(Icons.edit, color: Theme.of(context).primaryColor)
-                    : null,
-              )),
-          const Divider(thickness: 2, indent: 62),
-          // Status
-          InkWell(
-              onTap: () async {
-                String? desc = await inputDialog(
-                  "Description",
-                  null,
-                  "Input here",
-                  statusController,
-                  editDesc: true,
-                );
-                try {
-                  if (desc == null) {
-                    return;
+                  try {
+                    if (name == null || name.isEmpty) {
+                      return;
+                    }
+                    setState(() {
+                      _isUpdating = true;
+                    });
+                    final updatedGroupInfo = await GroupChatApi()
+                        .updateGroupInfo(
+                            UpdateGroupDto(name: name), groupChat.id);
+                    syncGroup(updatedGroupInfo); // Sync the group info
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                        content: Text("Group name updated successfully")));
+                    setState(() {
+                      _isUpdating = false;
+                    });
+                  } catch (e) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(e.toString()),
+                      ),
+                    );
                   }
-                  final updatedGroupInfo = await GroupChatApi().updateGroupInfo(
-                      UpdateGroupDto(description: desc), groupChat.id);
-                  syncGroup(updatedGroupInfo); // Sync the group info
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                      content: Text("Description updated successfully")));
-                } catch (e) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(e.toString()),
-                    ),
+                },
+                child: ListTile(
+                  leading: const SizedBox(
+                    height: double.infinity,
+                    child: Icon(Icons.group, color: Colors.black, size: 30),
+                  ),
+                  title: const Text(
+                    "Group Name",
+                    style: TextStyle(fontWeight: FontWeight.w500, fontSize: 16),
+                  ),
+                  subtitle: Text(
+                    groupChat.name,
+                    style: const TextStyle(fontSize: 18),
+                    maxLines: 1,
+                  ),
+                  trailing: (groupChat.groupType == GroupType.Basic)
+                      ? Icon(Icons.edit, color: Theme.of(context).primaryColor)
+                      : null,
+                )),
+            const Divider(thickness: 2, indent: 62),
+            // Status
+            InkWell(
+                onTap: () async {
+                  String? desc = await inputDialog(
+                    "Description",
+                    "Input here",
+                    statusController,
+                    editDesc: true,
                   );
-                }
-              },
-              child: ListTile(
-                leading: const SizedBox(
-                  height: double.infinity,
-                  child:
-                      Icon(Icons.info_outline, color: Colors.black, size: 30),
-                ),
-                title: const Text(
-                  "Description",
-                  style: TextStyle(fontWeight: FontWeight.w500, fontSize: 16),
-                ),
-                subtitle: Text(
-                  (groupChat.description ?? "This is a new USTalk group!"),
-                  style: const TextStyle(fontSize: 18),
-                ),
-                trailing:
-                    Icon(Icons.edit, color: Theme.of(context).primaryColor),
-              )),
-        ],
+                  try {
+                    if (desc == null) {
+                      return;
+                    }
+                    setState(() {
+                      _isUpdating = true;
+                    });
+                    final updatedGroupInfo = await GroupChatApi()
+                        .updateGroupInfo(
+                            UpdateGroupDto(description: desc), groupChat.id);
+                    syncGroup(updatedGroupInfo); // Sync the group info
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                        content: Text("Description updated successfully")));
+                    setState(() {
+                      _isUpdating = false;
+                    });
+                  } catch (e) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(e.toString()),
+                      ),
+                    );
+                  }
+                },
+                child: ListTile(
+                  leading: const SizedBox(
+                    height: double.infinity,
+                    child:
+                        Icon(Icons.info_outline, color: Colors.black, size: 30),
+                  ),
+                  title: const Text(
+                    "Description",
+                    style: TextStyle(fontWeight: FontWeight.w500, fontSize: 16),
+                  ),
+                  subtitle: Text(
+                    (groupChat.description ?? "This is a new USTalk group!"),
+                    style: const TextStyle(fontSize: 18),
+                  ),
+                  trailing:
+                      Icon(Icons.edit, color: Theme.of(context).primaryColor),
+                )),
+          ],
+        ),
       ),
     );
   }
 
-  Future<String?> inputDialog(String title, String? description, String hint,
-          TextEditingController controller,
+  Future<String?> inputDialog(
+          String title, String hint, TextEditingController controller,
           {bool editDesc = false}) =>
       showDialog<String>(
         context: context,
@@ -446,13 +483,6 @@ class _EditGroupChatState extends State<EditGroupChat> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (description != null) Text(description),
-              if (!editDesc)
-                TextField(
-                  autofocus: true,
-                  decoration: InputDecoration(hintText: hint),
-                  controller: controller,
-                ),
               if (editDesc)
                 TextField(
                   autofocus: true,

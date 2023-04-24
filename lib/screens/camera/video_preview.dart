@@ -14,11 +14,12 @@ import '../../models/chatroom.dart';
 import '../../models/user_state.dart';
 
 class VideoPreview extends StatefulWidget {
-  const VideoPreview({Key? key,
-                        required this.video,
-                        required this.chatroom,
-                        required this.sendCallback,
-                      }) : super(key: key);
+  const VideoPreview({
+    Key? key,
+    required this.video,
+    required this.chatroom,
+    required this.sendCallback,
+  }) : super(key: key);
 
   final File video;
   final Chatroom chatroom;
@@ -29,7 +30,6 @@ class VideoPreview extends StatefulWidget {
 }
 
 class _VideoPreviewState extends State<VideoPreview> {
-
   late final VideoPlayerController _controller;
   late final ChewieController _chewieController;
   late final Future<void> _future;
@@ -66,171 +66,174 @@ class _VideoPreviewState extends State<VideoPreview> {
   @override
   Widget build(BuildContext context) {
     return Consumer<UserState>(
-      builder: (context, userState, child) => Scaffold(
-        backgroundColor: Colors.black,
-        appBar: AppBar(
+      builder: (context, userState, child) => WillPopScope(
+        onWillPop: () async => !_isSending,
+        child: Scaffold(
           backgroundColor: Colors.black,
-          leadingWidth: 56,
-          leading: IconButton(
-            icon: const Icon(
-              Icons.arrow_back,
-              color: Colors.white,
-            ),
-            onPressed: () {
-              Navigator.pop(context);
-            },
+          appBar: AppBar(
+            backgroundColor: Colors.black,
+            leadingWidth: 56,
+            leading: _isSending
+                ? const Icon(
+                    Icons.hourglass_top,
+                    color: Colors.white,
+                  )
+                : IconButton(
+                    icon: const Icon(
+                      Icons.arrow_back,
+                      color: Colors.white,
+                    ),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                  ),
+            /* Commented out, implement if time is allowed
+              actions: [
+                // Crop
+                IconButton(
+                  icon: const Icon(
+                    Icons.crop_rotate,
+                    size: 28,
+                  ),
+                  onPressed: () {}
+                ),
+                // Add emoji
+                IconButton(
+                  icon: const Icon(
+                    Icons.emoji_emotions_outlined,
+                    size: 28,
+                  ),
+                  onPressed: () {}
+                ),
+                // Add text
+                IconButton(
+                  icon: const Icon(
+                    Icons.title,
+                    size: 28,
+                  ),
+                  onPressed: () {}
+                ),
+                // Edit
+                IconButton(
+                  icon: const Icon(
+                    Icons.edit,
+                    size: 28,
+                  ),
+                  onPressed: () {}
+                ),
+              ],
+              */
           ),
-          /* Commented out, implement if time is allowed
-          actions: [
-            // Crop
-            IconButton(
-              icon: const Icon(
-                Icons.crop_rotate,
-                size: 28,
-              ),
-              onPressed: () {}
-            ),
-            // Add emoji
-            IconButton(
-              icon: const Icon(
-                Icons.emoji_emotions_outlined,
-                size: 28,
-              ),
-              onPressed: () {}
-            ),
-            // Add text
-            IconButton(
-              icon: const Icon(
-                Icons.title,
-                size: 28,
-              ),
-              onPressed: () {}
-            ),
-            // Edit
-            IconButton(
-              icon: const Icon(
-                Icons.edit,
-                size: 28,
-              ),
-              onPressed: () {}
-            ),
-          ],
-          */
-        ),
-        body: FutureBuilder(
-          future: _future,
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const CircularProgressIndicator();
-            }
-            return SizedBox(
-              width: MediaQuery.of(context).size.width,
-              height: MediaQuery.of(context).size.height,
-              child: Stack(
-                children: [
-                  SizedBox(
-                    width: MediaQuery.of(context).size.width,
-                    height: MediaQuery.of(context).size.height - 150,
-                    child: AspectRatio(
-                      aspectRatio: _chewieController.aspectRatio!,
-                      child: Chewie(controller: _chewieController),
-                    )
-                  ),
-                  /* Comment out for now, if time allows to add caption to images
-                  Positioned(
-                    bottom: 0,
-                    child: Container(
-                      color: Colors.black38,
-                      width: MediaQuery.of(context).size.width,
-                      padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 8),
-                      child: TextFormField(
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 17,
-                        ),
-                        maxLines: 5,
-                        minLines: 1,
-                        decoration: InputDecoration(
-                          border: InputBorder.none,
-                          hintText: "Add Caption....",
-                          prefixIcon: IconButton(
-                            onPressed: () {},
-                            icon: const Icon(
-                              Icons.add_photo_alternate,
-                              color: Colors.white,
-                              size: 27,
-                            ),
-                          ),
-                          hintStyle: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 17,
-                          ),
-                          suffixIcon: CircleAvatar(
-                            radius: 28,
-                            backgroundColor: Palette.ustBlue[500],
-                            child: IconButton(
-                            onPressed: () {
-                              // return to chatroom
-                              switch (chatroom.type) {
-                                case ChatroomType.oneToOne:
-                                  Navigator.of(context).pushAndRemoveUntil(
-                                    MaterialPageRoute(builder: (context) => ChatRoomScreen(chatroom: chatroom)),
-                                    (route) => false
-                                  );
-                                break;
-                                case ChatroomType.group:
-                                  Navigator.of(context).pushAndRemoveUntil(
-                                    MaterialPageRoute(builder: (context) => ChatRoomScreenGroup(chatroom: chatroom)),
-                                    (route) => false
-                                  );
-                                break;
-                              }
-                            },
-                              icon: const Icon(
-                                Icons.send,
-                                color: Colors.white,
-                                size: 27,
-                              ),
-                            ),
+          body: FutureBuilder(
+              future: _future,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const CircularProgressIndicator();
+                }
+                return SizedBox(
+                  width: MediaQuery.of(context).size.width,
+                  height: MediaQuery.of(context).size.height,
+                  child: Stack(
+                    children: [
+                      SizedBox(
+                          width: MediaQuery.of(context).size.width,
+                          height: MediaQuery.of(context).size.height - 150,
+                          child: AspectRatio(
+                            aspectRatio: _chewieController.aspectRatio!,
+                            child: Chewie(controller: _chewieController),
                           )),
-                      ),
-                    ),
-                  ),
-                  */
-                  // The play button at center
-                  /*
-                  Align(
-                    alignment: Alignment.center,
-                    child: InkWell(
-                      onTap: () {
-                        setState(() {
-                          _controller.value.isPlaying
-                              ? _controller.pause()
-                              : _controller.play();
-                        });
-                      },
-                      child: CircleAvatar(
-                        radius: 33,
-                        backgroundColor: Colors.black38,
-                        child: Icon(
-                          _controller.value.isPlaying
-                              ? Icons.pause
-                              : Icons.play_arrow,
-                          color: Colors.white,
-                          size: 50,
+                      /* Comment out for now, if time allows to add caption to images
+                      Positioned(
+                        bottom: 0,
+                        child: Container(
+                          color: Colors.black38,
+                          width: MediaQuery.of(context).size.width,
+                          padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 8),
+                          child: TextFormField(
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 17,
+                            ),
+                            maxLines: 5,
+                            minLines: 1,
+                            decoration: InputDecoration(
+                              border: InputBorder.none,
+                              hintText: "Add Caption....",
+                              prefixIcon: IconButton(
+                                onPressed: () {},
+                                icon: const Icon(
+                                  Icons.add_photo_alternate,
+                                  color: Colors.white,
+                                  size: 27,
+                                ),
+                              ),
+                              hintStyle: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 17,
+                              ),
+                              suffixIcon: CircleAvatar(
+                                radius: 28,
+                                backgroundColor: Palette.ustBlue[500],
+                                child: IconButton(
+                                onPressed: () {
+                                  // return to chatroom
+                                  switch (chatroom.type) {
+                                    case ChatroomType.oneToOne:
+                                      Navigator.of(context).pushAndRemoveUntil(
+                                        MaterialPageRoute(builder: (context) => ChatRoomScreen(chatroom: chatroom)),
+                                        (route) => false
+                                      );
+                                    break;
+                                    case ChatroomType.group:
+                                      Navigator.of(context).pushAndRemoveUntil(
+                                        MaterialPageRoute(builder: (context) => ChatRoomScreenGroup(chatroom: chatroom)),
+                                        (route) => false
+                                      );
+                                    break;
+                                  }
+                                },
+                                  icon: const Icon(
+                                    Icons.send,
+                                    color: Colors.white,
+                                    size: 27,
+                                  ),
+                                ),
+                              )),
+                          ),
                         ),
                       ),
-                    ),
+                      */
+                      // The play button at center
+                      /*
+                      Align(
+                        alignment: Alignment.center,
+                        child: InkWell(
+                          onTap: () {
+                            setState(() {
+                              _controller.value.isPlaying
+                                  ? _controller.pause()
+                                  : _controller.play();
+                            });
+                          },
+                          child: CircleAvatar(
+                            radius: 33,
+                            backgroundColor: Colors.black38,
+                            child: Icon(
+                              _controller.value.isPlaying
+                                  ? Icons.pause
+                                  : Icons.play_arrow,
+                              color: Colors.white,
+                              size: 50,
+                            ),
+                          ),
+                        ),
+                      ),
+                      */
+                    ],
                   ),
-                  */
-                ],
-              ),
-            );
-          }
-          
-        ),
-        
-        floatingActionButton: FloatingActionButton(
+                );
+              }),
+          floatingActionButton: FloatingActionButton(
             backgroundColor: (_isSending) ? Colors.grey : Palette.ustBlue[500],
             onPressed: () async {
               if (!_isSending) {
@@ -242,28 +245,27 @@ class _VideoPreviewState extends State<VideoPreview> {
                     userState.me!,
                     widget.chatroom,
                     widget.video,
-                    widget.video.path, 
+                    widget.video.path,
                     MessageType.video,
                   );
                   widget.sendCallback(mediaMessage);
                 } on Exception catch (e) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text("error: $e")));
+                  ScaffoldMessenger.of(context)
+                      .showSnackBar(SnackBar(content: Text("error: $e")));
                 }
-                  
 
                 // return to chatroom
                 switch (widget.chatroom.type) {
                   case ChatroomType.oneToOne:
-                    Navigator.of(context).popUntil(
-                        (route) => route.settings.name == "/chatroom/${widget.chatroom.id}"
-                      );
-                  break;
+                    Navigator.of(context).popUntil((route) =>
+                        route.settings.name ==
+                        "/chatroom/${widget.chatroom.id}");
+                    break;
                   case ChatroomType.group:
-                    Navigator.of(context).popUntil(
-                        (route) => route.settings.name == "/chatroom-group/${widget.chatroom.id}"
-                    );
-                  break;
+                    Navigator.of(context).popUntil((route) =>
+                        route.settings.name ==
+                        "/chatroom-group/${widget.chatroom.id}");
+                    break;
                 }
                 setState(() {
                   _isSending = false;
@@ -276,6 +278,7 @@ class _VideoPreviewState extends State<VideoPreview> {
               size: 28,
             ),
           ),
+        ),
       ),
     );
   }

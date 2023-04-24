@@ -23,6 +23,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
   late TextEditingController statusController;
   late TextEditingController displayNameController;
 
+  bool _isUpdating = false;
+
   @override
   void initState() {
     // Add default items to list
@@ -76,6 +78,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     TextButton(
                                       onPressed: () async {
                                         try {
+                                          setState(() {
+                                            _isUpdating = true;
+                                          });
                                           userState.setMe(await AccountApi()
                                               .removeProfilePic());
                                           Navigator.pop(context);
@@ -83,6 +88,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                               .showSnackBar(const SnackBar(
                                                   content: Text(
                                                       "Profile Picture removed successfully")));
+                                          setState(() {
+                                            _isUpdating = false;
+                                          });
                                           return;
                                         } catch (e) {
                                           ScaffoldMessenger.of(context)
@@ -136,6 +144,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         );
                         if (croppedFile == null) return;
                         // Upload to server
+                        setState(() {
+                          _isUpdating = true;
+                        });
                         userState.setMe(await AccountApi()
                             .updateProfilePic(File(croppedFile.path)));
                         Navigator.pop(context);
@@ -143,6 +154,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             const SnackBar(
                                 content: Text(
                                     "Profile Picture updated successfully")));
+                        setState(() {
+                          _isUpdating = false;
+                        });
                       }),
                       child: Column(
                         children: [
@@ -209,6 +223,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         );
                         if (croppedFile == null) return;
                         // Upload to server
+                        setState(() {
+                          _isUpdating = true;
+                        });
                         userState.setMe(await AccountApi()
                             .updateProfilePic(File(croppedFile.path)));
                         Navigator.pop(context);
@@ -216,6 +233,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             const SnackBar(
                                 content: Text(
                                     "Profile Picture updated successfully")));
+                        setState(() {
+                          _isUpdating = false;
+                        });
                       },
                       child: Column(
                         children: [
@@ -262,179 +282,195 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Consumer<UserState>(
-        builder: (context, userState, child) => Scaffold(
-              resizeToAvoidBottomInset: false,
-              appBar: AppBar(
-                title: const Text("Profile"),
-              ),
-              body: Column(
-                children: [
-                  const SizedBox(height: 20),
-                  Center(
-                    child: Stack(
-                      alignment: AlignmentDirectional.topCenter,
-                      children: [
-                        UserIcon(
-                          radius: 72,
-                          iconSize: 72,
-                          isGroup: false,
-                          profilePicUrl: userState.me!.profilePicUrl,
-                        ),
-                        Positioned(
-                          bottom: 1,
-                          right: 1,
-                          child: GestureDetector(
-                            onTap: () {
-                              _showBottomSheet(context, userState);
-                            },
-                            child: Container(
-                              child: const Padding(
-                                padding: EdgeInsets.all(2.0),
-                                child:
-                                    Icon(Icons.camera_alt, color: Colors.black),
-                              ),
-                              decoration: BoxDecoration(
-                                  border: Border.all(
-                                    width: 6,
-                                    color: Colors.white,
-                                  ),
-                                  borderRadius: const BorderRadius.all(
-                                      Radius.circular(50)),
-                                  color: Colors.white,
-                                  boxShadow: [
-                                    BoxShadow(
-                                      offset: const Offset(2, 4),
-                                      color: Colors.black.withOpacity(
-                                        0.3,
-                                      ),
-                                      blurRadius: 3,
-                                    ),
-                                  ]),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
+      builder: (context, userState, child) => WillPopScope(
+        onWillPop: () async => !_isUpdating,
+        child: Scaffold(
+          resizeToAvoidBottomInset: false,
+          appBar: AppBar(
+            title: const Text("Profile"),
+            leading: _isUpdating
+                ? const Icon(Icons.hourglass_top)
+                : IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.arrow_back),
                   ),
-                  const SizedBox(height: 20),
-                  // User name
-                  InkWell(
-                      child: ListTile(
+          ),
+          body: Column(
+            children: [
+              const SizedBox(height: 20),
+              Center(
+                child: Stack(
+                  alignment: AlignmentDirectional.topCenter,
+                  children: [
+                    UserIcon(
+                      radius: 72,
+                      iconSize: 72,
+                      isGroup: false,
+                      profilePicUrl: userState.me!.profilePicUrl,
+                    ),
+                    Positioned(
+                      bottom: 1,
+                      right: 1,
+                      child: GestureDetector(
+                        onTap: () {
+                          _showBottomSheet(context, userState);
+                        },
+                        child: Container(
+                          child: const Padding(
+                            padding: EdgeInsets.all(2.0),
+                            child: Icon(Icons.camera_alt, color: Colors.black),
+                          ),
+                          decoration: BoxDecoration(
+                              border: Border.all(
+                                width: 6,
+                                color: Colors.white,
+                              ),
+                              borderRadius:
+                                  const BorderRadius.all(Radius.circular(50)),
+                              color: Colors.white,
+                              boxShadow: [
+                                BoxShadow(
+                                  offset: const Offset(2, 4),
+                                  color: Colors.black.withOpacity(
+                                    0.3,
+                                  ),
+                                  blurRadius: 3,
+                                ),
+                              ]),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
+              // User name
+              InkWell(
+                  child: ListTile(
+                leading: const SizedBox(
+                  height: double.infinity,
+                  child: Icon(Icons.person, color: Colors.black, size: 30),
+                ),
+                title: const Text(
+                  "User Name",
+                  style: TextStyle(fontWeight: FontWeight.w500, fontSize: 16),
+                ),
+                subtitle: Text(
+                  userState.me!.username,
+                  style: const TextStyle(fontSize: 18),
+                ),
+              )),
+              const Divider(thickness: 2, indent: 62),
+              // Display name
+              InkWell(
+                  onTap: () async {
+                    String? name = await inputDialog(
+                      "Display Name",
+                      "Submitting as blank will set your display name to your user name",
+                      "Input here",
+                      displayNameController,
+                    );
+                    try {
+                      if (name == null) {
+                        return;
+                      }
+                      if (name.isEmpty) {
+                        name = userState.me!.username;
+                      }
+                      // send post request to server to update display name
+                      setState(() {
+                        _isUpdating = true;
+                      });
+                      final me = await AccountApi()
+                          .updateProfile(UpdateUserDto(displayName: name));
+                      userState.setMe(me);
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                          content: Text("Display name updated successfully")));
+                      setState(() {
+                        _isUpdating = false;
+                      });
+                    } catch (e) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(e.toString()),
+                        ),
+                      );
+                    }
+                  },
+                  child: ListTile(
                     leading: const SizedBox(
                       height: double.infinity,
-                      child: Icon(Icons.person, color: Colors.black, size: 30),
                     ),
                     title: const Text(
-                      "User Name",
+                      "Display Name",
                       style:
                           TextStyle(fontWeight: FontWeight.w500, fontSize: 16),
                     ),
                     subtitle: Text(
-                      userState.me!.username,
+                      (userState.me!.displayName ?? userState.me!.username),
+                      style: const TextStyle(fontSize: 18),
+                      maxLines: 1,
+                    ),
+                    trailing:
+                        Icon(Icons.edit, color: Theme.of(context).primaryColor),
+                  )),
+              const Divider(thickness: 2, indent: 62),
+              // Status
+              InkWell(
+                  onTap: () async {
+                    String? status = await inputDialog(
+                      "Status",
+                      null,
+                      "Input here",
+                      statusController,
+                    );
+                    try {
+                      if (status == null || status.isEmpty) {
+                        return;
+                      }
+                      // send post request to server to update status
+                      setState(() {
+                        _isUpdating = true;
+                      });
+                      final me = await AccountApi()
+                          .updateProfile(UpdateUserDto(status: status));
+                      userState.setMe(me);
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                          content: Text("Status updated successfully")));
+                      setState(() {
+                        _isUpdating = false;
+                      });
+                    } catch (e) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(e.toString()),
+                        ),
+                      );
+                    }
+                  },
+                  child: ListTile(
+                    leading: const SizedBox(
+                      height: double.infinity,
+                      child: Icon(Icons.info_outline,
+                          color: Colors.black, size: 30),
+                    ),
+                    title: const Text(
+                      "Status",
+                      style:
+                          TextStyle(fontWeight: FontWeight.w500, fontSize: 16),
+                    ),
+                    subtitle: Text(
+                      (userState.me!.status ?? "Hi! I'm using USTalk."),
                       style: const TextStyle(fontSize: 18),
                     ),
+                    trailing:
+                        Icon(Icons.edit, color: Theme.of(context).primaryColor),
                   )),
-                  const Divider(thickness: 2, indent: 62),
-                  // Display name
-                  InkWell(
-                      onTap: () async {
-                        String? name = await inputDialog(
-                          "Display Name",
-                          "Submitting as blank will set your display name to your user name",
-                          "Input here",
-                          displayNameController,
-                        );
-                        try {
-                          if (name == null) {
-                            return;
-                          }
-                          if (name.isEmpty) {
-                            name = userState.me!.username;
-                          }
-                          // send post request to server to update display name
-                          final me = await AccountApi()
-                              .updateProfile(UpdateUserDto(displayName: name));
-                          userState.setMe(me);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                  content: Text(
-                                      "Display name updated successfully")));
-                        } catch (e) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(e.toString()),
-                            ),
-                          );
-                        }
-                      },
-                      child: ListTile(
-                        leading: const SizedBox(
-                          height: double.infinity,
-                        ),
-                        title: const Text(
-                          "Display Name",
-                          style: TextStyle(
-                              fontWeight: FontWeight.w500, fontSize: 16),
-                        ),
-                        subtitle: Text(
-                          (userState.me!.displayName ?? userState.me!.username),
-                          style: const TextStyle(fontSize: 18),
-                          maxLines: 1,
-                        ),
-                        trailing: Icon(Icons.edit,
-                            color: Theme.of(context).primaryColor),
-                      )),
-                  const Divider(thickness: 2, indent: 62),
-                  // Status
-                  InkWell(
-                      onTap: () async {
-                        String? status = await inputDialog(
-                          "Status",
-                          null,
-                          "Input here",
-                          statusController,
-                        );
-                        try {
-                          if (status == null || status.isEmpty) {
-                            return;
-                          }
-                          // send post request to server to update status
-                          final me = await AccountApi()
-                              .updateProfile(UpdateUserDto(status: status));
-                          userState.setMe(me);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                  content:
-                                      Text("Status updated successfully")));
-                        } catch (e) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(e.toString()),
-                            ),
-                          );
-                        }
-                      },
-                      child: ListTile(
-                        leading: const SizedBox(
-                          height: double.infinity,
-                          child: Icon(Icons.info_outline,
-                              color: Colors.black, size: 30),
-                        ),
-                        title: const Text(
-                          "Status",
-                          style: TextStyle(
-                              fontWeight: FontWeight.w500, fontSize: 16),
-                        ),
-                        subtitle: Text(
-                          (userState.me!.status ?? "Hi! I'm using USTalk."),
-                          style: const TextStyle(fontSize: 18),
-                        ),
-                        trailing: Icon(Icons.edit,
-                            color: Theme.of(context).primaryColor),
-                      )),
-                ],
-              ),
-            ));
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   Future<String?> inputDialog(String title, String? description, String hint,
