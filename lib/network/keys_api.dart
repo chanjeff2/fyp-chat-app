@@ -1,4 +1,5 @@
 import 'package:fyp_chat_app/dto/key_bundle_dto.dart';
+import 'package:fyp_chat_app/dto/need_update_keys_dto.dart';
 import 'package:fyp_chat_app/dto/update_keys_dto.dart';
 import 'package:fyp_chat_app/models/key_bundle.dart';
 
@@ -29,5 +30,11 @@ class KeysApi extends Api {
     final json = await get("/$userId/devices", useAuth: true);
     final dto = KeyBundleDto.fromJson(json);
     return KeyBundle.fromDto(dto);
+  }
+
+  Future<NeedUpdateKeysDto> checkIfNeedUpdateKeys(int deviceId) async {
+    final json =
+        await get("/devices/$deviceId/is-need-update-keys", useAuth: true);
+    return NeedUpdateKeysDto.fromJson(json);
   }
 }

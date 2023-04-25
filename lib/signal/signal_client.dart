@@ -97,6 +97,58 @@ class SignalClient {
     await KeysApi().updateKeys(dto);
   }
 
+  Future<void> updateKeysIfNeeded() async {
+    final deviceId = await DeviceInfoHelper().getDeviceId();
+    final dto = await KeysApi().checkIfNeedUpdateKeys(deviceId!);
+    if (dto.signedPreKey) {
+      await _generateAndStoreNewSignedPreKey();
+    }
+    if (dto.oneTimeKeys) {
+      await _generateAndStoreNewOneTimeKeys();
+    }
+  }
+
+  Future<void> _generateAndStoreNewSignedPreKey() async {
+    // generate keys
+    final identityKeyPair = await DiskIdentityKeyStore().getIdentityKeyPair();
+    final nextSignedPreKeyId = await DiskSignedPreKeyStore().getTotalRows();
+    final signedPreKey =
+        generateSignedPreKey(identityKeyPair, nextSignedPreKeyId);
+
+    final deviceId = await DeviceInfoHelper().getDeviceId();
+
+    // store keys
+    await DiskSignedPreKeyStore()
+        .storeSignedPreKey(signedPreKey.id, signedPreKey);
+
+    // upload keys to Server
+    final dto = UpdateKeysDto(
+      deviceId!,
+      signedPreKey: SignedPreKey.fromSignedPreKeyRecord(signedPreKey).toDto(),
+    );
+    await KeysApi().updateKeys(dto);
+  }
+
+  Future<void> _generateAndStoreNewOneTimeKeys() async {
+    final nextId = await DiskPreKeyStore().getTotalRows();
+    // generate keys
+    final oneTimeKeys = generatePreKeys(nextId, 110);
+
+    final deviceId = await DeviceInfoHelper().getDeviceId();
+
+    // store keys
+    await Future.wait(
+        oneTimeKeys.map((p) => DiskPreKeyStore().storePreKey(p.id, p)));
+
+    // upload keys to Server
+    final dto = UpdateKeysDto(
+      deviceId!,
+      oneTimeKeys:
+          oneTimeKeys.map((e) => PreKey.fromPreKeyRecord(e).toDto()).toList(),
+    );
+    await KeysApi().updateKeys(dto);
+  }
+
   Future<void> _establishSession(
       String recipientUserId, KeyBundle keyBundle) async {
     await Future.wait(keyBundle.deviceKeyBundles.map((deviceKeyBundle) async {

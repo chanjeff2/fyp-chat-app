@@ -7,6 +7,7 @@ import 'package:fyp_chat_app/models/received_plain_message.dart';
 import 'package:fyp_chat_app/network/account_api.dart';
 import 'package:fyp_chat_app/network/api.dart';
 import 'package:fyp_chat_app/network/auth_api.dart';
+import 'package:fyp_chat_app/signal/signal_client.dart';
 import 'package:fyp_chat_app/storage/credential_store.dart';
 import 'package:fyp_chat_app/utilities/sync_manager.dart';
 
@@ -42,8 +43,11 @@ class UserState extends ChangeNotifier {
         _isAccessTokenAvailable = true;
         final ac = await AccountApi().getMe();
         _me = ac;
-        await SyncManager().synchronizeContacts();
-        await SyncManager().synchronizeGroups();
+        SignalClient().updateKeysIfNeeded(); // can be async
+        await Future.wait([
+          SyncManager().synchronizeContacts(),
+          SyncManager().synchronizeGroups()
+        ]);
       } on ApiException catch (e) {
         // show error?
       }
