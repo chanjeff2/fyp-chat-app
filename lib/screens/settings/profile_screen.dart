@@ -288,8 +288,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
           resizeToAvoidBottomInset: false,
           appBar: AppBar(
             title: const Text("Profile"),
+            automaticallyImplyLeading: false,
             leading: _isUpdating
-                ? const Icon(Icons.hourglass_top)
+                ? null
                 : IconButton(
                     onPressed: () => Navigator.pop(context),
                     icon: const Icon(Icons.arrow_back),

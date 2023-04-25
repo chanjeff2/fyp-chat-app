@@ -16,6 +16,7 @@ import 'package:fyp_chat_app/models/media_message.dart';
 import 'package:fyp_chat_app/models/plain_message.dart';
 import 'package:fyp_chat_app/models/received_plain_message.dart';
 import 'package:fyp_chat_app/models/user_state.dart';
+import 'package:fyp_chat_app/network/api.dart';
 import 'package:fyp_chat_app/screens/chatroom/contact_info.dart';
 import 'package:fyp_chat_app/signal/signal_client.dart';
 import 'package:fyp_chat_app/storage/group_member_store.dart';
@@ -209,16 +210,25 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
   String get message => _messageController.text;
 
   void _sendMessage(String message) async {
-    _messageController.clear();
-    final sentMessage = await SignalClient().sendMessageToChatroom(
-      _state.me!,
-      chatroom,
-      message,
-    );
-    setState(() {
-      _messages.insert(0, sentMessage);
-      _textMessage = false;
-    });
+    try {
+      setState(() {
+        _textMessage = false;
+      });
+      _messageController.clear();
+      final sentMessage = await SignalClient().sendMessageToChatroom(
+        _state.me!,
+        chatroom,
+        message,
+      );
+      setState(() {
+        _messages.insert(0, sentMessage);
+      });
+    } on ApiException catch (e) {
+      if (e.statusCode == 404) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+            content: Text("Failed to send message, please try again later")));
+      }
+    }
   }
 
   void _updateMediaMessage(MediaMessage mediaMessage) async {

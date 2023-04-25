@@ -24,6 +24,7 @@ import 'package:fyp_chat_app/models/pre_key.dart';
 import 'package:fyp_chat_app/models/received_plain_message.dart';
 import 'package:fyp_chat_app/models/signed_pre_key.dart';
 import 'package:fyp_chat_app/models/user.dart';
+import 'package:fyp_chat_app/network/api.dart';
 import 'package:fyp_chat_app/network/devices_api.dart';
 import 'package:fyp_chat_app/network/events_api.dart';
 import 'package:fyp_chat_app/network/group_chat_api.dart';
@@ -405,30 +406,36 @@ class SignalClient {
 
     DateTime sentAt = DateTime.now();
 
-    switch (chatroom.type) {
-      case ChatroomType.oneToOne:
-        chatroom as OneToOneChat;
-        await _sendTextMessage(
-          me.userId,
-          senderDeviceId,
-          chatroom.target.userId,
-          me.userId, // chatroom id w.r.t. recipient, i.e. my user id
-          content,
-          sentAt.toUtc(),
-        );
-        break;
-      case ChatroomType.group:
-        chatroom as GroupChat;
-        await Future.wait(
-            chatroom.members.map((e) async => await _sendTextMessage(
-                  me.userId,
-                  senderDeviceId,
-                  e.user.userId,
-                  chatroom.id,
-                  content,
-                  sentAt.toUtc(),
-                )));
-        break;
+    try {
+      switch (chatroom.type) {
+        case ChatroomType.oneToOne:
+          chatroom as OneToOneChat;
+          await _sendTextMessage(
+            me.userId,
+            senderDeviceId,
+            chatroom.target.userId,
+            me.userId, // chatroom id w.r.t. recipient, i.e. my user id
+            content,
+            sentAt.toUtc(),
+          );
+          break;
+        case ChatroomType.group:
+          chatroom as GroupChat;
+          await Future.wait(
+              chatroom.members.map((e) async => await _sendTextMessage(
+                    me.userId,
+                    senderDeviceId,
+                    e.user.userId,
+                    chatroom.id,
+                    content,
+                    sentAt.toUtc(),
+                  )));
+          break;
+      }
+    } on ApiException catch (e) {
+      if (e.statusCode == 404) {
+        rethrow;
+      }
     }
 
     // save message to disk
@@ -509,35 +516,42 @@ class SignalClient {
     // The id for retrieving the media on server
     late final mediaId;
 
-    switch (chatroom.type) {
-      case ChatroomType.oneToOne:
-        chatroom as OneToOneChat;
-        mediaId = await _sendMediaMessage(
-          me.userId,
-          senderDeviceId,
-          chatroom.target.userId,
-          me.userId, // chatroom id w.r.t. recipient, i.e. my user id
-          processedContent,
-          baseName,
-          type,
-          sentAt.toUtc(),
-        );
-        break;
-      case ChatroomType.group:
-        chatroom as GroupChat;
-        final idList = await Future.wait(
-            chatroom.members.map((e) async => await _sendMediaMessage(
-                  me.userId,
-                  senderDeviceId,
-                  e.user.userId,
-                  chatroom.id,
-                  processedContent,
-                  baseName,
-                  type,
-                  sentAt.toUtc(),
-                )));
-        mediaId = idList.last;
-        break;
+    try {
+      switch (chatroom.type) {
+        case ChatroomType.oneToOne:
+          chatroom as OneToOneChat;
+          mediaId = await _sendMediaMessage(
+            me.userId,
+            senderDeviceId,
+            chatroom.target.userId,
+            me.userId, // chatroom id w.r.t. recipient, i.e. my user id
+            processedContent,
+            baseName,
+            type,
+            sentAt.toUtc(),
+          );
+          break;
+        case ChatroomType.group:
+          chatroom as GroupChat;
+          final idList = await Future.wait(
+              chatroom.members.map((e) async => await _sendMediaMessage(
+                    me.userId,
+                    senderDeviceId,
+                    e.user.userId,
+                    chatroom.id,
+                    processedContent,
+                    baseName,
+                    type,
+                    sentAt.toUtc(),
+                  )));
+          mediaId = idList.last;
+          break;
+      }
+    } on ApiException catch (e) {
+      if (e.statusCode == 404) {
+        throw ApiException(
+            404, "Failed to send message, please try again later", null);
+      }
     }
 
     // Generated media (For group message, save with the id of the last member send to)
