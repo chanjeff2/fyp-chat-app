@@ -63,7 +63,7 @@ abstract class Chatroom {
           latestMessage: latestMessage,
           unread: await unreadFuture,
           createdAt: DateTime.parse(e.createdAt),
-          isMuted: e.isMuted,
+          isMuted: e.isMuted == 1,
         );
       case ChatroomType.group:
         final members = await GroupMemberStore().getByChatroomId(e.id);
@@ -85,7 +85,7 @@ abstract class Chatroom {
           updatedAt: DateTime.parse(e.updatedAt!),
           groupType: GroupType.values[e.groupType!],
           description: e.description,
-          isMuted: e.isMuted,
+          isMuted: e.isMuted == 1,
         );
     }
   }

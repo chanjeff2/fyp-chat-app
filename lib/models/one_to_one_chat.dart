@@ -39,7 +39,7 @@ class OneToOneChat extends Chatroom {
         id: id,
         type: type.index,
         createdAt: createdAt.toIso8601String(),
-        isMuted: isMuted,
+        isMuted: isMuted ? 1 : 0,
         profilePicUrl: profilePicUrl,
       );
 }

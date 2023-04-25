@@ -62,8 +62,8 @@ $columnIsMuted INTEGER
   final String? profilePicUrl;
 
   static const columnIsMuted = "isMuted";
-  @JsonKey(required: true, name: columnIsMuted)
-  final bool isMuted;
+  @JsonKey(name: columnIsMuted, defaultValue: 0)
+  final int isMuted;
 
   ChatroomEntity({
     required this.id,

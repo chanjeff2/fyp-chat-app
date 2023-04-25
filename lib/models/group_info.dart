@@ -50,7 +50,7 @@ class GroupInfo extends Chatroom {
         groupType: groupType.index,
         description: description,
         profilePicUrl: profilePicUrl,
-        isMuted: isMuted,
+        isMuted: isMuted ? 1 : 0,
       );
 
   GroupInfo.fromDto(GroupInfoDto dto)

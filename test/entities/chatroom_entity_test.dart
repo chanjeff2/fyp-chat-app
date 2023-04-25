@@ -12,7 +12,7 @@ void main() {
       groupType: 0,
       description: 'descriptionTest',
       profilePicUrl: 'profilePicUrlTest',
-      isMuted: false,
+      isMuted: 0,
       updatedAt: DateTime.now().toIso8601String(),
     );
   });
