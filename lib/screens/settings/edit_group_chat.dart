@@ -307,8 +307,9 @@ class _EditGroupChatState extends State<EditGroupChat> {
         resizeToAvoidBottomInset: false,
         appBar: AppBar(
           title: const Text("Edit Group"),
+          automaticallyImplyLeading: false,
           leading: _isUpdating
-              ? const Icon(Icons.hourglass_top)
+              ? null
               : IconButton(
                   onPressed: () => Navigator.pop(context, groupChat),
                   icon: const Icon(Icons.arrow_back),

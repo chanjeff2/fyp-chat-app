@@ -6,6 +6,7 @@ import 'package:fyp_chat_app/components/palette.dart';
 import 'package:fyp_chat_app/models/chat_message.dart';
 import 'package:fyp_chat_app/models/enum.dart';
 import 'package:fyp_chat_app/models/media_message.dart';
+import 'package:fyp_chat_app/network/api.dart';
 import 'package:fyp_chat_app/signal/signal_client.dart';
 import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
@@ -71,13 +72,11 @@ class _VideoPreviewState extends State<VideoPreview> {
         child: Scaffold(
           backgroundColor: Colors.black,
           appBar: AppBar(
+            automaticallyImplyLeading: false,
             backgroundColor: Colors.black,
             leadingWidth: 56,
             leading: _isSending
-                ? const Icon(
-                    Icons.hourglass_top,
-                    color: Colors.white,
-                  )
+                ? null
                 : IconButton(
                     icon: const Icon(
                       Icons.arrow_back,
@@ -250,8 +249,14 @@ class _VideoPreviewState extends State<VideoPreview> {
                   );
                   widget.sendCallback(mediaMessage);
                 } on Exception catch (e) {
-                  ScaffoldMessenger.of(context)
-                      .showSnackBar(SnackBar(content: Text("error: $e")));
+                  if (e is ApiException && e.statusCode == 404) {
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                        content: Text(
+                            "Failed to send message, please try again later")));
+                  } else {
+                    ScaffoldMessenger.of(context)
+                        .showSnackBar(SnackBar(content: Text("error: $e")));
+                  }
                 }
 
                 // return to chatroom
@@ -272,11 +277,13 @@ class _VideoPreviewState extends State<VideoPreview> {
                 });
               }
             },
-            child: Icon(
-              (_isSending) ? Icons.hourglass_top : Icons.send,
-              color: Colors.white,
-              size: 28,
-            ),
+            child: _isSending
+                ? const CircularProgressIndicator(color: Colors.white)
+                : const Icon(
+                    Icons.send,
+                    color: Colors.white,
+                    size: 28,
+                  ),
           ),
         ),
       ),
