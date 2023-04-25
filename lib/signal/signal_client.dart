@@ -549,8 +549,7 @@ class SignalClient {
       }
     } on ApiException catch (e) {
       if (e.statusCode == 404) {
-        throw ApiException(
-            404, "Failed to send message, please try again later", null);
+        rethrow;
       }
     }
 
