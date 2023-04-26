@@ -18,6 +18,7 @@ import 'package:fyp_chat_app/screens/settings/edit_group_chat.dart';
 import 'package:fyp_chat_app/storage/chatroom_store.dart';
 import 'package:fyp_chat_app/storage/block_store.dart';
 import 'package:fyp_chat_app/storage/group_member_store.dart';
+import 'package:fyp_chat_app/storage/message_store.dart';
 import 'package:provider/provider.dart';
 import 'package:fyp_chat_app/models/chatroom.dart';
 import 'package:collection/collection.dart';
@@ -1120,8 +1121,10 @@ class _ContactInfoState extends State<ContactInfo> {
         bool leaveGroupSuccess = await GroupChatApi().leaveGroup(chatroom.id);
         //return to home screen (delete if unnecessary)
         if (leaveGroupSuccess) {
-          ChatroomStore().remove(chatroom.id);
+          await ChatroomStore().remove(chatroom.id);
           (chatroom as GroupChat).members.clear();
+          MessageStore().removeAllMessageByChatroomId(chatroom.id);
+          Navigator.pop(context, chatroom);
           Navigator.pop(context, chatroom);
         } else {
           _leaveGroupFailedAlert(context);

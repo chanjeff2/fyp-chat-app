@@ -43,6 +43,8 @@ void main() {
 
   test('Get synced info from server', () async {
     const String baseUrl = "https://fyp-chat-server-dev.up.railway.app";
+    // const String baseUrl = "https://fyp-chat-server.onrender.com";
+    // static const String baseUrl = "http://172.29.138.1:3000";
 
     const String loginPrefix = "/auth";
     const String loginEndpoint = "/login";
@@ -105,6 +107,8 @@ void main() {
 
   test('Get from server, update date newer than server', () async {
     const String baseUrl = "https://fyp-chat-server-dev.up.railway.app";
+    // const String baseUrl = "https://fyp-chat-server.onrender.com";
+    // static const String baseUrl = "http://172.29.138.1:3000";
 
     const String loginPrefix = "/auth";
     const String loginEndpoint = "/login";
