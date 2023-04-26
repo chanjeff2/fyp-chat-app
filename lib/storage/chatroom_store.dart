@@ -108,6 +108,16 @@ class ChatroomStore {
     if (count == 0) await db.insert(table, map);
   }
 
+  Future<void> updateMuteAllChatrooms(bool mute) async {
+    final db = await DiskStorage().db;
+    final value = (mute) ? 1 : 0;
+    final updateMap = {ChatroomEntity.columnIsMuted: value};
+    await db.update(
+      table,
+      updateMap,
+    );
+  }
+
   Future<void> updateGroupInfo(GroupInfo groupInfo) async {
     final db = await DiskStorage().db;
     final map = groupInfo.toEntity().toJson();

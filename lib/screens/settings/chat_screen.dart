@@ -43,8 +43,8 @@ class _ChatScreenState extends State<ChatScreen> {
                             context: context,
                             builder: (context) {
                               return AlertDialog(
-                                  title: Text("Delete all chatrooms"),
-                                  content: Text(
+                                  title: const Text("Delete all chatrooms"),
+                                  content: const Text(
                                       "This action will delete all messages history and chatroom in your storage. Are you sure to perform this action?"),
                                   actions: [
                                     TextButton(
@@ -61,6 +61,10 @@ class _ChatScreenState extends State<ChatScreen> {
                                         }
                                         Navigator.pop(context);
                                         Navigator.pop(context);
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(const SnackBar(
+                                                content: Text(
+                                                    "All chatrooms deleted successfully")));
                                       },
                                       child: const Text("Delete"),
                                     ),

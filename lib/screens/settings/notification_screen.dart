@@ -50,8 +50,8 @@ class _NotificationScreenState extends State<NotificationScreen> {
                               context: context,
                               builder: (context) {
                                 return AlertDialog(
-                                    title: Text("Mute All Notifications"),
-                                    content: Text(
+                                    title: const Text("Mute All Notifications"),
+                                    content: const Text(
                                         "This action will mute notifications from all the chats. Are you sure to perform this action?"),
                                     actions: [
                                       TextButton(
@@ -65,7 +65,9 @@ class _NotificationScreenState extends State<NotificationScreen> {
                                           setState(() {
                                             _isLoading = true;
                                           });
-                                          Navigator.pop(context);
+                                          await ChatroomStore()
+                                              .updateMuteAllChatrooms(true);
+                                          /*
                                           await ChatroomStore()
                                               .getAllChatroom()
                                               .then((value) async {
@@ -106,9 +108,15 @@ class _NotificationScreenState extends State<NotificationScreen> {
                                               }
                                             }
                                           });
+                                          */
                                           setState(() {
                                             _isLoading = false;
                                           });
+                                          Navigator.pop(context);
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(const SnackBar(
+                                                  content: Text(
+                                                      "All chatrooms muted successfully")));
                                         },
                                         child: const Text("Mute"),
                                       ),
@@ -142,8 +150,9 @@ class _NotificationScreenState extends State<NotificationScreen> {
                               context: context,
                               builder: (context) {
                                 return AlertDialog(
-                                    title: Text("Enable All Notifications"),
-                                    content: Text(
+                                    title:
+                                        const Text("Enable All Notifications"),
+                                    content: const Text(
                                         "This action will enable back to recieve notifications from all the chats. Are you sure to perform this action?"),
                                     actions: [
                                       TextButton(
@@ -157,7 +166,9 @@ class _NotificationScreenState extends State<NotificationScreen> {
                                           setState(() {
                                             _isLoading = true;
                                           });
-                                          Navigator.pop(context);
+                                          await ChatroomStore()
+                                              .updateMuteAllChatrooms(false);
+                                          /*
                                           await ChatroomStore()
                                               .getAllChatroom()
                                               .then((value) async {
@@ -198,9 +209,15 @@ class _NotificationScreenState extends State<NotificationScreen> {
                                               }
                                             }
                                           });
+                                          */
+                                          Navigator.pop(context);
                                           setState(() {
                                             _isLoading = false;
                                           });
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(const SnackBar(
+                                                  content: Text(
+                                                      "All chatrooms unmuted successfully")));
                                         },
                                         child: const Text("Enable"),
                                       ),
