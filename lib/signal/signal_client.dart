@@ -699,7 +699,7 @@ class SignalClient {
       senderUserId: sender.userId,
       chatroomId: message.chatroomId, // TODO: update to chatroom id
       content: plaintext,
-      sentAt: message.sentAt,
+      sentAt: message.sentAt.toLocal(),
     );
 
     // save message to disk
@@ -842,7 +842,7 @@ class SignalClient {
       chatroomId: message.chatroomId,
       media: reconstructedMediaItem,
       type: recoveredKeyItem.type,
-      sentAt: message.sentAt,
+      sentAt: message.sentAt.toLocal(),
     );
 
     // save message and media to disk
