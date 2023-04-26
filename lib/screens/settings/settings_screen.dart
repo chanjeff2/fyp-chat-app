@@ -44,8 +44,8 @@ class SettingsScreen extends StatelessWidget {
                           ),
                         ),
                         subtitle: Text(
-                          userState.me!.status 
-                          ?? "Hi! I'm using USTalk.", // Status
+                          userState.me!.status ??
+                              "Hi! I'm using USTalk.", // Status
                           style: const TextStyle(
                             fontSize: 14,
                           ),
@@ -55,7 +55,6 @@ class SettingsScreen extends StatelessWidget {
                   ),
                   const Divider(thickness: 2, indent: 8, endIndent: 8),
                   _renderOption(account, Icons.account_box, context),
-                  _renderOption(privacy, Icons.lock, context),
                   const Divider(thickness: 2, indent: 8, endIndent: 8),
                   _renderOption(chat, Icons.chat, context),
                   _renderOption(notifications, Icons.notifications, context),
@@ -78,16 +77,10 @@ class SettingsScreen extends StatelessWidget {
     switch (title) {
       case account:
         {
-          return Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (context) => const ProfileScreen(),
-                settings: const RouteSettings(name: "/edit-profile"),
-              ));
-        }
-      case privacy:
-        {
-          print("Privacy");
-          break;
+          return Navigator.of(context).push(MaterialPageRoute(
+            builder: (context) => const ProfileScreen(),
+            settings: const RouteSettings(name: "/edit-profile"),
+          ));
         }
       case chat:
         {
