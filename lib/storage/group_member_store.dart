@@ -112,17 +112,15 @@ class GroupMemberStore {
     );
     final map = entity.toJson();
     final db = await DiskStorage().db;
-    if (member.id != null) {
-      // update
-      await db.update(
-        table,
-        map,
-        where: '${GroupMemberEntity.columnId} = ?',
-        whereArgs: [member.id],
-      );
-    } else {
-      // insert new record
-      await db.insert(table, map);
-    }
+    // try update
+    final count = await db.update(
+      table,
+      map,
+      where:
+          '${GroupMemberEntity.columnChatroomId} = ? AND ${GroupMemberEntity.columnUserId} = ?',
+      whereArgs: [chatroomId, member.user.userId],
+    );
+    // if no existing record, insert new record
+    if (count == 0) await db.insert(table, map);
   }
 }
