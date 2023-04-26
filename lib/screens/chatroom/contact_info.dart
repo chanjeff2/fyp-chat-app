@@ -38,7 +38,7 @@ class ContactInfo extends StatefulWidget {
 
 class _ContactInfoState extends State<ContactInfo> {
   // Change the data type of the lists below if necessary
-  List<int> _media = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+  // List<int> _media = [1, 2, 3, 4, 5, 6, 7, 8, 9];
   Offset _tapPosition = Offset.zero;
 
   late Chatroom chatroom;
@@ -346,7 +346,8 @@ class _ContactInfoState extends State<ContactInfo> {
                             ],
                           ),
                           const SizedBox(width: 32),
-                          // Search button
+                          // Search button (To be implemented)
+                          /*
                           Column(children: [
                             InkWell(
                               onTap: () {
@@ -374,6 +375,7 @@ class _ContactInfoState extends State<ContactInfo> {
                               ),
                             ),
                           ]),
+                          */
                           (chatroom.type == ChatroomType.group &&
                                   checkIsAdmin(userState))
                               ? const SizedBox(width: 32)
@@ -477,64 +479,59 @@ class _ContactInfoState extends State<ContactInfo> {
                           ? const Divider(thickness: 2, indent: 8, endIndent: 8)
                           : Container(),
                       /*
-              // Disappearing Messages
-              InkWell(
-                onTap: () {/* isGroup ? EditGroupDescription : null */},
-                child: ListTile(
-                  leading: const SizedBox(
-                    height: double.infinity,
-                    child: Icon(Icons.speed_rounded, color: Colors.black),
-                  ),
-                  title: const Text(
-                    "Disappearing Messages",
-                    style: TextStyle(
-                      fontSize: 16,
-                    ),
-                  ),
-                  subtitle: Text(
-                    "Off", // disappearing ? "On" : "Off"
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey.shade600,
-                    ),
-                  ),
-                ),
-              ),
-              */
-                      // Check security number * DON'T SHOW THIS IN GROUP INFO *
+                      // Disappearing Messages
                       InkWell(
-                          onTap: () {
-                            /* isGroup ? EditGroupDescription : null */
-                          },
-                          child: ListTile(
-                              leading: const SizedBox(
-                                height: double.infinity,
-                                child: Icon(Icons.verified_user_outlined,
-                                    color: Colors.black),
-                              ),
-                              title: const Text(
-                                "View public key",
-                                style: TextStyle(
-                                  fontSize: 16,
-                                ),
-                              ),
-                              subtitle: (chatroom.type == ChatroomType.group)
-                                  ? Text(
-                                      "All messages are end-to-end encrypted.",
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        color: Colors.grey.shade600,
-                                      ),
-                                    )
-                                  : Text(
-                                      "All messages are end-to-end encrypted.",
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        color: Colors.grey.shade600,
-                                      ),
-                                    ))),
+                        onTap: () {/* isGroup ? EditGroupDescription : null */},
+                        child: ListTile(
+                          leading: const SizedBox(
+                            height: double.infinity,
+                            child: Icon(Icons.speed_rounded, color: Colors.black),
+                          ),
+                          title: const Text(
+                            "Disappearing Messages",
+                            style: TextStyle(
+                              fontSize: 16,
+                            ),
+                          ),
+                          subtitle: Text(
+                            "Off", // disappearing ? "On" : "Off"
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey.shade600,
+                            ),
+                          ),
+                        ),
+                      ),
+                      */
+                      InkWell(
+                        onTap: () {
+                          // Note to future implementers:
+                          // This will be check security number
+                        },
+                        child: ListTile(
+                          leading: const SizedBox(
+                            height: double.infinity,
+                            child: Icon(Icons.verified_user_outlined,
+                                color: Colors.black),
+                          ),
+                          title: const Text(
+                            "End-to-End Encryption",
+                            style: TextStyle(
+                              fontSize: 16,
+                            ),
+                          ),
+                          subtitle: Text(
+                            "All messages are end-to-end encrypted.",
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey.shade600,
+                            ),
+                          ),
+                        ),
+                      ),
                       const Divider(thickness: 2, indent: 8, endIndent: 8),
-                      // Shared Media
+                      // Shared Media (to be Implemented)
+                      /*
                       Row(
                         children: [
                           const SizedBox(width: 16),
@@ -600,6 +597,7 @@ class _ContactInfoState extends State<ContactInfo> {
                         ],
                       ),
                       const Divider(thickness: 2, indent: 8, endIndent: 8),
+                      */
                       // Group members
                       (chatroom.type == ChatroomType.group)
                           ? Row(
