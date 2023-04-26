@@ -30,6 +30,7 @@ void main() {
     // The following is a simple resemblance of the POST request
     const String baseUrl = "https://fyp-chat-server-dev.up.railway.app";
     // const String baseUrl = "https://fyp-chat-server.onrender.com";
+    // static const String baseUrl = "http://172.29.138.1:3000";
     String pathPrefix = "/auth";
     String endpoint = "/login";
     Uri url = Uri.parse("$baseUrl$pathPrefix$endpoint");
