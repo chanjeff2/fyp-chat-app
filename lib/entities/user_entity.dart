@@ -9,7 +9,10 @@ class UserEntity {
   static const String createTableCommandFields = """
 $columnUserId TEXT PRIMARY KEY NOT NULL, 
 $columnUsername TEXT UNIQUE NOT NULL, 
-$columnDisplayName TEXT
+$columnDisplayName TEXT,
+$columnStatus TEXT,
+$columnProfilePicUrl TEXT,
+$columnUpdatedAt TEXT NOT NULL
 """;
 
   static const columnUserId = "userId";
@@ -24,21 +27,29 @@ $columnDisplayName TEXT
   @JsonKey(name: columnDisplayName)
   final String? displayName;
 
-  String get name => displayName ?? username;
+  static const columnStatus = "status";
+  @JsonKey(name: columnStatus)
+  final String? status;
+
+  static const columnProfilePicUrl = "profilePicUrl";
+  @JsonKey(name: columnProfilePicUrl)
+  final String? profilePicUrl;
+
+  static const columnUpdatedAt = "updatedAt";
+  @JsonKey(name: columnUpdatedAt)
+  final String updatedAt;
 
   UserEntity({
     required this.userId,
     required this.username,
     this.displayName,
+    this.status,
+    this.profilePicUrl,
+    required this.updatedAt,
   });
 
   Map<String, dynamic> toJson() => _$UserEntityToJson(this);
 
   factory UserEntity.fromJson(Map<String, dynamic> json) =>
       _$UserEntityFromJson(json);
-
-  UserEntity.fromDto(UserDto dto)
-      : userId = dto.userId,
-        username = dto.username,
-        displayName = dto.displayName;
 }

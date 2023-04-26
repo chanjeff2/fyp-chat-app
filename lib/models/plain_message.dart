@@ -1,46 +1,36 @@
-import 'package:fyp_chat_app/entities/plain_message_entity.dart';
+import 'package:fyp_chat_app/entities/chat_message_entity.dart';
+import 'package:fyp_chat_app/models/chat_message.dart';
+import 'package:fyp_chat_app/models/enum.dart';
 
-class PlainMessage {
-  int? id;
-  final String senderUserId;
-  final String chatroomId;
+class PlainMessage extends ChatMessage {
+  @override
   final String content;
-  final DateTime sentAt;
-  final bool isRead;
 
   PlainMessage({
-    this.id,
-    required this.senderUserId,
-    required this.chatroomId,
+    id,
+    required String senderUserId,
+    required String chatroomId,
     required this.content,
-    required this.sentAt,
-    this.isRead = false,
-  });
+    required DateTime sentAt,
+    isRead = false,
+  }) : super(
+          type: FCMEventType.textMessage,
+          id: id,
+          senderUserId: senderUserId,
+          chatroomId: chatroomId,
+          messageType: MessageType.text,
+          sentAt: sentAt,
+          isRead: isRead,
+        );
 
-  PlainMessage.fromEntity(PlainMessageEntity entity)
-      : senderUserId = entity.senderUserId,
-        chatroomId = entity.chatroomId,
-        content = entity.content,
-        sentAt = DateTime.parse(entity.sentAt),
-        isRead = entity.isRead == 1;
-
-  PlainMessageEntity toEntity() => PlainMessageEntity(
+  @override
+  ChatMessageEntity toEntity() => ChatMessageEntity(
+        id: id,
         senderUserId: senderUserId,
         chatroomId: chatroomId,
         content: content,
+        type: MessageType.text.index,
         sentAt: sentAt.toIso8601String(),
         isRead: isRead ? 1 : 0,
       );
-}
-
-String toIso8601String(DateTime dateTime) {
-  return dateTime.toIso8601String();
-}
-
-bool intToBool(int i) {
-  return i == 1;
-}
-
-int boolToInt(bool isTrue) {
-  return isTrue ? 1 : 0;
 }

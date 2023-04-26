@@ -1,29 +1,29 @@
 import 'package:fyp_chat_app/entities/chatroom_entity.dart';
+import 'package:fyp_chat_app/models/enum.dart';
 import 'package:fyp_chat_app/models/group_chat.dart';
 import 'package:fyp_chat_app/models/one_to_one_chat.dart';
-import 'package:fyp_chat_app/models/plain_message.dart';
+import 'package:fyp_chat_app/models/chat_message.dart';
 import 'package:fyp_chat_app/storage/contact_store.dart';
 import 'package:fyp_chat_app/storage/group_member_store.dart';
 import 'package:fyp_chat_app/storage/message_store.dart';
 
-enum ChatroomType {
-  oneToOne,
-  group,
-}
-
 abstract class Chatroom {
-  String id;
+  final String id;
   ChatroomType get type;
   String get name;
-  final PlainMessage? latestMessage;
-  final int unread;
+  String? get profilePicUrl;
+  ChatMessage? latestMessage;
+  int unread;
   final DateTime createdAt; // exist if read from db
+  DateTime get updatedAt;
+  bool isMuted = false;
 
   Chatroom({
     required this.id,
     this.latestMessage,
     required this.unread,
     required this.createdAt,
+    this.isMuted = false,
   });
 
   /// Compares the last activity time of this Chatroom object to [other],
@@ -63,6 +63,7 @@ abstract class Chatroom {
           latestMessage: latestMessage,
           unread: await unreadFuture,
           createdAt: DateTime.parse(e.createdAt),
+          isMuted: e.isMuted == 1,
         );
       case ChatroomType.group:
         final members = await GroupMemberStore().getByChatroomId(e.id);
@@ -79,7 +80,12 @@ abstract class Chatroom {
           members: members,
           latestMessage: latestMessage,
           unread: unread,
+          profilePicUrl: e.profilePicUrl,
           createdAt: DateTime.parse(e.createdAt),
+          updatedAt: DateTime.parse(e.updatedAt!),
+          groupType: GroupType.values[e.groupType!],
+          description: e.description,
+          isMuted: e.isMuted == 1,
         );
     }
   }

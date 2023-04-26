@@ -1,12 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:fyp_chat_app/dto/login_dto.dart';
 import 'package:fyp_chat_app/models/access_token.dart';
+import 'package:fyp_chat_app/models/group_chat.dart';
+import 'package:fyp_chat_app/models/group_member.dart';
 import 'package:fyp_chat_app/models/user_state.dart';
 import 'package:fyp_chat_app/network/account_api.dart';
 import 'package:fyp_chat_app/network/api.dart';
+import 'package:fyp_chat_app/network/block_api.dart';
+import 'package:fyp_chat_app/network/group_chat_api.dart';
 import 'package:fyp_chat_app/screens/register_or_login/loading_screen.dart';
 import 'package:fyp_chat_app/signal/signal_client.dart';
-import 'package:fyp_chat_app/storage/credential_store.dart';
+import 'package:fyp_chat_app/storage/block_store.dart';
+import 'package:fyp_chat_app/storage/chatroom_store.dart';
+import 'package:fyp_chat_app/storage/contact_store.dart';
 import 'package:provider/provider.dart';
 
 import '../../dto/register_dto.dart';
@@ -29,7 +35,6 @@ class _RegisterOrLoginScreenState extends State<RegisterOrLoginScreen> {
   bool _isConfirmPasswordVisible = false;
   bool _isRegister = false;
   bool _isLoading = false;
-
   String get username => _usernameController.text;
   String get password => _passwordController.text;
 
@@ -124,7 +129,7 @@ class _RegisterOrLoginScreenState extends State<RegisterOrLoginScreen> {
                           )),
                       validator: (username) {
                         if (username?.isEmpty ?? true) {
-                          return "username cannot be empty";
+                          return "confirm password cannot be empty";
                         }
                         return null;
                       },
@@ -142,6 +147,7 @@ class _RegisterOrLoginScreenState extends State<RegisterOrLoginScreen> {
                         });
                         try {
                           late final AccessToken accessToken;
+                          Future? restoreFuture;
                           if (_isRegister) {
                             // register
                             accessToken = await AuthApi().register(
@@ -155,21 +161,45 @@ class _RegisterOrLoginScreenState extends State<RegisterOrLoginScreen> {
                             accessToken = await AuthApi().login(
                               LoginDto(username: username, password: password),
                             );
+                            // start restore chatroom
+                            restoreFuture = restoreGroupChat();
+                            // fetch blocklist of chatroom
+                            await BlockStore().storeBlockedByBlockList(
+                                await BlockApi().getBlockedListRequest());
                           }
                           // init signal stuffs
                           await SignalClient().initialize();
-                          // store credential
-                          await CredentialStore()
-                              .storeCredential(username, password);
-                          await CredentialStore().storeToken(accessToken);
+
                           Provider.of<UserState>(context, listen: false)
                               .setAccessTokenStatus(true);
+
+                          // wait restore chatroom finish
+                          if (restoreFuture != null) {
+                            await restoreFuture;
+                          }
                           // get account profile
+                          // add account to contact store
                           final account = await AccountApi().getMe();
+
+                          await ContactStore().storeContact(account);
                           userState.setMe(account);
                         } on ApiException catch (e) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text("error: ${e.message}")));
+                          if (e.message.contains("duplicate key error collection")) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                    "Provided username has been used. Please use another username"
+                                  )));
+                          } else if (e.statusCode == 401) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                    "Incorrect username or password. Please try again"
+                                  )));
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text("error: ${e.message}")));
+                          }
                         } finally {
                           //remove loading screen
                           setState(() {
@@ -207,4 +237,19 @@ class _RegisterOrLoginScreenState extends State<RegisterOrLoginScreen> {
             ),
           ),
         );
+
+  Future<void> restoreGroupChat() async {
+    final groups = await GroupChatApi().getMyGroups();
+
+    //save contact of group members
+    Set<GroupMember> set = {};
+    for (GroupChat group in groups) {
+      set.addAll(group.members);
+    }
+    for (GroupMember contact in set) {
+      await ContactStore().storeContact(contact.user);
+    }
+
+    await Future.wait(groups.map((group) => ChatroomStore().save(group)));
+  }
 }

@@ -26,7 +26,7 @@ class GroupMemberStore {
         if (user == null) {
           return null;
         }
-        return GroupMember(id: e.id, user: user);
+        return GroupMember(id: e.id, user: user, role: e.role);
       }),
     );
     return members.whereType<GroupMember>().toList();
@@ -47,10 +47,41 @@ class GroupMemberStore {
     if (user == null) {
       return null;
     }
-    return GroupMember(id: entity.id, user: user);
+    return GroupMember(id: entity.id, user: user, role: entity.role);
   }
 
-  Future<bool> remove(String id) async {
+  Future<GroupMember?> getbyChatroomIdAndUserId(
+      String chatroomId, String userId) async {
+    final db = await DiskStorage().db;
+    final result = await db.query(
+      table,
+      where:
+          '${GroupMemberEntity.columnChatroomId} = ? AND ${GroupMemberEntity.columnUserId} = ?',
+      whereArgs: [chatroomId, userId],
+    );
+    if (result.isEmpty) {
+      return null;
+    }
+    final entity = GroupMemberEntity.fromJson(result[0]);
+    final user = await ContactStore().getContactById(entity.userId);
+    if (user == null) {
+      return null;
+    }
+    return GroupMember(id: entity.id, user: user, role: entity.role);
+  }
+
+  Future<bool> remove(String chatroomId, String userId) async {
+    final db = await DiskStorage().db;
+    final count = await db.delete(
+      table,
+      where:
+          '${GroupMemberEntity.columnChatroomId} = ? AND ${GroupMemberEntity.columnUserId} = ?',
+      whereArgs: [chatroomId, userId],
+    );
+    return count > 0;
+  }
+
+  Future<bool> removeById(String id) async {
     final db = await DiskStorage().db;
     final count = await db.delete(
       table,
@@ -71,24 +102,25 @@ class GroupMemberStore {
   }
 
   Future<void> save(String chatroomId, GroupMember member) async {
+    // save user to contact in case haven't
+    await ContactStore().storeContact(member.user);
     final entity = GroupMemberEntity(
       id: member.id,
       chatroomId: chatroomId,
       userId: member.user.userId,
+      role: member.role,
     );
     final map = entity.toJson();
     final db = await DiskStorage().db;
-    if (member.id != null) {
-      // update
-      await db.update(
-        table,
-        map,
-        where: '${GroupMemberEntity.columnId} = ?',
-        whereArgs: [member.id],
-      );
-    } else {
-      // insert new record
-      await db.insert(table, map);
-    }
+    // try update
+    final count = await db.update(
+      table,
+      map,
+      where:
+          '${GroupMemberEntity.columnChatroomId} = ? AND ${GroupMemberEntity.columnUserId} = ?',
+      whereArgs: [chatroomId, member.user.userId],
+    );
+    // if no existing record, insert new record
+    if (count == 0) await db.insert(table, map);
   }
 }

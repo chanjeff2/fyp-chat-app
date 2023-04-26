@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:fyp_chat_app/components/user_icon.dart';
 import 'package:fyp_chat_app/models/chatroom.dart';
+import 'package:fyp_chat_app/models/enum.dart';
+import 'package:fyp_chat_app/models/group_chat.dart';
+import 'package:fyp_chat_app/models/one_to_one_chat.dart';
 import 'package:intl/intl.dart';
 
-// Contact in selecting user, which shows status
+// Practically useless now, remake if needed
 class ContactOption extends StatelessWidget {
   const ContactOption({Key? key}) : super(key: key);
 
@@ -68,10 +72,9 @@ class HomeContact extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 8.0),
         child: ListTile(
-          leading: const CircleAvatar(
-            child: Icon(Icons.person, size: 28, color: Colors.white),
-            radius: 28,
-            backgroundColor: Colors.blueGrey,
+          leading: UserIcon(
+            isGroup: chatroom.type == ChatroomType.group,
+            profilePicUrl: chatroom.profilePicUrl,
           ),
           title: Row(
             children: [
@@ -82,14 +85,16 @@ class HomeContact extends StatelessWidget {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              Spacer(),
+              const Spacer(),
               if (chatroom.latestMessage != null)
                 Text(
                   DateFormat.Hm()
                       .format(chatroom.latestMessage!.sentAt), // time
                   style: TextStyle(
                     fontSize: 16,
-                    fontWeight: FontWeight.bold,
+                    fontWeight: (chatroom.unread > 0)
+                        ? FontWeight.bold
+                        : FontWeight.normal,
                     color:
                         (chatroom.unread > 0) ? Colors.redAccent : Colors.black,
                   ),
@@ -99,35 +104,41 @@ class HomeContact extends StatelessWidget {
           subtitle: Row(
             children: [
               if (chatroom.latestMessage != null)
-                Text(
-                  chatroom.latestMessage!.content, // Latest message
-                  style: const TextStyle(
-                    fontSize: 14,
+                Expanded(
+                  child: Text(
+                    chatroom
+                        .latestMessage!.notificationContent, // Latest message
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: (chatroom.unread > 0)
+                            ? FontWeight.w700
+                            : FontWeight.normal),
                   ),
                 ),
               const Spacer(),
-              Container(
-                width: 20,
-                height: 20,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: (chatroom.unread > 0)
-                      ? Colors.redAccent
-                      : null, // Theme.of(context).primaryColor,
+              Visibility(
+                visible: chatroom.unread > 0,
+                child: Container(
+                  width: 20,
+                  height: 20,
+                  alignment: Alignment.center,
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.redAccent, // Theme.of(context).primaryColor,
+                  ),
+                  child: Text(
+                    chatroom.unread > 9 ? '9+' : chatroom.unread.toString(),
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: Colors.white,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
                 ),
-                child: (chatroom.unread > 0)
-                    ? Text(
-                        chatroom.unread > 9 ? '9+' : chatroom.unread.toString(),
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          color: Colors.white,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      )
-                    : null,
-              ),
+              )
             ],
           ),
         ),

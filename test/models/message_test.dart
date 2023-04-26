@@ -2,8 +2,10 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:fyp_chat_app/dto/message_dto.dart';
+import 'package:fyp_chat_app/dto/events/message_dto.dart';
 import 'package:fyp_chat_app/dto/send_message_dto.dart';
+import 'package:fyp_chat_app/models/chat_message.dart';
+import 'package:fyp_chat_app/models/enum.dart';
 import 'package:fyp_chat_app/models/message.dart';
 import 'package:fyp_chat_app/models/message_to_server.dart';
 import 'package:fyp_chat_app/models/send_message_dao.dart';
@@ -76,6 +78,7 @@ void main() {
       senderDeviceId: deviceId,
       recipientUserId: 'recipientUserId',
       chatroomId: 'recipientUserId', // TODO: handle group chat
+      messageType: FCMEventType.textMessage,
       messages: [
         MessageToServer(
           cipherTextType: ciphertext.getType(),

@@ -1,6 +1,8 @@
 import 'package:fyp_chat_app/entities/chatroom_entity.dart';
 import 'package:fyp_chat_app/models/chatroom.dart';
-import 'package:fyp_chat_app/models/plain_message.dart';
+// import 'package:fyp_chat_app/models/plain_message.dart';
+import 'package:fyp_chat_app/models/chat_message.dart';
+import 'package:fyp_chat_app/models/enum.dart';
 import 'package:fyp_chat_app/models/user.dart';
 
 class OneToOneChat extends Chatroom {
@@ -10,18 +12,26 @@ class OneToOneChat extends Chatroom {
   String get name => target.name;
 
   @override
+  String? get profilePicUrl => target.profilePicUrl;
+
+  @override
   ChatroomType get type => ChatroomType.oneToOne;
+
+  @override
+  DateTime get updatedAt => target.updatedAt;
 
   OneToOneChat({
     required this.target,
-    PlainMessage? latestMessage,
+    ChatMessage? latestMessage,
     required int unread,
     required DateTime createdAt,
+    bool isMuted = false,
   }) : super(
           id: target.userId,
           latestMessage: latestMessage,
           unread: unread,
           createdAt: createdAt,
+          isMuted: isMuted,
         );
 
   @override
@@ -29,5 +39,7 @@ class OneToOneChat extends Chatroom {
         id: id,
         type: type.index,
         createdAt: createdAt.toIso8601String(),
+        isMuted: isMuted ? 1 : 0,
+        profilePicUrl: profilePicUrl,
       );
 }

@@ -9,6 +9,7 @@ part of 'update_user_dto.dart';
 UpdateUserDto _$UpdateUserDtoFromJson(Map<String, dynamic> json) =>
     UpdateUserDto(
       displayName: json['displayName'] as String?,
+      status: json['status'] as String?,
     );
 
 Map<String, dynamic> _$UpdateUserDtoToJson(UpdateUserDto instance) {
@@ -21,5 +22,6 @@ Map<String, dynamic> _$UpdateUserDtoToJson(UpdateUserDto instance) {
   }
 
   writeNotNull('displayName', instance.displayName);
+  writeNotNull('status', instance.status);
   return val;
 }

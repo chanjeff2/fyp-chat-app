@@ -1,6 +1,8 @@
+import 'package:fyp_chat_app/entities/blocklist_entity.dart';
+import 'package:fyp_chat_app/entities/chat_message_entity.dart';
 import 'package:fyp_chat_app/entities/chatroom_entity.dart';
 import 'package:fyp_chat_app/entities/group_member_entity.dart';
-import 'package:fyp_chat_app/entities/plain_message_entity.dart';
+import 'package:fyp_chat_app/entities/media_item_entity.dart';
 import 'package:fyp_chat_app/entities/pre_key_pair_entity.dart';
 import 'package:fyp_chat_app/entities/session_entity.dart';
 import 'package:fyp_chat_app/entities/signed_pre_key_pair_entity.dart';
@@ -13,12 +15,16 @@ import 'package:fyp_chat_app/storage/disk_pre_key_store.dart';
 import 'package:fyp_chat_app/storage/disk_session_store.dart';
 import 'package:fyp_chat_app/storage/disk_signed_pre_key_store.dart';
 import 'package:fyp_chat_app/storage/group_member_store.dart';
+import 'package:fyp_chat_app/storage/media_store.dart';
 import 'package:fyp_chat_app/storage/message_store.dart';
+import 'package:fyp_chat_app/storage/block_store.dart';
 import 'package:fyp_chat_app/storage/secure_storage.dart';
 import 'package:sqflite_sqlcipher/sqflite.dart';
 import 'package:path/path.dart';
 import 'dart:math';
 import 'dart:convert';
+
+import 'package:synchronized/synchronized.dart';
 
 // Class for accessing storage that handles all key store
 class DiskStorage {
@@ -35,6 +41,8 @@ class DiskStorage {
 
   static Database? _database;
 
+  final _lock = Lock();
+
   Future<Database> get db async {
     return _database ??= await _initDatabase();
   }
@@ -44,7 +52,7 @@ class DiskStorage {
     return await openDatabase(
       join(await getDatabasesPath(), databasePath),
       password: password,
-      version: 12,
+      version: 14,
       onCreate: (db, version) {
         db.execute(
           "CREATE TABLE ${DiskIdentityKeyStore.table}(${TheirIdentityKeyEntity.createTableCommandFields});",
@@ -62,7 +70,10 @@ class DiskStorage {
           "CREATE TABLE ${ContactStore.table}(${UserEntity.createTableCommandFields});",
         );
         db.execute(
-          "CREATE TABLE ${MessageStore.table}(${PlainMessageEntity.createTableCommandFields});",
+          "CREATE TABLE ${MessageStore.table}(${ChatMessageEntity.createTableCommandFields});",
+        );
+        db.execute(
+          "CREATE TABLE ${MediaStore.table}(${MediaItemEntity.createTableCommandFields});",
         );
         db.execute(
           "CREATE TABLE ${ChatroomStore.table}(${ChatroomEntity.createTableCommandFields});",
@@ -70,17 +81,22 @@ class DiskStorage {
         db.execute(
           "CREATE TABLE ${GroupMemberStore.table}(${GroupMemberEntity.createTableCommandFields});",
         );
+        db.execute(
+          "CREATE TABLE ${BlockStore.table}(${BlocklistEntity.createTableCommandFields});",
+        );
       },
     );
   }
 
   Future<String> getDatabasePassword() async {
-    var password = await SecureStorage().read(key: databasePasswordKey);
-    if (password == null) {
-      password = generateDatabasePassword();
-      SecureStorage().write(key: databasePasswordKey, value: password);
-    }
-    return password;
+    return await _lock.synchronized(() async {
+      var password = await SecureStorage().read(key: databasePasswordKey);
+      if (password == null) {
+        password = generateDatabasePassword();
+        SecureStorage().write(key: databasePasswordKey, value: password);
+      }
+      return password;
+    });
   }
 
   String generateDatabasePassword() {

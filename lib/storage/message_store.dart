@@ -1,5 +1,5 @@
-import 'package:fyp_chat_app/entities/plain_message_entity.dart';
-import 'package:fyp_chat_app/models/plain_message.dart';
+import 'package:fyp_chat_app/entities/chat_message_entity.dart';
+import 'package:fyp_chat_app/models/chat_message.dart';
 import 'package:fyp_chat_app/storage/disk_storage.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -13,7 +13,7 @@ class MessageStore {
 
   static const table = 'message';
 
-  Future<List<PlainMessage>> getMessageByChatroomId(
+  Future<List<ChatMessage>> getMessageByChatroomId(
     String chatroomId, {
     int start = 0,
     int count = 100,
@@ -21,16 +21,16 @@ class MessageStore {
     final db = await DiskStorage().db;
     final result = await db.query(
       table,
-      where: '${PlainMessageEntity.columnChatroomId} = ?',
+      where: '${ChatMessageEntity.columnChatroomId} = ?',
       whereArgs: [chatroomId],
-      orderBy: '${PlainMessageEntity.columnSentAt} DESC',
+      orderBy: '${ChatMessageEntity.columnSentAt} DESC',
       offset: start,
       limit: count,
     );
-    return result.map((e) {
-      final entity = PlainMessageEntity.fromJson(e);
-      return PlainMessage.fromEntity(entity);
-    }).toList();
+    final messages = await Future.wait(result
+        .map((e) => ChatMessageEntity.fromJson(e))
+        .map((e) async => ChatMessage.fromEntity(e)));
+    return messages.whereType<ChatMessage>().toList();
   }
 
   Future<int> getNumberOfUnreadMessageByChatroomId(
@@ -41,7 +41,7 @@ class MessageStore {
       table,
       columns: ['COUNT(*)'],
       where:
-          '${PlainMessageEntity.columnChatroomId} = ? AND ${PlainMessageEntity.columnIsRead} = 0',
+          '${ChatMessageEntity.columnChatroomId} = ? AND ${ChatMessageEntity.columnIsRead} = 0',
       whereArgs: [chatroomId],
     );
     return Sqflite.firstIntValue(result) ?? 0;
@@ -51,8 +51,18 @@ class MessageStore {
     final db = await DiskStorage().db;
     final count = await db.delete(
       table,
-      where: '${PlainMessageEntity.columnId} = ?',
+      where: '${ChatMessageEntity.columnId} = ?',
       whereArgs: [messageId],
+    );
+    return count > 0;
+  }
+
+  Future<bool> removeAllMessageByChatroomId(String chatroomId) async {
+    final db = await DiskStorage().db;
+    final count = await db.delete(
+      table,
+      where: '${ChatMessageEntity.columnChatroomId} = ?',
+      whereArgs: [chatroomId],
     );
     return count > 0;
   }
@@ -61,13 +71,13 @@ class MessageStore {
     final db = await DiskStorage().db;
     final count = await db.delete(
       table,
-      where: '${PlainMessageEntity.columnSenderUserId} = ?',
+      where: '${ChatMessageEntity.columnSenderUserId} = ?',
       whereArgs: [userId],
     );
     return count > 0;
   }
 
-  Future<int> storeMessage(PlainMessage message) async {
+  Future<int> storeMessage(ChatMessage message) async {
     final messageMap = message.toEntity().toJson();
     final db = await DiskStorage().db;
     final id = await db.insert(table, messageMap);
@@ -78,8 +88,8 @@ class MessageStore {
     final db = await DiskStorage().db;
     final count = await db.update(
       table,
-      {PlainMessageEntity.columnIsRead: 1},
-      where: '${PlainMessageEntity.columnId} = ?',
+      {ChatMessageEntity.columnIsRead: 1},
+      where: '${ChatMessageEntity.columnId} = ?',
       whereArgs: [messageId],
     );
     return count > 0;
@@ -89,9 +99,9 @@ class MessageStore {
     final db = await DiskStorage().db;
     final count = await db.update(
       table,
-      {PlainMessageEntity.columnIsRead: 1},
+      {ChatMessageEntity.columnIsRead: 1},
       where:
-          '${PlainMessageEntity.columnChatroomId} = ? AND ${PlainMessageEntity.columnIsRead} = 0',
+          '${ChatMessageEntity.columnChatroomId} = ? AND ${ChatMessageEntity.columnIsRead} = 0',
       whereArgs: [chatroomId],
     );
     return count > 0;

@@ -1,6 +1,9 @@
+import 'package:fyp_chat_app/dto/group_info_dto.dart';
 import 'package:fyp_chat_app/entities/chatroom_entity.dart';
 import 'package:fyp_chat_app/models/chatroom.dart';
+import 'package:fyp_chat_app/models/enum.dart';
 import 'package:fyp_chat_app/models/group_chat.dart';
+import 'package:fyp_chat_app/models/group_info.dart';
 import 'package:fyp_chat_app/models/one_to_one_chat.dart';
 import 'package:fyp_chat_app/storage/disk_storage.dart';
 import 'package:fyp_chat_app/storage/group_member_store.dart';
@@ -32,9 +35,20 @@ class ChatroomStore {
     final result = await db.query(table);
 
     final chatroomList = await Future.wait(result
-        .map((e) => ChatroomEntity.fromJson(e))
-        .map((e) async => Chatroom.fromEntity(e)));
+        .map((e) async => Chatroom.fromEntity(ChatroomEntity.fromJson(e))));
     return chatroomList.whereType<Chatroom>().toList();
+  }
+
+  Future<List<ChatroomEntity>> getAllGroupChatEntity() async {
+    final db = await DiskStorage().db;
+    final result = await db.query(
+      table,
+      where: '${ChatroomEntity.columnType} = ?',
+      whereArgs: [ChatroomType.group.index],
+    );
+
+    final chatroomList = result.map((e) => ChatroomEntity.fromJson(e)).toList();
+    return chatroomList;
   }
 
   Future<Chatroom?> get(String id) async {
@@ -89,6 +103,32 @@ class ChatroomStore {
       map,
       where: '${ChatroomEntity.columnId} = ?',
       whereArgs: [entity.id],
+    );
+    // if no existing record, insert new record
+    if (count == 0) await db.insert(table, map);
+  }
+
+  Future<void> updateMuteAllChatrooms(bool mute) async {
+    final db = await DiskStorage().db;
+    final value = (mute) ? 1 : 0;
+    final updateMap = {ChatroomEntity.columnIsMuted: value};
+    await db.update(
+      table,
+      updateMap,
+      where: '${ChatroomEntity.columnIsMuted} = ?',
+      whereArgs: [1 - value],
+    );
+  }
+
+  Future<void> updateGroupInfo(GroupInfo groupInfo) async {
+    final db = await DiskStorage().db;
+    final map = groupInfo.toEntity().toJson();
+    // try update
+    final count = await db.update(
+      table,
+      map,
+      where: '${ChatroomEntity.columnId} = ?',
+      whereArgs: [groupInfo.id],
     );
     // if no existing record, insert new record
     if (count == 0) await db.insert(table, map);

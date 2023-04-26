@@ -6,10 +6,13 @@ part 'update_user_dto.g.dart';
 class UpdateUserDto {
   @JsonKey(includeIfNull: false)
   String? displayName;
-  // tbc
+
+  @JsonKey(includeIfNull: false)
+  String? status;
 
   UpdateUserDto({
     this.displayName,
+    this.status,
   });
 
   Map<String, dynamic> toJson() => _$UpdateUserDtoToJson(this);

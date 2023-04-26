@@ -1,15 +1,16 @@
 import 'package:fyp_chat_app/models/chatroom.dart';
-import 'package:fyp_chat_app/models/plain_message.dart';
 import 'package:fyp_chat_app/models/user.dart';
 
-class ReceivedPlainMessage {
+import 'chatroom_event.dart';
+
+class ReceivedChatEvent {
   final User sender;
   final Chatroom chatroom;
-  final PlainMessage message;
+  final ChatroomEvent event;
 
-  ReceivedPlainMessage({
+  ReceivedChatEvent({
     required this.sender,
     required this.chatroom,
-    required this.message,
+    required this.event,
   });
 }

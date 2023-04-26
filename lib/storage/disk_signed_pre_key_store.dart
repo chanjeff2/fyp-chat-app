@@ -1,6 +1,7 @@
 import 'package:fyp_chat_app/entities/signed_pre_key_pair_entity.dart';
 import 'package:fyp_chat_app/storage/disk_storage.dart';
 import 'package:libsignal_protocol_dart/libsignal_protocol_dart.dart';
+import 'package:sqflite/sqflite.dart';
 
 /// store only our signed pre keys
 class DiskSignedPreKeyStore extends SignedPreKeyStore {
@@ -46,6 +47,15 @@ class DiskSignedPreKeyStore extends SignedPreKeyStore {
     return allKeys
         .map((e) => SignedPreKeyPairEntity.fromJson(e).toSignedPreKeyRecord())
         .toList();
+  }
+
+  Future<int> getTotalRows() async {
+    final db = await DiskStorage().db;
+    final count = await db.query(
+      table,
+      columns: ['COUNT(*)'],
+    );
+    return Sqflite.firstIntValue(count) ?? 0;
   }
 
   @override
