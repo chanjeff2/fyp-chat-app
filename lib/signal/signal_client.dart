@@ -247,10 +247,11 @@ class SignalClient {
     final deviceIds =
         await DiskSessionStore().getSubDeviceSessions(recipientUserId);
 
+    final devices = [1, ...deviceIds];
     // remove my device if send to self
-    final devices = (myUserId == recipientUserId)
-        ? ([1, ...deviceIds]).where((id) => id != senderDeviceId)
-        : ([1, ...deviceIds]);
+    if (myUserId == recipientUserId) {
+      devices.remove(senderDeviceId);
+    }
 
     final messages = await Future.wait(
       devices.map((deviceId) async =>
@@ -281,10 +282,18 @@ class SignalClient {
       ),
     );
 
+    final devicesToRetry = [
+      ...response.misMatchDeviceIds,
+      ...response.missingDeviceIds
+    ];
+    // remove my device if send to self
+    if (myUserId == recipientUserId) {
+      devicesToRetry.remove(senderDeviceId);
+    }
+
     // revoke session for updated and new devices
     final messagesRetry = await Future.wait(
-      [...response.misMatchDeviceIds, ...response.missingDeviceIds]
-          .map((deviceId) async {
+      devicesToRetry.map((deviceId) async {
         final keyBundle =
             await KeysApi().getKeyBundle(recipientUserId, deviceId);
         await _establishSession(recipientUserId, keyBundle);
