@@ -345,7 +345,10 @@ class _ContactInfoState extends State<ContactInfo> {
                               ],
                             ],
                           ),
-                          const SizedBox(width: 32),
+                          (chatroom.type == ChatroomType.group &&
+                                  checkIsAdmin(userState))
+                              ? const SizedBox(width: 32)
+                              : const SizedBox(width: 0),
                           // Search button (To be implemented)
                           /*
                           Column(children: [
@@ -673,10 +676,6 @@ class _ContactInfoState extends State<ContactInfo> {
                                 // Group members
                                 return InkWell(
                                   onTapDown: (position) async {
-                                    print(groupChat.members.length);
-                                    print((await GroupMemberStore()
-                                            .getByChatroomId(chatroom.id))
-                                        .length);
                                     print((checkIsAdmin(userState)
                                             ? groupChat.members[index - 1]
                                             : groupChat.members[index])
