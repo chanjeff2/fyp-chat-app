@@ -143,50 +143,17 @@ class _ContactInfoState extends State<ContactInfo> {
           });
           break;
         case FCMEventType.addMember:
-          final event = receivedChatEvent.event as AccessControlEvent;
-          final member = await GroupMemberStore()
-              .getbyChatroomIdAndUserId(chatroom.id, event.targetUserId);
-          setState(() {
-            if (!(chatroom as GroupChat).members.contains(member)) {
-              (chatroom as GroupChat).members.add(member!);
-            }
-          });
-          break;
         case FCMEventType.kickMember:
-          final event = receivedChatEvent.event as AccessControlEvent;
-          setState(() {
-            (chatroom as GroupChat)
-                .members
-                .removeWhere((member) => member.user.id == event.targetUserId);
-          });
-          break;
         case FCMEventType.promoteAdmin:
         case FCMEventType.demoteAdmin:
-          final event = receivedChatEvent.event as AccessControlEvent;
-          final member = await GroupMemberStore()
-              .getbyChatroomIdAndUserId(chatroom.id, event.targetUserId);
-          setState(() {
-            (chatroom as GroupChat)
-                .members
-                .removeWhere((member) => member.user.id == event.targetUserId);
-            (chatroom as GroupChat).members.add(member!);
-          });
-          break;
         case FCMEventType.memberJoin:
-          final member = await GroupMemberStore().getbyChatroomIdAndUserId(
-              chatroom.id, receivedChatEvent.event.senderUserId);
-          setState(() {
-            if (!(chatroom as GroupChat).members.contains(member)) {
-              (chatroom as GroupChat).members.add(member!);
-            }
-          });
-          break;
         case FCMEventType.memberLeave:
           setState(() {
-            (chatroom as GroupChat).members.removeWhere((member) =>
-                member.user.id == receivedChatEvent.event.senderUserId);
+            (chatroom as GroupChat).members.clear();
+            (chatroom as GroupChat)
+                .members
+                .addAll((receivedChatEvent.chatroom as GroupChat).members);
           });
-          break;
       }
     });
   }

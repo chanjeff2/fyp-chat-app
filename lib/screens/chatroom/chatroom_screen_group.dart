@@ -112,46 +112,15 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
           });
           break;
         case FCMEventType.addMember:
-          final event = receivedChatEvent.event as AccessControlEvent;
-          final member = await GroupMemberStore()
-              .getbyChatroomIdAndUserId(chatroom.id, event.targetUserId);
-          setState(() {
-            if (!chatroom.members.contains(member)) {
-              chatroom.members.add(member!);
-            }
-          });
-          break;
         case FCMEventType.kickMember:
-          final event = receivedChatEvent.event as AccessControlEvent;
-          setState(() {
-            chatroom.members
-                .removeWhere((member) => member.user.id == event.targetUserId);
-          });
-          break;
         case FCMEventType.promoteAdmin:
         case FCMEventType.demoteAdmin:
-          final event = receivedChatEvent.event as AccessControlEvent;
-          final member = await GroupMemberStore()
-              .getbyChatroomIdAndUserId(chatroom.id, event.targetUserId);
-          setState(() {
-            chatroom.members
-                .removeWhere((member) => member.user.id == event.targetUserId);
-            chatroom.members.add(member!);
-          });
-          break;
         case FCMEventType.memberJoin:
-          final member = await GroupMemberStore().getbyChatroomIdAndUserId(
-              chatroom.id, receivedChatEvent.event.senderUserId);
-          setState(() {
-            if (!chatroom.members.contains(member)) {
-              chatroom.members.add(member!);
-            }
-          });
-          break;
         case FCMEventType.memberLeave:
           setState(() {
-            chatroom.members.removeWhere((member) =>
-                member.user.id == receivedChatEvent.event.senderUserId);
+            chatroom.members.clear();
+            chatroom.members
+                .addAll((receivedChatEvent.chatroom as GroupChat).members);
           });
           break;
       }
