@@ -52,7 +52,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                                 return AlertDialog(
                                     title: const Text("Mute All Notifications"),
                                     content: const Text(
-                                        "This action will mute notifications from all the chats. Are you sure to perform this action?"),
+                                        "This action will mute notifications from all the current chats. Are you sure to perform this action?"),
                                     actions: [
                                       TextButton(
                                         onPressed: () async {
@@ -135,7 +135,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                                 fontWeight: FontWeight.w500, fontSize: 18),
                           ),
                           subtitle: Text(
-                            "Mute notifications from all your groups and chats",
+                            "Mute notifications from all your current groups and chats",
                             style: TextStyle(fontSize: 16),
                           ),
                         )),
@@ -153,7 +153,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                                     title:
                                         const Text("Enable All Notifications"),
                                     content: const Text(
-                                        "This action will enable back to recieve notifications from all the chats. Are you sure to perform this action?"),
+                                        "This action will enable back to recieve notifications from all the current chats. Are you sure to perform this action?"),
                                     actions: [
                                       TextButton(
                                         onPressed: () async {
@@ -236,7 +236,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                                 fontWeight: FontWeight.w500, fontSize: 18),
                           ),
                           subtitle: Text(
-                            "Enable notifications from all your groups and chats",
+                            "Enable notifications from all your current groups and chats",
                             style: TextStyle(fontSize: 16),
                           ),
                         )),
