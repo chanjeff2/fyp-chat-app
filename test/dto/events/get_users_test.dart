@@ -18,6 +18,8 @@ void main() {
   late final String accessToken;
 
   const String baseUrl = "https://fyp-chat-server-dev.up.railway.app";
+  // const String baseUrl = "https://fyp-chat-server.onrender.com";
+  // static const String baseUrl = "http://172.29.138.1:3000";
   const String pathPrefix = "/users";
   setUpAll(() async {
     testUsername1 = "test123";
