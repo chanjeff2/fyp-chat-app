@@ -115,6 +115,8 @@ class ChatroomStore {
     await db.update(
       table,
       updateMap,
+      where: '${ChatroomEntity.columnIsMuted} = ?',
+      whereArgs: [1 - value],
     );
   }
 
