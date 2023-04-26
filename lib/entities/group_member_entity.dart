@@ -9,7 +9,8 @@ class GroupMemberEntity {
 $columnId INTEGER PRIMARY KEY AUTOINCREMENT, 
 $columnChatroomId TEXT NOT NULL, 
 $columnUserId TEXT NOT NULL,
-$columnRole TEXT NOT NULL
+$columnRole TEXT NOT NULL,
+UNIQUE ($columnChatroomId, $columnUserId)
 """;
 
   static const columnId = "id";
