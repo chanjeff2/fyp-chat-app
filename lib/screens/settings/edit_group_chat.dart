@@ -58,7 +58,9 @@ class _EditGroupChatState extends State<EditGroupChat> {
         ),
       ),
       builder: (BuildContext context) {
-        return Container(
+        return WillPopScope(
+          onWillPop: () async => !_isUpdating,
+          child: Container(
             padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
             height: 180,
             child: Column(
@@ -287,7 +289,9 @@ class _EditGroupChatState extends State<EditGroupChat> {
                   ],
                 )
               ],
-            ));
+            ),
+          ),
+        );
       },
     );
   }
