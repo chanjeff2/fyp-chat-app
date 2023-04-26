@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:fyp_chat_app/models/account.dart';
+import 'package:fyp_chat_app/models/message.dart';
 import 'package:fyp_chat_app/models/user_state.dart';
 import 'package:fyp_chat_app/storage/chatroom_store.dart';
+import 'package:fyp_chat_app/storage/message_store.dart';
 import 'package:provider/provider.dart';
 
 import '../../network/account_api.dart';
@@ -59,6 +61,7 @@ class _ChatScreenState extends State<ChatScreen> {
                                         for (var element in list) {
                                           ChatroomStore().remove(element.id);
                                         }
+                                        await MessageStore().deleteAllMessage();
                                         Navigator.pop(context);
                                         Navigator.pop(context);
                                         ScaffoldMessenger.of(context)

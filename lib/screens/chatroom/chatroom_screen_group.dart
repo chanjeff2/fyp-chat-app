@@ -306,8 +306,10 @@ class _ChatRoomScreenGroupState extends State<ChatRoomScreenGroup> {
                                 blockedFuture: blockedFuture)))
                         .then((updatedChatroom) {
                       setState(() {
-                        blockedFuture = BlockStore().contain(chatroom.id);
-                        chatroom = updatedChatroom;
+                        if (updatedChatroom != null) {
+                          blockedFuture = BlockStore().contain(chatroom.id);
+                          chatroom = updatedChatroom;
+                        }
                       });
                     }),
                     child: Column(

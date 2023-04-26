@@ -33,6 +33,13 @@ class MessageStore {
     return messages.whereType<ChatMessage>().toList();
   }
 
+  Future<void> deleteAllMessage() async {
+    final db = await DiskStorage().db;
+    await db.delete(
+      table,
+    );
+  }
+
   Future<int> getNumberOfUnreadMessageByChatroomId(
     String chatroomId,
   ) async {

@@ -236,7 +236,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                 name: "/chatroom-group/${chatroomList[i].id}"),
                           ))
                               .then((value) async {
-                            await ChatroomStore().save(value);
+                            if ((value as GroupChat).members.isNotEmpty) {
+                              await ChatroomStore().save(value);
+                            }
                             await _loadChatroom();
                           });
                           break;
